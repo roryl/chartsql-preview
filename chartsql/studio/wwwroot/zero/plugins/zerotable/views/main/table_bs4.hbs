@@ -1,0 +1,818 @@
+<style>
+.edit-link span {
+    visibility: hidden;
+}
+
+.edit-link:hover span {
+    visibility: visible;
+}
+
+.outerx {
+  overflow: hidden;
+}
+
+.helperx {
+  width: 1px;
+  height: 100%;
+  float: left;
+}
+
+.innerx {
+  /*float: left;*/
+}
+
+table {
+    width: 100%;
+}
+td {
+    max-width: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+	padding:5px;
+}
+
+button.text {
+     background:none!important;
+     border:none;
+     padding:0!important;
+     font: inherit;
+     /*border is optional*/
+     border-bottom:none;
+     cursor: pointer;
+}
+
+/*
+Bootstrap does not appear to suport buttons
+in an addon group, so we make this supportable
+by setting the padding of the addon to 0, and
+making the button a sufficient width. This gives us a
+good hitbox for the click
+ */
+.input-group-addon-btn {
+	padding:0;
+}
+
+.input-group-addon-btn > button {
+	min-width:25px;
+}
+
+</style>
+<div class="row" id="zero-grid{{table_name}}">
+	<div class="col-lg-12">
+		<div class="row">
+			<div class="col-lg-12">
+
+			</div>
+		</div>
+		{{#if toolbar.show}}
+		<div class="row" style="margin-bottom:10px;">
+			<div class="col-lg-12">
+				<div class="form form-inline pull-right">
+					<div class="form-group">
+						{{#if toolbar.tools.copy}}
+						copy link <input type="text" class="form-control input-sm" value="{{current_link}}">
+						{{/if}}
+						{{#if toolbar.tools.history}}
+						<button class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="top" title="Show Filter History"><i class="glyphicon glyphicon-list-alt"></i></button>
+						{{/if}}
+						{{#if toolbar.tools.share}}
+						<button class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="top" title="Share View"><i class="glyphicon glyphicon-share-alt"></i></button>
+						{{/if}}
+						{{#if toolbar.tools.download}}
+						<a class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="top" title="Download CSV" href="{{csv_download_link}}"><i class="glyphicon glyphicon-download-alt"></i></a>
+						{{/if}}
+						{{#if toolbar.tools.customize}}
+						<button class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="top" title="Customize Table"><i class="glyphicon glyphicon-th-list"></i></button>
+						{{/if}}
+					</div>
+				</div>
+			</div>
+		</div>
+		{{/if}}
+		<div class="row">
+			<div class="col-lg-8">
+				<form id="max_items{{table_name}}" action="{{base_path}}" method="get" class="form-inline" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}} style="display:inline;">
+					{{#each current_params}}
+						{{#unless is_max}}
+							{{#unless is_more}}
+							<input type="hidden" name="{{name}}" value="{{value}}">
+							{{/unless}}
+						{{/unless}}
+					{{/each}}
+					<div class="form-group">
+						<label>Show </label>
+						<select class="form-control" name="{{table_name_prefix}}max" onChange="$('#max_items{{table_name}}').submit();">
+							{{#select max}}<option value="10">10</option>{{/select}}
+							{{#select max}}<option value="25">25</option>{{/select}}
+							{{#select max}}<option value="50">50</option>{{/select}}
+							{{#select max}}<option value="100">100</option>{{/select}}
+							{{#select max}}<option value="200">200</option>{{/select}}
+							{{#select max}}<option value="0">All</option>{{/select}}
+						</select>
+						<label>records</label>
+						<button id="max_select_button" class="btn btn-primary" style="margin-left:5px;">Go</button>
+					</div>
+				</form>
+
+				{{#if has_filters}}
+					<form action="{{base_path}}" method="get" class="form-inline" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}} style="display:inline;">
+						{{#each current_params}}
+							{{#unless is_filter}}
+								<input type="hidden" name="{{name}}" value="{{value}}">
+							{{/unless}}
+						{{/each}}
+						<button class="btn btn-default" {{#if has_filters}}{{else}}disabled="true"{{/if}}>Clear All Filters <i class="glyphicon glyphicon-filter"></i></button>
+					</form>
+					{{#each columns}}
+						{{#unless hidden}}
+						{{#if is_filtered}}
+							{{#if filter.value}}
+								<span style="">
+								<a onClick="$(this).addClass('animated bounceOut');" href="{{clear_filter_link}}" class="btn btn-sm btn-primary" style="border-radius:20px; padding:5px 10px 5px 10px; position:relative"><strong>{{friendly_name}} is</strong> {{filter.value}} <i class="glyphicon glyphicon-remove" style="margin-left:5px; top:3px;"></i></a>
+								</span>
+							{{/if}}
+						{{/if}}
+						{{/unless}}
+					{{/each}}
+					{{#if search}}
+					|
+					{{/if}}
+				{{/if}}
+				{{#if search}}
+					<a
+						class="btn btn-sm btn-primary"
+						onClick="$(this).addClass('animated bounceOut');"
+						href="{{clear_search_link}}"
+						{{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}
+						style="border-radius:20px; padding:5px 10px 5px 10px; position:relative; margin-left:10px;"
+
+					><strong>Searching</strong> {{search}}
+					<i class="glyphicon glyphicon-remove" style="margin-left:5px; top:3px;"></i>
+					</a>
+				{{/if}}
+
+			</div>
+			<div class="col-lg-4 text-right">
+				<div class="form-group" class="pull-right" style="display:inline;">
+					<form id="search-form" method="GET" action="{{base_path}}" class="form-inline" style="display:inline;" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+						{{#each current_params}}
+							{{#unless is_search}}
+								{{#unless is_offset}}
+									<input type="hidden" name="{{name}}" value="{{value}}">
+								{{/unless}}
+							{{/unless}}
+						{{/each}}
+						<input name="{{table_name_prefix}}offet" type="hidden" class="form-control input-sm" value="0">
+						<input name="{{table_name_prefix}}search" type="text" class="form-control input-sm" value="{{search}}">
+						<button name="submit" value="search" class="btn btn-primary btn-sm">Search</button>
+					</form>
+					{{#if use_zero_ajax}}
+						<script>
+							var searchForm = $('#search-form');
+							var searchInput = $('#search-form > input[name="search"]');
+							isTimeout = false;
+							searchInput.on('keyup', function(event){
+								// console.log(event);
+								// if(typeof timeout !== 'undefined'){
+								if(isTimeout){
+									// console.log(timeout);
+									console.log('timeout found');
+									// clearTimeout(timeout);
+
+								} else {
+
+									isTimeout = true;
+									timeout = setTimeout(function(){
+
+										var prior = searchInput.val();
+										var newKey = event.key;
+
+										if(newKey !== 'undefined' && newKey !== 'Backspace'){
+											searchInput.attr('value', prior + newKey);
+										}
+
+										var strLength = searchInput.val().length * 2;
+										searchInput.focus();
+										searchInput[0].setSelectionRange(strLength, strLength);
+
+										event.preventDefault();
+										searchForm.submit();
+
+									}, 1000);
+									isTimeout = false;
+								}
+
+							});
+						</script>
+					{{/if}}
+					{{#if search}}
+						<script>
+							var searchInput = $('#search-form > input[name="search"]');
+							searchInput.focus();
+							var strLength = searchInput.val().length * 2;
+							searchInput.focus();
+							searchInput[0].setSelectionRange(strLength, strLength);
+						</script>
+					{{/if}}
+					<a class="btn btn-default btn-sm" href="{{clear_search_link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>Clear</a>
+
+				</div>
+			</div>
+		</div>
+		{{#each action_rows}}
+		<div class="row">
+			<div class="col-lg-12">
+				<div style="display:inline; float:right">
+					<button class="btn btn-default"><i class="glyphicon glyphicon-trash"></i> View Deleted</button>
+				</div>
+			</div>
+		</div>
+		{{/each}}
+		<div style="margin-bottom:10px;">
+
+		</div>
+		<div>
+			<div class="row">
+				{{!-- <div class="col-lg-3">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">Customize Columns</h3>
+						</div>
+						<div class="panel-body" style="padding:0">
+							<div class="list-group" style="margin:0; padding:0;">
+								{{#each columns}}
+								<div class="list-group-item">
+									<form id="data-grid-form-name{{../id}}" action="{{base_path}}/{{../id}}" method="post" class="form-inline" style="display:inline;" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+										<div class="form-group">
+											<!--- {{../is_active}} --->
+											<input type="hidden" name="goto" value="{{current_link}}" />
+											<input type="hidden" name="is_active" value="{{#if ../is_active}}false{{else}}true{{/if}}">
+											<!--- <input type="submit" name="{{column_name}}" id="data-grid-input-name{{id}}" class="form-control input-sm" value="{{lookup ../this column_row_data_path}}" data-initial-value="{{lookup ../this column_row_data_path}}" {{#if zero_is_checked}}checked{{/if}}/> --->
+											<button id="data-grid-input-name{{id}}" class="" style="border:none; margin:0px;" value="" data-initial-value="{{lookup ../this column_row_data_path}}">{{#if ../is_active}}&#9745;{{else}}&#9744;{{/if}}</button>
+										</div>
+									</form>
+									{{friendly_name}}
+								</div>
+								{{/each}}
+							</div>
+						</div>
+					</div>
+				</div> --}}
+				<div class="col-lg-12">
+					<div class="zerotable-table-container table-responsive">
+					<table id="zerotable{{table_name}}"
+						   class="table
+						   {{#if style.table.bordered}}table-bordered{{/if}}
+						   {{#if style.table.striped}}table-striped{{/if}}
+						   {{#if style.table.hover}}table-hover{{/if}}
+						   {{#if style.table.condensed}}table-condensed{{/if}}
+						   " >
+			  			<thead>
+							{{#each columns}}
+								<th {{#if width}}width="{{width}}"{{/if}} {{#if text_align}}style="text-align:{{text_align}};"{{/if}}>{{friendly_name}}
+									{{#if sortable}}
+										{{#if is_sorted}}
+											{{#if is_sorted_asc}}
+												<span class="pull-right"><a href="{{sort_desc_link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}><i class="fa fa-fw fa-sort-desc"></i></a></span>
+											{{else}}
+												<span class="pull-right"><a href="{{sort_asc_link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}><i class="fa fa-fw fa-sort-asc"></i></a></span>
+											{{/if}}
+										{{else}}
+											<span class="pull-right"><a href="{{sort_asc_link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}><i class="fa fa-fw fa-sort"></i></a></span>
+										{{/if}}
+											<!--- <span class="pull-right"><a href=""><i class="fa fa-fw fa-filter"></i></a></span>
+											<span class="pull-right"><a href=""><i class="fa fa-fw fa-search"></i></a></span> --->
+									{{/if}}
+								</th>
+							{{/each}}
+			  			</thead>
+
+			  			<tbody>
+							{{#if has_filterable_columns}}
+								<tr>
+									{{#each columns}}
+										{{!-- Making the input widths not expand their container cell:
+											  http://stackoverflow.com/questions/13856955/i-need-to-make-an-input-element-adjust-to-table-cell-width
+										--}}
+										<td {{#if width}}width="{{width}}"{{/if}}
+
+											{{#if filterable}}{{#if filter.value}}style="background-color: #cccccc;"{{/if}}{{/if}}
+
+										>
+											{{#if filterable}}
+												<form style="display:inline;" action="{{base_path}}" class="horizontal" method="GET" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+														{{!-- This next section outputs the parameters for the form EXCEPT:
+															- Paramters which represent a filter column AND the current looped column is
+															being filters. For clarity with the lookup() expression I am using if/else
+															instead of unless which can be hard to mentally parse in a complex situation --}}
+														{{#each current_params}}
+
+															{{#if is_filter}}
+																{{!-- Filter params will have the name of the column which is being
+																filtered within the structure like below:
+
+																{
+																	is_filter: true,
+																	column: {
+																		a_columns_name: true
+																	},
+																	name: "filters.name",
+																	value: "shoes"
+																},
+
+																We can therefore lookup the column name (a_columns_name) to return true
+																if we are on the current column being looped over in the outer loop.
+
+																Need to use the ifLookup helper which will properly test the lookup for a
+																truthy value (true or "true"). If doing a normal 'if (lookup column ../this.column_name' then handlebars may conflict on columns named 'name' and
+																find keys in some parent structure, which will also return true under a normal
+																#if (strings return true).
+																  --}}
+																{{#ifLookup (lookup column ../this.column_name)}}
+																	{{!-- The current column we are looping matches the current_param
+																	that we are looping, as such, do not output any hidden variable because
+																	the form input will handle passing this value back --}}
+																{{else}}
+																	<input type="hidden" name="{{name}}" value="{{value}}">
+																{{/ifLookup}}
+															{{else}}
+																<input type="hidden" name="{{name}}" value="{{value}}">
+															{{/if}}
+
+														{{/each}}
+
+														{{#if filter.type.text}}
+															{{#if filter.value}}
+																<div class="input-group">
+																	<input type="input" class="form-control input input-sm" name="{{table_name_prefix}}filters.{{column_name}}" style="min-width: 10px; max-width: 100%; width: 100%;" {{#if filter.value}}value="{{filter.value}}"{{/if}} placeholder="filter {{friendly_name}}"/>
+																	<div class="input-group-addon input-group-addon-btn">
+																		<button class="text"><i class="glyphicon glyphicon-filter"></i></button>
+																		<button class="text" name="delete_path" value="{{table_name_prefix}}filters.{{column_name}}"><i class="glyphicon glyphicon-remove-circle"></i></button>
+																	</div>
+																</div>
+															{{else}}
+																<div class="input-group">
+																	<input type="input" class="form-control input input-sm" name="{{table_name_prefix}}filters.{{column_name}}" style="min-width: 10px; max-width: 100%; width: 100%;" {{#if filter.value}}value="{{filter.value}}"{{/if}} placeholder="filter {{friendly_name}}"/>
+																	<div class="input-group-addon input-group-addon-btn">
+																		<button class="text"><i class="glyphicon glyphicon-filter"></i></button>
+																	</div>
+																</div>
+															{{/if}}
+														{{/if}}
+
+														{{#if filter.type.select}}
+															<div class="input-group">
+																<select name="{{table_name_prefix}}filters.{{column_name}}" class="form-control input input-sm" >
+																	<option>Select {{friendly_name}}</option>
+																	{{#each filter.data}}
+																		{{#select filter.value}}<option value="{{id}}">{{name}}</option>{{/select}}
+																	{{/each}}
+																</select>
+																<div class="input-group-addon input-group-addon-btn">
+																	{{#if filter.value}}
+																		<button class="text"><i class="glyphicon glyphicon-filter"></i></button>
+																		<button class="text" name="delete_path" value="{{table_name_prefix}}filters.{{column_name}}"><i class="glyphicon glyphicon-remove-circle"></i></button>
+																	{{else}}
+																		<button class="text"><i class="glyphicon glyphicon-filter"></i></button>
+																	{{/if}}
+
+																</div>
+															</div>
+														{{/if}}
+												</form>
+											{{/if}}
+										</td>
+									{{/each}}
+								</tr>
+							{{/if}}
+
+			  				{{#each rows}}
+				  				<tr
+									{{#if row_on_click}}
+										class="zerotable-row-on-click"
+										data-onClick="{{row_on_click}}"
+									{{/if}}
+				  				>
+									{{#each columns}}
+										<td id="cell-{{column_name}}-{{id}}"
+										style="vertical-align: middle; padding:5px; height:1px; {{#if text_align}}text-align:{{text_align}};{{/if}}"
+										>
+											<div
+												style="margin:0px; border-radius:0px; border:none; height:100%; width:100%; display:table;"
+												class="cell-wrapper-{{column_name}}-{{id}}
+													{{#if view_state.edit_result.errors}}
+														{{#if ../edit}}
+															{{#if edit}}
+															alert alert-danger
+															{{/if}}
+														{{/if}}
+													{{/if}}
+												"
+											>
+											{{#if view_state.edit_result.errors}}
+												{{#if ../edit}}
+													{{#if edit}}
+														<label class="label label-danger" style="display:block;">
+															{{#each view_state.edit_result.errors.errors}}
+																<strong>{{message}}</strong>
+															{{/each}}
+														</label>
+													{{/if}}
+												{{/if}}
+											{{/if}}
+
+											{{#if column_type}}
+												{{#if column_type.text}}
+													{{#if editable}} <!--- if column is editable --->
+
+														<!--- TEXT EDIT WEB COMPONENT
+
+														This web component is made up of a text edit box with a save/cancel button
+														and an enable edit button, which is the text of the column
+
+														Notes:
+														- In order to have a hitbox which takes up the entire width and height
+														  of the cell, we emply a few strategies:
+
+														  1. The td side is 1px, which will force it to be the side of any child elements
+														  2. Each form input and edit button are 100% width and height
+														  3. Using a padding trick to get vertical alignment out of the form elements: http://vanseodesign.com/css/vertical-centering/
+														  4. Inside the TD is a div.table and div.tabel-cell, this is so that we can vertically-align regular text
+														  5. Visibility is controlled by a ID+Class selector. By default the input form is hidden, and is made visible by adding a visiblity class
+
+														--->
+														<style>
+															#data-grid-form-{{column_name}}-{{../id}} {
+																display:none;
+															}
+
+
+
+															.hidden-{{column_name}}-{{id}} {
+																display:none;
+															}
+
+															#data-grid-form-{{column_name}}-{{../id}}.visible-{{column_name}}-{{id}} {
+																display:block;
+															}
+
+															button.link {
+															     background:none!important;
+															     border:none;
+															     padding:0!important;
+															     font: inherit;
+															     /*border is optional*/
+															     border-bottom:1px solid #444;
+															     cursor: pointer;
+															}
+
+															button.text {
+															     background:none!important;
+															     border:none;
+															     padding:0!important;
+															     font: inherit;
+															     /*border is optional*/
+															     border-bottom:none;
+															     cursor: pointer;
+															}
+														</style>
+
+														<!--- EDIT FIELD --->
+														<form id="data-grid-form-{{column_name}}-{{../id}}"
+															  action="{{base_path}}/{{../id}}"
+															  method="post"
+															  style="margin:0px; padding:1% 0; height:100%; padding-left:5px;"
+															  class="text-edit
+															  		 form-inline
+															  		 {{#if edit}}
+															  		 	{{#if ../edit}}
+															  		 		visible-{{column_name}}-{{id}}
+															  		 	{{/if}}
+															  		 {{/if}}"
+															 {{#if use_zero_ajax}}zero-target="#cell-{{column_name}}-{{id}}"{{/if}}>
+
+															<div class="" style="padding:5px; width:100%">
+																<input type="hidden" name="goto" value="{{pagination.current_page.link}}" />
+																<input type="hidden" name="goto_fail" value="{{pagination.current_page.link}}" />
+																<input type="hidden" name="edit_col" value="{{column_name}}">
+																<input type="hidden" name="edit_id" value="{{../id}}">
+																<input type="hidden" name="preserve_response" value="view_state.edit_result">
+																<!--- <input type="hidden" name="preserve_request" value="true"> --->
+																<input type="text"
+																	   name="{{column_name}}"
+																	   id="data-grid-input-name{{id}}"
+																	   class="form-control input-sm"
+																	   style="width:60%; height:32px;"
+																	   value="{{lookup ../this column_row_data_path}}"
+																	   data-initial-value="{{lookup ../this column_row_data_path}}"/>
+
+																<button class="btn btn-primary btn-sm" style="">save</button>
+																<button name="submit_overload"
+																		value="{'clear_form':true}"
+																		formaction="{{pagination.current_page.link}}"
+																		class="btn btn-default btn-sm cancel-button"
+																		style=""
+																	href="{{clear_edit_link}}"
+																	{{!-- onClick="$('#data-grid-form-{{column_name}}-{{../id}}').hide(); $('#enable-edit-{{column_name}}-{{id}}').show(); return false;" --}}
+																	>cancel</button>
+															</div>
+														</form>
+
+														<div style="display:table-cell; position:relative">
+															<!--- ENABLE EDIT FIELD --->
+															<form id="enable-edit-{{column_name}}-{{id}}"
+																  action="{{base_path}}"
+																  method="post"
+																  style="margin:0px; padding:0px; height:100%"
+																  {{#if use_zero_ajax}}zero-target="#cell-{{column_name}}-{{id}}"{{/if}}
+																  class="
+																  		text-enable-edit
+																	{{#if edit}}
+															  		 	{{#if ../edit}}
+															  		 		hidden-{{column_name}}-{{id}}
+															  		 	{{/if}}
+															  		 {{/if}}"
+																  "
+																  >
+																{{#each current_params}}
+																	<input type="hidden" name="{{name}}" value="{{value}}">
+																{{/each}}
+																<input type="hidden" name="edit_col" value="{{column_name}}">
+																<input type="hidden" name="edit_id" value="{{id}}">
+																<button class="text"
+																		style="display:block; width:100%; height:100%; position:absolute; {{#if text_align}}text-align:{{text_align}};{{/if}} "
+																		onClick="$('#data-grid-form-{{column_name}}-{{../id}}').show(); $('#enable-edit-{{column_name}}-{{id}}').hide(); return false;"
+																		>
+																		<span style="padding:5px;">
+																			{{#if (lookup ../this.wrap column_row_data_path)}}
+																				{{{lookup ../this.wrap column_row_data_path}}}
+																			{{else}}
+																				{{lookup ../this column_row_data_path}}
+																			{{/if}}
+																		</span>
+																</button>
+															</form>
+														</div>
+
+
+													{{else}} <!--- NOT editable --->
+														<div style="display:table-cell; vertical-align:middle;">
+															{{#if (lookup ../this.wrap column_row_data_path)}}
+																<span id="data-grid-edit-name{{id}}" style="padding-left:5px;">{{{lookup ../this.wrap column_row_data_path}}}</span>
+															{{else}}
+																<span id="data-grid-edit-name{{id}}" style="padding-left:5px;">{{lookup ../this column_row_data_path}}</span>
+															{{/if}}
+														</div>
+													{{/if}}
+												{{/if}}
+
+												{{#if column_type.custom}}
+													<div style="display:table-cell; vertical-align:middle; padding-left:5px;">
+														{{{lookup ../this column_row_data_path}}}
+													</div>
+													<!--- {{{lookup ../this column_row_data_path}}} --->
+												{{/if}}
+
+												{{#if column_type.checkbox}}
+													<form id="data-grid-form-name{{../id}}" action="{{base_path}}/{{../id}}" method="post" class="form-inline" style="display:inline;" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+														<div class="form-group">
+															<!--- {{../is_active}} --->
+															<input type="hidden" name="goto" value="{{current_link}}" />
+															<input type="hidden" name="is_active" value="{{#if ../is_active}}false{{else}}true{{/if}}">
+															<!--- <input type="submit" name="{{column_name}}" id="data-grid-input-name{{id}}" class="form-control input-sm" value="{{lookup ../this column_row_data_path}}" data-initial-value="{{lookup ../this column_row_data_path}}" {{#if zero_is_checked}}checked{{/if}}/> --->
+															<button id="data-grid-input-name{{id}}" class="form-control" style="border:none;" value="" data-initial-value="{{lookup ../this column_row_data_path}}">{{#if ../is_active}}&#9745;{{else}}&#9744;{{/if}}</button>
+														</div>
+													</form>
+												{{/if}}
+
+												{{#if column_type.select}}
+													<style>
+														#data-grid-form-name-{{column_name}}-{{../id}} {
+															display:none;
+														}
+
+														.hidden-{{column_name}}-{{id}} {
+															display:none;
+														}
+
+														#data-grid-form-name-{{column_name}}-{{../id}}.visible-{{column_name}}-{{id}} {
+															display:block;
+														}
+
+														button.link {
+														     background:none!important;
+														     border:none;
+														     padding:0!important;
+														     font: inherit;
+														     /*border is optional*/
+														     border-bottom:1px solid #444;
+														     cursor: pointer;
+														}
+
+														button.text {
+														     background:none!important;
+														     border:none;
+														     padding:0!important;
+														     font: inherit;
+														     /*border is optional*/
+														     border-bottom:none;
+														     cursor: pointer;
+														}
+													</style>
+
+													<form id="data-grid-form-name-{{column_name}}-{{../id}}"
+														  action="{{base_path}}/{{../id}}"
+														  method="post"
+														  class="form-inline
+																{{#if edit}}
+																	{{#if ../edit}}
+																		visible-{{column_name}}-{{id}}
+																	{{/if}}
+																{{/if}}
+
+														  "
+														  style="padding:1% 0; padding-left:5px;"
+														  {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+
+														<div class="form-group" style="padding:2% 0;">
+															<input type="hidden" name="goto" value="{{pagination.current_page.link}}" />
+															<select name="{{column_name}}" class="form-control" style="">
+																{{#each column_type.options}}
+																	{{#select (lookup ../this column_name)}}<option value="{{id}}">{{name}}</option>{{/select}}
+																{{/each}}
+															</select>
+															{{#unless hide_buttons}}
+															<button class="btn btn-primary btn-sm">save</button>
+															<a class="btn btn-default btn-sm" href="{{clear_edit_link}}">cancel</a>
+															{{/unless}}
+														</div>
+													</form>
+
+													<!--- ENABLE EDIT FIELD --->
+													<div style="display:table-cell; position:relative;">
+
+														<form id="enable-edit-{{column_name}}-{{id}}"
+															  action="{{base_path}}"
+															  method="post"
+															  style="margin:0px; padding:0px; height:100%"
+															  {{#if use_zero_ajax}}zero-target="#cell-{{column_name}}-{{id}}"{{/if}}
+															  class="
+															  		text-enable-edit
+																{{#if edit}}
+														  		 	{{#if ../edit}}
+														  		 		hidden-{{column_name}}-{{id}}
+														  		 	{{/if}}
+														  		 {{/if}}"
+															  "
+															  >
+															{{#each current_params}}
+																<input type="hidden" name="{{name}}" value="{{value}}">
+															{{/each}}
+															<input type="hidden" name="edit_col" value="{{column_name}}">
+															<input type="hidden" name="edit_id" value="{{id}}">
+															<button class="text"
+																	style="display:block; {{#if text_align}}text-align:{{text_align}};{{/if}} width:100%; height:100%; position:absolute;"
+																	<!--- onClick="$('#data-grid-form-name{{../id}}').show(); $('#enable-edit-{{column_name}}-{{id}}').hide(); return false;" --->
+																	>
+																	<span style="padding-left:5px;">
+																		{{#if (lookup ../this.wrap column_row_data_path)}}
+																			{{{lookup ../this.wrap column_row_data_path}}}
+																		{{else}}
+																			{{lookup ../this column_row_data_path}}
+																		{{/if}}
+																	</span>
+															</button>
+														</form>
+													</div>
+												{{/if}}
+											{{else}}
+
+											{{/if}}
+											</div>
+					  					</td>
+									{{/each}}
+				  				</tr>
+
+								<!--- Edit / Additional data panel --->
+				  				{{#if show_row_edit_panel}}
+									<tr>
+										<td colspan="{{../column_count}}">
+											{{{row_edit_panel_content}}}
+										</td>
+									</tr>
+								{{/if}}
+
+			  				{{/each}}
+			  			</tbody>
+					</table>
+					</div>
+				</div>
+			</div><!--- /row --->
+			<div class="container" style="position:sticky; bottom:0; right:0; width:100%; background-color:white; ">
+			<div class="row">
+				<div class="col-lg-3">
+					Showing {{toString pagination.current_page.start_index}} to {{toString pagination.current_page.end_index}} of {{pagination.total_items}} entries
+				</div>
+				<div class="col-lg-2">
+					<form action="{{base_path}}" method="GET" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+						<!--- Loop through and output all variables except more,
+						because more gets calculated to add the number offset every
+						time more is called --->
+						{{#each current_params}}
+							{{#unless is_more}}
+								<input type="hidden" name="{{name}}" value="{{value}}">
+							{{/unless}}
+						{{/each}}
+						<input type="hidden" name="{{table_name_prefix}}more" value="{{next_more}}">
+						<button class="btn btn-sm btn-outline-primary">Show {{toString max}} more</button>
+					</form>
+				</div>
+				<div class="col-lg-7" style="">
+					<div class="row">
+						<div class="col-lg-12">
+							<nav aria-label="Page navigation" class="text-right">
+								<ul class="pagination text-right" style="margin-top:-5px;">
+									<li {{#if pagination.is_first_page}}class="page-item disabled"{{/if}}>
+										<a class="page-link" href="{{pagination.first_page.link}}" aria-label="Previous" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+											<span aria-hidden="true">First</span>
+										</a>
+									</li>
+
+									<li {{#unless pagination.has_previous_page}}class="page-item disabled"{{/unless}}>
+										<a class="page-link" href="{{pagination.previous_page.link}}" aria-label="Previous" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+											Previous
+										</a>
+									</li>
+
+									{{#each pagination.summary_pages}}
+										<li {{#if is_current_page}}class="page-item active"{{/if}}><a class="page-link" href="{{link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>{{toString id}}</a></li>
+									{{/each}}
+									<li {{#unless pagination.has_next_page}}class="page-item disabled"{{/unless}}>
+										<a class="page-link" href="{{pagination.next_page.link}}" aria-label="Next" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>Next</a>
+									</li>
+
+									<li {{#if pagination.is_last_page}}class="page-item disabled"{{/if}}>
+										<a class="page-link" href="{{pagination.last_page.link}}" aria-label="Previous" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+											<span aria-hidden="true">Last</span>
+										</a>
+									</li>
+
+									<li class="" style="margin-left:15px;">
+										<form action="{{base_path}}" method="POST" class="form-inline" style="display:inline;" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
+											<div class="form-group">
+
+												{{#each current_params}}
+													{{#unless is_goto_page}}
+														<input type="hidden" name="{{name}}" value="{{value}}">
+													{{/unless}}
+												{{/each}}
+												<button class="form-control btn-primary btn btn-sm">go to page</button>
+												<input name="{{table_name_prefix}}goto_page" class="form-control" type="page" style="width:50px;">
+												of {{toString pagination.total_pages}} pages
+											</div>
+										</form>
+									</li>
+								</ul>
+							</nav>
+						</div>
+					</div>
+				</div>
+			</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+{{!-- Work on a row click functionality, but not finished
+because need to determine how to detect if the
+row has editable items or other buttons --}}
+<script>
+	$(function() {
+	    $(".zerotable-row-on-click").click(function(e) {
+	    	console.log(e);
+	    	var target = $(e.target);
+	    	if(target.is('button,a,input,select')){
+	    		//Do nothing because something other than a row click was made
+	    	} else {
+		    	var onClick = $(e.currentTarget).attr('data-onClick');
+		    	eval(onClick);
+	    	}
+	    });
+	})
+</script>
+
+{{#if use_zero_ajax}}
+	<script>
+	NProgress.configure({ parent: "#zerotable{{table_name}}", showSpinner: false });
+
+	$( document ).ajaxStart(function() {
+		NProgress.start();
+	  // $( "#loading" ).show();
+	}).ajaxStop(function() {
+		NProgress.done();
+	  // $( "#loading" ).hide();
+	});
+	</script>
+{{/if}}

@@ -1,0 +1,133 @@
+<form id="storeEditorContentForm" action="/studio/main/storeEditorContent" method="POST" zero-target="#openFilesList,#fileList,#editorTabs,#editorFooter">
+	<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
+	<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
+	<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
+	<textarea id="editorContentTextarea" name="Sql" style="display:none;">{{{data.CurrentSqlFile.EditorContent}}}</textarea>
+	<button id="storeEditorContentButton" style="display:none;">update</button>
+</form>
+<div style="width:100%; height:100%; ">
+	<textarea id="sqlTextarea" class="form-control" rows="5" style="">{{data.CurrentSqlFile.EditorContent}}</textarea>
+</div>
+<!--- </div> --->
+<!--- <div class="tab-pane" id="tabs-profile-4" role="tabpanel">
+	<h4>Profile tab</h4>
+	<div>Fringilla egestas nunc quis tellus diam rhoncus ultricies tristique enim at diam, sem nunc amet, pellentesque id egestas velit sed</div>
+</div> --->
+<!--- </div> --->
+<script>
+
+	{{#if data.CurrentSqlFile.Id}}
+
+		{{#if (eq view_state.editor_panel.active_view "sql")}}
+
+
+
+		/**********************************************
+		* CODEMIRROR
+		**********************************************/
+		var sqlEditor = CodeMirror.fromTextArea(document.getElementById('sqlTextarea'), {
+			mode: 'text/x-sql',
+			theme: 'dracula',
+			lineNumbers: true,
+			extraKeys: {
+				"Tab": "indentMore",
+				"Shift-Tab": "indentLess"
+			}
+		});
+
+		// Define a function to find directives in the editor
+		// this will search through and look for @directive:. When it finds one
+		// it will mark it with the 'directive' class, otherwise it will mark it
+		// with the 'invalid-directive' class. We also keep track of which directives
+		// we have seen so that we can mark them with the 'already-seen-directive' class
+		// since in ChartSQL, only the first instance of a directive is used.
+		// Note:
+		// 	I have tried to initialize tooltips with tabler, but it wasn't working for now.
+		//  The tooltip classes are assigned but they don't load properly on every change
+		function findDirectives(editor) {
+
+			editor.getAllMarks().forEach(mark => mark.clear());
+			// Create a search cursor that looks for the @directive pattern
+			var cursor = editor.getSearchCursor(/@[\w-]+:/g);
+
+			var seenDirectives = [];
+			// Loop over the matches and mark them
+			while (cursor.findNext()) {
+				// console.log(cursor.pos.match[0]); // Log the current directive text
+
+				var directive = cursor.pos.match[0].replace(/:/g, '')
+				directive = directive.replace(/@/g, '')
+				// console.log(directive); // Log the current directive text
+
+				var validFormats = [
+					"chart",
+					"title",
+					"description",
+					"subtitle",
+					"category",
+					"groups",
+					"series",
+					"stacks",
+					"formats",
+					"stacking",
+					"stacking-mode",
+					"series-types",
+					"mongodb-query",
+					"datasource",
+					"secondary-series",
+					"baselines",
+					"baseline-types",
+					"series-labels"
+				];
+
+				if(!validFormats.includes(directive)){
+					editor.markText(cursor.from(), cursor.to(), {className: 'invalid-directive', attributes: {'data-bs-toggle': 'tooltip', 'title': "Not a valid directive"}});
+				} else {
+					if(!seenDirectives.includes(directive)){
+						seenDirectives.push(directive);
+						editor.markText(cursor.from(), cursor.to(), {className: 'directive'});
+					} else {
+						editor.markText(cursor.from(), cursor.to(), {className: 'already-seen-directive'});
+					}
+				}
+				// editor.markText(cursor.from(), cursor.to(), {className: 'directive'});
+			}
+		}
+
+		// Run our directive finder when the editor is initialized
+		// and whenever changes are made
+		findDirectives(sqlEditor);
+
+		// Define the function that will be called when the content changes
+		function onEditorContentChange(instance, changeObj) {
+
+			// Find the directives in the editor and mark them as
+			// 'directive' or 'invalid-directive'
+			findDirectives(sqlEditor);
+
+			// Update the content of the hidden text area with the current content of the CodeMirror instance
+			// so that it can be submitted with the form
+			document.getElementById('SqlSubmit{{Id}}').value = instance.getValue();
+			document.getElementById('editorContentTextarea').value = instance.getValue();
+
+			// Click the storeEditorContentButton which will send the editor content to the server
+			// in SqlFile (but not actually save the file) so that it can be restored if the user
+			// navigates away from the page and then comes back and it hasn't been saved
+			document.getElementById('storeEditorContentButton').click();
+
+			// Decorate the save button that we have changes and so we are going to
+			// remove the btn-ghost-secondary class and add the btn-primary class
+			// var button = document.getElementById('saveSqlbutton');
+			// // Remove an existing class
+			// button.classList.remove('btn-ghost-secondary');
+			// // Add a new class
+			// button.classList.add('btn-primary');
+
+			console.log('Editor content changed!');
+		}
+
+		// Attach the change event listener to your CodeMirror instance
+		sqlEditor.on('change', onEditorContentChange);
+		{{/if}}
+	{{/if}}
+</script>

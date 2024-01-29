@@ -1,0 +1,111 @@
+component accessors="true" {    
+	
+	/**
+	 * Controller constructor, receives an instance of Application.cfc as fw
+	 * @param  {component} fw An instance of the Application.cfc
+	 * @return {component}    An instance of this controller
+	 */
+	public any function init( fw ) {
+		variables.fw = fw;
+		return this;
+	}
+
+	/**
+	 * Lists a collection of the current resource 
+	 * @return {struct} The data for the list view
+	 */
+	public struct function list() {
+		return {}
+	}
+
+	/**
+	 * A controller function to validate a new entity
+	 * @return {struct} The data for the new entity
+	 */
+	public struct function validate() {
+		return {};
+	}	
+
+	/**
+	 * A controller function to represent a new form
+	 * @return {struct} The data for the new view
+	 */
+	public struct function new() {
+		return {};
+	}	
+
+	/**
+	 * A controller function to represent a an edit form
+	 * @return {struct} The data for the edit view
+	 */
+	public struct function edit( required id ) {
+		return {};
+	}
+
+	/**
+	 * Creates an item at the current resource
+	 * @return {struct} The data for the create view
+	 */
+	public struct function create() {
+		return {};
+	}
+
+	/**
+	 * Reads an item at the current resource
+	 * @return {struct} The data for the read view
+	 */
+	public struct function read( required id ) {
+		return {};
+	}
+
+	/**
+	 * Updates an item at the current resource
+	 * @return {struct} The data for the update view
+	 */
+	public struct function update( required id ) {
+		return {};
+	}
+
+	/**
+	 * Deletes an item at the current resource
+	 * @return {struct} The data for the delete view
+	 */
+	public struct function delete( required id ) {
+		return {}; 
+	}
+
+	/**
+	 * Links two resources together 
+	 * @return {struct} The data for the linked resource
+	 */
+	public struct function link( required id ){
+		return {};
+	}
+
+	/**
+	 * Unlinks two resources
+	 * @return {struct} The data for the linked resource
+	 */
+	public struct function unlink( required id ){
+		return {};
+	}
+
+	/**
+	 * Function to override the request scope variables for this controller
+	 * @param  {struct} rc The request context, the URL and FORM variables passed into the app
+	 * @return {struct}    The update RC scope which will be used to find variables for the controllers
+	 */
+	public struct function request( required struct rc, required struct headers ){
+		return rc;
+	}
+
+	/**
+	 * A function to override all controller function responses, for example to decorate with extra information on every call
+	 * @param  {struct} required struct        controllerResult Will receive the result of the controller method (list, create, read etc)
+	 * @return {struct}          Should return the updated controller result
+	 */
+	public struct function result( required struct controllerResult ){
+		return controllerResult;
+	}
+	
+}

@@ -1,0 +1,42 @@
+<cf_handlebars context="#result#">
+<div id="storyPlayer" class="mb-3" style="width:100%; display:none;">
+	<div class="btn-group w-100" role="group">
+		<a id="storyPreviousSlide" {{#if data.Story.PreviousSlideLink}}href="{{data.Story.PreviousSlideLink}}"{{/if}} zero-icon="false" for="btn-radio-dropdown-1" type="button" class="btn {{#unless data.Story.PreviousSlideLink}}text-muted{{/unless}}" style="flex: 0 1 auto;" data-bs-toggle="tooltip" data-bs-placement="right" title="Previous Slide (left arrow)">
+			<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-track-prev me-0" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 5v14l-8 -7z" /><path d="M10 5v14l-8 -7z" /></svg>
+		</a>
+		<div class="btn-group" role="group" style="flex: 1 1 auto;">
+			<label id="selectSlideMenu" for="btn-radio-dropdown-dropdown" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				{{data.CurrentSqlFile.NamedDirectives.Title.ValueRaw}}
+			</label>
+			<div class="dropdown-menu w-100">
+				{{#each data.Story.Slides}}
+					<a href="{{Link}}" studio-form-links="false" class="dropdown-item text-center {{#if (eq FullName data.CurrentSqlFile.FullName)}}active{{/if}}" style="display:block;">{{Title}}</a>
+				{{/each}}
+			</div>
+		</div>
+		<a id="storyNextSlide" {{#if data.Story.NextSlideLink}}href="{{data.Story.NextSlideLink}}"{{/if}} zero-icon="false" for="btn-radio-dropdown-2" type="button" class="btn {{#unless data.Story.NextSlideLink}}text-muted{{/unless}}" style="flex: 0 1 auto;" data-bs-toggle="tooltip" data-bs-placement="left" title="Next Slide (right arrow)">
+			<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-track-next me-0" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 5v14l8 -7z" /><path d="M14 5v14l8 -7z" /></svg>
+		</a>
+	</div>
+</div>
+<script>
+	//Add keyboard for next and previous arrow to click the preivous and next buttons
+	document.addEventListener('keydown', function(e) {
+		if (e.keyCode == 37) { // left
+			document.getElementById('storyPreviousSlide').click();
+		}
+		else if (e.keyCode == 39) { // right
+			document.getElementById('storyNextSlide').click();
+		}
+
+		// Down or up error opens the drowndown
+		else if (e.keyCode == 40 || e.keyCode == 38) { // down or up
+			document.getElementById('selectSlideMenu').click();
+			e.preventDefault();
+			// The tab cursor should be put on the first element of the dropdown that has the .active class
+			document.querySelector('#selectSlideMenu + .dropdown-menu a.active').focus();
+		}
+	});
+
+</script>
+</cf_handlebars>

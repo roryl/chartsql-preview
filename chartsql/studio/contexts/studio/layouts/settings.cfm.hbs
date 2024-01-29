@@ -1,0 +1,87 @@
+<!-- Page header -->
+<div class="page-header d-print-none">
+	<div class="container-xl">
+		<div class="row align-items-center">
+		<div class="col-auto" style="">
+			<!-- Avatar -->
+			<div class="avatar">
+				<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
+			</div>
+		</div>
+		<div class="col">
+			<!-- Page pre-title -->
+			<div class="page-pretitle">
+				Configure
+			</div>
+			<h2 class="page-title">
+				ChartSQL Studio Settings
+			</h2>
+		</div>
+		</div>
+		{{!-- <div class="row g-2 align-items-center">
+			<div class="col">
+				<h2 class="page-title">
+					ChartSQL Studio Settings
+				</h2>
+			</div>
+		</div> --}}
+	</div>
+</div>
+<!-- Page body -->
+<div class="page-body">
+	<div class="container-xl">
+		<div class="card">
+			<div class="row g-0">
+				<div class="col-3 d-none d-md-block border-end">
+					<div class="card-body">
+						<h4 class="subheader">ChartSQL Studio</h4>
+						<div class="list-group list-group-transparent">
+							<a href="/studio/settings" class="list-group-item list-group-item-action d-flex align-items-center {{#if (eq view_state.current_page "list")}}active{{/if}}">
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 8l-4 4l4 4" /><path d="M17 8l4 4l-4 4" /><path d="M14 4l-4 16" /></svg>
+								Editor
+							</a>
+							<a href="/studio/settings/datasources" class="list-group-item list-group-item-action d-flex align-items-center {{#if (eq view_state.current_page "datasources")}}active{{/if}}">
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-database me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0" /><path d="M4 6v6a8 3 0 0 0 16 0v-6" /><path d="M4 12v6a8 3 0 0 0 16 0v-6" /></svg>
+								Datasources
+							</a>
+							<a href="/studio/settings/packages" class="list-group-item list-group-item-action d-flex align-items-center {{#if (eq view_state.current_page "packages")}}active{{/if}}">
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
+								Packages
+							</a>
+							{{!-- <a href="./settings-plan.html" class="list-group-item list-group-item-action d-flex align-items-center">
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-keyboard me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M2 6m0 2a2 2 0 0 1 2 -2h16a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-16a2 2 0 0 1 -2 -2z" /><path d="M6 10l0 .01" /><path d="M10 10l0 .01" /><path d="M14 10l0 .01" /><path d="M18 10l0 .01" /><path d="M6 14l0 .01" /><path d="M18 14l0 .01" /><path d="M10 14l4 .01" /></svg>
+								Keybindings
+							</a> --}}
+							{{!-- <a href="./settings-plan.html" class="list-group-item list-group-item-action d-flex align-items-center">
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-server-bolt me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 4m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v2a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z" /><path d="M15 20h-9a3 3 0 0 1 -3 -3v-2a3 3 0 0 1 3 -3h12" /><path d="M7 8v.01" /><path d="M7 16v.01" /><path d="M20 15l-2 3h3l-2 3" /></svg>
+								Servers
+							</a> --}}
+						</div>
+						{{!-- <h4 class="subheader mt-4">DashSQL</h4>
+						<div class="list-group list-group-transparent">
+							<a href="#" class="list-group-item list-group-item-action">
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-login me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" /><path d="M21 12h-13l3 -3" /><path d="M11 15l-3 -3" /></svg>
+								Account
+							</a>
+							<a href="#" class="list-group-item list-group-item-action">
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-packages me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 16.5l-5 -3l5 -3l5 3v5.5l-5 3z" /><path d="M2 13.5v5.5l5 3" /><path d="M7 16.545l5 -3.03" /><path d="M17 16.5l-5 -3l5 -3l5 3v5.5l-5 3z" /><path d="M12 19l5 3" /><path d="M17 16.5l5 -3" /><path d="M12 13.5v-5.5l-5 -3l5 -3l5 3v5.5" /><path d="M7 5.03v5.455" /><path d="M12 8l5 -3" /></svg>
+								Namespaces
+							</a>
+							<a href="#" class="list-group-item list-group-item-action">
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
+								Packages
+							</a>
+							<a href="#" class="list-group-item list-group-item-action">
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-layout-dashboard me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4h6v8h-6z" /><path d="M4 16h6v4h-6z" /><path d="M14 12h6v8h-6z" /><path d="M14 4h6v4h-6z" /></svg>
+								Dashboards
+							</a>
+						</div> --}}
+					</div>
+				</div>
+				<div class="col d-flex flex-column">
+					<cfoutput>#body#</cfoutput>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

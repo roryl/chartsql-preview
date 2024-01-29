@@ -1,0 +1,69 @@
+<form id="storeMongoDirectiveForm" action="/studio/main/addOrUpdateDirective" method="POST" zero-target="#openFilesList,#fileList,#editorTabs,#sqlSourceCode">
+	<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
+	<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
+	<input type="hidden" name="directive" value="mongodb-query">
+	<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
+	<textarea id="editorContentTextarea" name="Value" style="display:none;">{{{data.CurrentSqlFile.NamedDirectives.mongodb-query.prettyPrint}}}</textarea>
+	<button id="storeMongoDirectiveButton" style="display:none;">update</button>
+</form>
+<div style="width:100%; height:100%;">
+	<textarea id="mongoTextarea" class="form-control" rows="5" style="">{{{data.CurrentSqlFile.NamedDirectives.mongodb-query.prettyPrint}}}</textarea>
+</div>
+{{!-- <div class="alert alert-warning bg-blue-lt" style="position:absolute; bottom:0px; width:100%;">Not valid JSON</div> --}}
+<!--- </div> --->
+<!--- <div class="tab-pane" id="tabs-profile-4" role="tabpanel">
+	<h4>Profile tab</h4>
+	<div>Fringilla egestas nunc quis tellus diam rhoncus ultricies tristique enim at diam, sem nunc amet, pellentesque id egestas velit sed</div>
+</div> --->
+<!--- </div> --->
+<script>
+
+	{{#if data.CurrentSqlFile.Id}}
+
+		{{#if (eq view_state.editor_panel.active_view "mongodb-query")}}
+
+
+
+		/**********************************************
+		* CODEMIRROR
+		**********************************************/
+		var mongoEditor = CodeMirror.fromTextArea(document.getElementById('mongoTextarea'), {
+			mode: 'text/javascript',
+			theme: 'dracula',
+			lineNumbers: true,
+			extraKeys: {
+				"Tab": "indentMore",
+				"Shift-Tab": "indentLess"
+			}
+		});
+
+		// Define the function that will be called when the content changes
+		function onEditorContentChange(instance, changeObj) {
+
+			var editorContent = instance.getValue();
+			var invalidJsonAlert = document.getElementById('invalidJsonAlert');
+
+
+			//Check if the content is valid JSON
+			try {
+				JSON.parse(editorContent);
+				//We update the textarea insight the submit form
+				console.log('Editor content changed!');
+
+				// add d-none if it's not already there
+				invalidJsonAlert.classList.add('d-none');
+
+			} catch (e) {
+				invalidJsonAlert.classList.remove('d-none');
+			}
+
+			document.getElementById('editorContentTextarea').value = instance.getValue();
+			document.getElementById('storeMongoDirectiveButton').click();
+
+		}
+
+		// Attach the change event listener to your CodeMirror instance
+		mongoEditor.on('change', onEditorContentChange);
+		{{/if}}
+	{{/if}}
+</script>

@@ -1,0 +1,31 @@
+{
+	"name" 		: "ColdBox ORM Extensions",
+	"version"	: "@version.number@+@build.number@",
+	"author" 	: "Ortus Solutions <info@ortussolutions.com",
+	"slug"		: "cborm",
+	"type"		: "modules",
+	"homepage"	: "https://github.com/ColdBox/cbox-cborm",
+	"documentation"		: "https://github.com/ColdBox/cbox-cborm/wiki",
+	"repository"		: { "type" : "git", "url" : "https://github.com/ColdBox/cbox-cborm" },
+	"shortDescription"	: "Enhances the ColdFusion ORM with tons of utilities.",
+	"license"			: [ 
+		{ "type" : "Apache2", "url" : "http://www.apache.org/licenses/LICENSE-2.0.html" } 
+	],
+	"contributors"		: [
+		"Brad Wood <bdw429s@gmail.com>", 
+		"Curt Gratz <gratz@computerknowhow.com>", 
+		"Joel Watson <existdissolve@gmail.com>"
+	],
+	"engines"	: [
+		{ "type" : "lucee", "version" : ">4.5" },
+		{ "type" : "adobe", "version" : ">9.02" }
+	],
+	"dependencies" 	:{
+		"cbvalidation" : "1.1.0"
+	},
+	"ignore":[
+        "**/.*",
+        "tests",
+        "*/.md"
+    ]
+}

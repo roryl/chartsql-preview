@@ -1,0 +1,77 @@
+<cf_handlebars context="#context#">
+	<div class="accordion" id="accordionPanelsStayOpenExample" style="">
+	{{#each data.Storys}}
+		<div class="accordion-item">
+			<h2 class="accordion-header" id="panelsStayOpen-headingOne{{Id}}">
+			<button class="accordion-button {{#if IsOpen}}{{else}}collapsed{{/if}}" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne{{Id}}" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne{{Id}}">
+				{{Name}}
+			</button>
+			</h2>
+			<div id="panelsStayOpen-collapseOne{{Id}}" class="accordion-collapse collapse show {{#if IsOpen}}show{{/if}}" aria-labelledby="panelsStayOpen-headingOne{{Id}}">
+				<div class="accordion-body p-0">
+					<ul class="list-group list-group-flush">
+						<li id="renameStory{{Id}}" class="list-group-item py-0 px-3 pb-2 d-none">
+							<form method="POST" action="/studio/storys/{{Id}}">
+								<div class="input-group mb-2">
+										<input type="hidden" name="goto" value="{{view_state.current_url}}">
+										<input type="hidden" name="goto_fail" value="{{view_state.current_url}}">
+										<input id="renameStoryInput{{Id}}" type="text" class="form-control" name="Name" placeholder="{{Name}}">
+										<button class="btn" type="button">Rename</button>
+								</div>
+							</form>
+						</li>
+						{{#each Slides}}
+						{{!-- <form action="{{Link}}" method="GET" zero-target="{{view_state.main_zero_targets}}">{{Title}}</form> --}}
+						<li class="list-group-item align-items-center d-flex pe-2">
+								{{!-- <a href="{{Link}}" studio-form-links="false">{{Title}}</a> --}}
+							<form method="GET" action="/studio/main">
+								{{#each LinkParams}}
+									<input type="hidden" name="{{key}}" value="{{value}}">
+								{{/each}}
+								<button class="btn-link" type="submit" zero-icon="false">
+									{{Title}}
+								</button>
+							</form>
+							<div class="dropdown float-end ms-auto">
+								<a href="#" class="btn-action dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><!-- Download SVG icon from http://tabler-icons.io/i/dots-vertical -->
+								<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path><path d="M12 19m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path><path d="M12 5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"></path></svg>
+								</a>
+								<div class="dropdown-menu dropdown-menu-end">
+								<a class="dropdown-item" href="{{Story.PlayLink}}">
+									<i class="ti ti-player-play" style=""></i>
+									&nbsp;<span>From Beginning</span>
+								</a>
+								<a class="dropdown-item" href="#">
+									<i class="ti ti-slideshow" style=""></i>
+									&nbsp; from Here
+								</a>
+								<hr class="dropdown-divider">
+								<form method="POST" action="/studio/storys/{{Story.Id}}/deleteSlide">
+									<input type="hidden" name="goto" value="{{view_state.current_url}}">
+									<input type="hidden" name="goto_fail" value="{{view_state.current_url}}">
+									<input type="hidden" name="SlideId" value="{{Id}}">
+									<button class="dropdown-item">
+										<i class="ti ti-trash-x" style=""></i>
+										&nbsp;Delete Slide
+									</button>
+								</form>
+								<hr class="dropdown-divider">
+								<a class="dropdown-item" onclick="document.getElementById('renameStory{{Story.Id}}').classList.remove('d-none'); document.getElementById('renameStoryInput{{Story.Id}}').focus();">
+									<i class="ti ti-edit" style=""></i>
+									&nbsp;Rename Story
+								</a>
+								<a class="dropdown-item" href="#">
+									<i class="ti ti-trash-x" style=""></i>
+									&nbsp;Delete Story
+								</a>
+								</div>
+							</div>
+						</li>
+						{{/each}}
+					</ul>
+				</div>
+			</div>
+		</div>
+	{{/each}}
+	</div>
+</cf_handlebars>

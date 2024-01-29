@@ -1,0 +1,17 @@
+{
+    "app":{
+        "cfengine":"lucee@5.4.3+16"
+    },
+    "name":"dev-studio",
+    "jvm":{
+        "args":[
+            "--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED"
+        ],
+        "heapSize":"1024"
+    },
+    "web":{
+        "rewrites":{
+            "enable":"true"
+        }
+    }
+}

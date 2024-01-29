@@ -1,0 +1,9 @@
+{
+  "FriendlyName": "mongosample",
+  "Storys": [],
+  "DefaultStudioDatasource": {
+    "Name": "mongo_sales"
+  },
+  "Path": "C:\\websites\\chartsql\\core\\mongosample",
+  "FullName": "websites.chartsql.core.mongosample"
+}

@@ -1,0 +1,414 @@
+<!-- Page header -->
+<div class="" style="display:flex; flex-flow:column; height:100vh;">
+	<div class="" style="height:6%;">
+		<cfinclude template="fragments/header.cfm">
+	</div>
+	<div class="" style="flex:1; display:flex; flex-flow:row; height:94%;">
+		<div id="fileListContainer" class="" style="width:20%; height:100%; display:flex; flex-flow:column;">
+			<div class="card" style=" height:100%;">
+					<div class="input-icon">
+						<span id="filterActiveIcon" class="input-icon-addon">
+							<!-- Download SVG icon from http://tabler-icons.io/i/search -->
+							<svg xmlns="http://www.w3.org/2000/svg" class="{{#if view_state.filter}}text-info{{/if}} icon icon-tabler icon-tabler-filter ms-4" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" /></svg>
+						</span>
+						<form id="fileFilterForm" method="GET" action="/studio/main" zero-target="#filterClearContainer,#fileList,#filterActiveIcon">
+							{{#each view_state.params}}
+								{{#unless (eq key "Filter")}}
+									<input type="hidden" name="{{key}}" value="{{value}}">
+								{{/unless}}
+							{{/each}}
+							<div id="filterInputContainer">
+								<input id="fileSearch" type="text" name="Filter" onfocus="this.select();" autocomplete="off" oninput="document.getElementById('filterSubmit').click();" value="{{#if view_state.Filter}}{{view_state.Filter}}{{/if}}" class="form-control" placeholder="Filter Package Charts..." aria-label="Search in website" style=" height:43px; padding-left:60px; border-radius:0; border-top:none; border-left:none; border-right:none;">
+							</div>
+							<button id="filterSubmit" type="submit" class="d-none">submit</button>
+						</form>
+						<div id="filterClearContainer" class="" style="position:absolute; top:0; right:0; width:50px; height:100%; align-items:center; justify-content:center; display:flex;">
+							<form id="fileFilterForm" method="GET" action="/studio/main" zero-target="#filterClearContainer,#fileList,#filterActiveIcon">
+								{{#each view_state.params}}
+									{{#unless (eq key "Filter")}}
+										<input type="hidden" name="{{key}}" value="{{value}}">
+									{{/unless}}
+								{{/each}}
+								<button id="filterClear" type="submit" class="btn btn-sm" zero-icon="false" onclick="document.getElementById('fileSearch').value = ''" style="{{#if view_state.filter}}display:flex;{{else}}display:none{{/if}}">clear</button>
+							</form>
+							{{!-- <button id="filterSubmit" type="submit" class="btn btn-sm" style="{{#if view_state.filter}}display:flex;{{else}}display:none;{{/if}}">clear</button> --}}
+						</div>
+					</div>
+
+				<!--- <div class="bg-warning" style="min-height:2000px;">
+					foo
+				</div> --->
+				<div class="w-100" style="overflow-y:auto; height:100%; position:relative;">
+					{{#each data.ChartSQLStudio.FileBrowserViews}}
+						{{#if IsActive}}
+							<div id="FileBrowserView-select-{{Name}}" class="w-100 h-100">
+								{{#if (eq name "files")}}
+									<cfinclude template="fragments/filelist.cfm">
+								{{else if (eq name "schema")}}
+									<cfinclude template="fragments/schemalist.cfm.hbs">
+								{{else}}
+									{{{Content}}}
+								{{/if}}
+							</div>
+						{{/if}}
+					{{/each}}
+				</div>
+				<div id="file-browswer-view-links" style="position:absolute; bottom:0px; width:100%; z-index:1000;">
+					<ul class="nav nav-tabs card-header-tabs nav-fill" style="padding:0; margin:0;">
+						{{#each data.ChartSQLStudio.FileBrowserViews}}
+							<li class="nav-item">
+								<a class="nav-link py-1 pt-2 {{#if IsActive}}active{{/if}}" aria-current="page" href="{{Link}}">
+									<i class="{{IconClass}}" style="font-size:1.1rem; font-width:.5rem;"></i>
+								</a>
+							</li>
+						{{/each}}
+					  </ul>
+				</div>
+			</div>
+		</div>
+		<div id="renderingContainer" class="" style="width:80%; display:flex; flex-flow:column; height:100%;">
+
+			<div id="openFilesList" style="width:100%;">
+				<div class="card border-top-1 border-bottom-0">
+					<cfinclude template="fragments/openfilelist.cfm">
+				</div>
+			</div>
+
+			<cql-open-file-path id="openFilePath" style="width:100%;">
+				<div class="card" style="border:none; font-size:.8rem; height:28px;">
+					<div class="card-footer p-1 ps-2 text-muted">
+						<!--- Override the separator to > because it looks weird with the file paths \ --->
+						<style>
+							.openFilePath .breadcrumb-item + .breadcrumb-item::before {
+							content: ">";
+							}
+						</style>
+						{{#if data.CurrentSqlFile.Id}}
+						<ol class="openFilePath breadcrumb" aria-label="breadcrumbs">
+							<li class="breadcrumb-item">{{data.CurrentSqlFile.Package.Path}}</li>
+							{{#if (eq data.CurrentSqlFile.Subpath "")}}
+								<!--- If if subpath is empty then not show it --->
+							{{else}}
+								<li class="breadcrumb-item">{{data.CurrentSqlFile.Subpath}}</li>
+							{{/if}}
+							<li class="breadcrumb-item active" aria-current="page">{{data.CurrentSqlFile.Name}}</li>
+						  </ol>
+						{{else}}
+						  <span class="text-muted">No file open</span>
+						{{/if}}
+					</div>
+				</div>
+			</cql-open-file-path>
+			<div class="card p-0 m-0" style="border-radius:0; border-top:none; border-left:none; border-bottom:none; border-right:none; flex:1; width:100%; display:flex; overflow:hidden;">
+				<div class="card-body p-0" style="display:flex; width:100%; height:100%">
+					<div class="tab-content splitVertical" style="display:flex; flex-flow:column; height:100%; width:100%;">
+						<div id="topPanel" class="split" style="display:flex; flex-flow:row; height:{{view_state.top_panel_height}}%; width:100%; overflow:hidden;">
+							<div class="" id="editorPanel" style="width: {{view_state.editor_width}}%">
+								<cfinclude template="fragments/editor.cfm.hbs">
+							</div>
+							<div id="rendererPanel" style="width:{{view_state.renderer_width}}%; display:flex; height:100%;">
+								<!--- <div class="bg-info" style="height:2000px; width:100%;">
+									foo
+								</div> --->
+								<cfinclude template="fragments/renderer.cfm">
+							</div>
+						</div>
+						<div id="infoPanel" class="" style="width:100%; height:{{view_state.bottom_panel_height}}%; padding:0; margin:0; display:flex;">
+							<div class="card border-0" style="display:flex; flex-flow:column; height:100%; width:100%;">
+								<div class="card-header" style="flex:0;">
+									<ul class="nav nav-tabs card-header-tabs p-0" role="tablist">
+										<li class="nav-item" role="presentation">
+											<form action="{{view_state.info_panel.resultset.link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" aria-selected="true" role="tab">
+												<button class="nav-link {{#if (eq view_state.info_panel.active_view "resultset")}}active{{/if}}">
+												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-table me-2" style="--tblr-icon-size: 1.1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z" /><path d="M3 10h18" /><path d="M10 3v18" /></svg>
+												<!--- <span class="badge bg-azure-lt me-2" style="{{#unless (eq view_state.info_panel.active_view "resultset")}}opacity:.5;{{/unless}}">{{data.CurrentSqlFile.Name}}</span>  --->
+												Data
+												<!--- <span class="badge ms-2">{{#if data.CurrentSqlFile.ResultSet}}{{length data.CurrentSqlFile.ResultSet.Data}}{{else}}-{{/if}}</span> --->
+												</button>
+											</form>
+										</li>
+										<li class="nav-item" role="presentation">
+											<form action="{{view_state.info_panel.executions.link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" class="" aria-selected="false" role="tab" tabindex="-1">
+												<button class="nav-link {{#if (eq view_state.info_panel.active_view "executions")}}active{{/if}}"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sql me-2" style="--tblr-icon-size: 1.3rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 8a2 2 0 0 1 2 2v4a2 2 0 1 1 -4 0v-4a2 2 0 0 1 2 -2z" /><path d="M17 8v8h4" /><path d="M13 15l1 1" /><path d="M3 15a1 1 0 0 0 1 1h2a1 1 0 0 0 1 -1v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1" /></svg>
+												Executions
+												<!--- {{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
+													<span class="ms-2 status-dot status-green" style="{{#unless (eq view_state.info_panel.active_view "executions")}}opacity:.5;{{/unless}}"></span>
+													{{else}}
+													<span class="ms-2 status-dot status-orange"></span>
+													{{/if}} --->
+												</button>
+											</form>
+										</li>
+										<li class="nav-item" role="presentation">
+											<form action="{{view_state.info_panel.server.link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" aria-selected="false" role="tab" tabindex="-1">
+												<button class="nav-link {{#if (eq view_state.info_panel.active_view "server")}}active{{/if}}">
+													<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bolt" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11" /></svg>
+													Editor Perf
+													<!--- {{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
+														<span class="ms-2 status-dot status-green" style="{{#unless (eq view_state.info_panel.active_view "executions")}}opacity:.5;{{/unless}}"></span>
+														{{else}}
+														<span class="ms-2 status-dot status-orange"></span>
+														{{/if}} --->
+												</button>
+											</form>
+										</li>
+											<!--- <li class="nav-item dropdown">
+												<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+												<div class="dropdown-menu" style="">
+													<a class="dropdown-item" href="#">
+														Action
+													</a>
+													<a class="dropdown-item" href="#">
+														Another action
+													</a>
+												</div>
+											</li> --->
+										<li class="nav-item ms-auto me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Clear your editor session">
+											{{!-- <form method="post" action="/studio/main/clearEditorSession">
+												<input type="hidden" name="goto" value="{{view_state.current_url}}">
+												<input type="hidden" name="goto_fail" value="{{view_state.current_url}}">
+												<button type="submit" class="nav-link mt-0" aria-selected="false" role="tab" tabindex="-1">
+													<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-replace" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 3m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M15 15m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M21 11v-3a2 2 0 0 0 -2 -2h-6l3 3m0 -6l-3 3" /><path d="M3 13v3a2 2 0 0 0 2 2h6l-3 -3m0 6l3 -3" /></svg>
+												</button>
+											</form> --}}
+										</li>
+									</ul>
+								</div>
+								<!--- FLEX/POSITIONING NOTE:
+									Somehow the tab-content pushes out the card-footer, so we need to use absolute positioning to get it to stick to the bottom of the card.
+									this seems to fix the issue and allow the footer to always be present no matter how much content is in the tab-content.
+								--->
+								<div class="card-body p-0" style="flex:1; display:flex; width:100%;">
+									{{#if (eq view_state.info_panel.active_view "resultset")}}
+									<div class="tab-content" style="height:100%; width:100%; position:absolute; bottom:0; display:flex; ">
+										<div id="executionsContent" class="tab-pane active show" role="tabpanel" style="height:100%; width:100%; overflow-y:scroll; display:flex;">
+											<div class="" style="width:100%;">
+												<cfinclude template="fragments/datalist.cfm">
+											</div>
+										</div>
+									</div>
+									{{/if}}
+
+									{{#if (eq view_state.info_panel.active_view "executions")}}
+									<div class="tab-content" style="height:100%; width:100%; position:absolute; bottom:0; display:flex; ">
+										<div id="executionsContent" class="tab-pane active show" role="tabpanel" style="height:100%; overflow-y:scroll; display:flex; flex-direction: column-reverse;">
+											<cfinclude template="fragments/executions.cfm">
+										</div>
+									</div>
+									{{/if}}
+
+									{{#if (eq view_state.info_panel.active_view "server")}}
+									<div class="tab-content" style="height:100%; width:100%; position:absolute; bottom:0; display:flex; overflow:hidden; ">
+										{{{data.ServerPerformanceData.Content}}}
+									</div>
+									{{/if}}
+									<!--- <div class="tab-content">
+										<div class="tab-pane active show" role="tabpanel" style="overflow:scroll;">
+											<cfinclude template="fragments/datalist.cfm">
+										</div>
+										<div class="tab-pane" role="tabpanel">
+											<cfinclude template="fragments/console.cfm">
+										</div>
+									</div> --->
+								</div>
+								<!--- <div class="enterCommand" style="width:400px;">
+									<div class="input-group input-group-sm">
+										<button type="button" class="btn dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+											Command
+										</button>
+										<div class="dropdown-menu" style="">
+											<a class="dropdown-item" href="#">
+												Action
+											</a>
+											<a class="dropdown-item" href="#">
+												Another action
+											</a>
+										</div>
+										<input type="text" class="form-control form-control-sm" aria-label="Text input with dropdown button">
+									</div>
+								</div> --->
+								<div class="card-footer p-0" style="flex:0; display:flex; flex-flow:column;">
+									<div class="p-1" style="width:100%; display:flex; flex-flow:row; align-items:center;">
+										{{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
+										<span class="ms-2 status-dot status-success me-2"></span>
+										{{else if data.EditorSession.LastExecutionRequest.IsError}}
+										<span class="ms-2 status-dot status-red me-2"></span>
+										{{else if data.EditorSession.LastExecutionRequest.IsRunning}}
+										<span class="ms-2 status-dot status-dot-animated status-azure me-2"></span>
+										{{else if data.EditorSession.LastExecutionRequest.IsCancelled}}
+										<span class="ms-2 status-dot status-dot-animated status-orange me-2"></span>
+										{{else}}
+										<span class="ms-2 status-dot me-2"></span>
+										{{/if}}
+										<span class="badge me-2
+											{{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
+											bg-green-lt
+											{{else if data.EditorSession.LastExecutionRequest.IsError}}
+											bg-red-lt
+											{{else if data.EditorSession.LastExecutionRequest.IsRunning}}
+											bg-azure-lt
+											{{else if data.EditorSession.LastExecutionRequest.IsCancelled}}
+											bg-orange-lt
+											{{/if}}
+											">
+											{{data.EditorSession.LastExecutionRequest.SqlFile.Name}}
+										</span>
+										{{#if data.EditorSession.LastExecutionRequest.Id}}
+										<span class="text-muted me-2"><small>Total Execution Time:</small></span>
+										<span class="
+											badge
+											{{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
+											bg-green-lt
+											{{else if data.EditorSession.LastExecutionRequest.IsError}}
+											bg-red-lt
+											{{else if data.EditorSession.LastExecutionRequest.IsRunning}}
+											bg-azure-lt
+											{{else if data.EditorSession.LastExecutionRequest.IsCancelled}}
+											bg-orange-lt
+											{{/if}}
+											">
+											{{toString data.EditorSession.LastExecutionRequest.ExecutionTime}} ms
+										</span>
+
+										{{/if}}
+
+										{{#if data.EditorSession.LastExecutionRequest.IsError}}
+										<span class="badge badge-outline text-red ms-3" style="max-width:50%;">{{toString data.EditorSession.LastExecutionRequest.ErrorMessage}}</span>
+										{{else if data.EditorSession.LastExecutionRequest.IsCancelled}}
+										<span class="badge badge-outline text-orange ms-3" style="max-width:50%;">Execution Cancelled</span>
+										{{/if}}
+										{{#if data.EditorSession.LastExecutionRequest.IsRunning}}
+										<form method="POST" action="/studio/main/cancelExecution" style="display:inline;">
+											<input type="hidden" name="Id" value="{{data.EditorSession.LastExecutionRequest.Id}}">
+											<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
+											<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
+											<button class="btn text-warning btn-sm m-0 p-0 ms-2" style="">Cancel Execution</button>
+
+										</form>
+										<div id="refreshExecution">
+											<form id="checkExecution" method="GET" action="{{view_state.current_url}}" zero-push-state="false" zero-auto="1" zero-target="#rendererPanel,#editorTabs,#infoPanel,#openFilesList,#directivesEditor" style="display:none;">
+												<input type="hidden" name="Id" value="{{data.EditorSession.LastExecutionRequest.Id}}">
+												<button type="submit" class="btn btn-sm btn-outline-secondary ms-3">Check Execution Status</button>
+											</form>
+										</div>
+										{{/if}}
+
+										<form method="post" class="ms-auto" action="/studio/main" zero-target="#refreshMemoryUsage" style="display:inline;">
+											<input type="hidden" name="goto_before" value="{{view_state.current_url}}"/>
+											<label class="form-check form-switch align-items-center d-flex p-0 my-0 me-0" data-bs-toggle="tooltip" data-bs-placement="top" title="Auto refresh usage">
+												<input class="form-check-input" type="checkbox" onclick="ZeroClient.toggle('REFRESH_CPU'); document.getElementById('toggleRefreshMemoryUsage').click();" {{#if client_state.REFRESH_CPU}}checked{{/if}}>
+												<span class="form-check-label"></span>
+												<button id="toggleRefreshMemoryUsage" type="submit" style="display:none;"></button>
+											</label>
+										</form>
+
+										<div id="memoryUsage" class="" style="display:flex; flex-flow:row;">
+											<cfinclude template="fragments/cpu_and_memory.cfm">
+										</div>
+									</div>
+									<div style="width:100%;">
+										{{#if data.EditorSession.LastExecutionRequest.IsRunning}}
+										<div style="width:100%; padding:0; margin:0;">
+											<div class="progress progress-sm">
+												<div class="progress-bar progress-bar-indeterminate"></div>
+											</div>
+										</div>
+										{{else}}
+										<div>
+											<div class="progress progress-sm" style="border-radius:0;">
+												<div class="progress-bar" style="border-radius:0;"></div>
+											</div>
+										</div>
+										{{/if}}
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--- <div class="bg-info" style="">footer</div> --->
+</div>
+<script src="/assets/js/filter-files.js" defer></script>
+<script>
+
+	/**********************************************
+	* KEYBOARD SHORTCUTS
+	**********************************************/
+	document.addEventListener('keydown', function(event) {
+		// Check if Ctrl (or Command on Mac) is pressed along with S
+		if ((event.ctrlKey || event.metaKey) && (event.key === 's' || event.key === 'S')) {
+			// Prevent the default save action
+			event.preventDefault();
+
+			//If we see find the saveSqlbutton then click otherwise do nothing
+			if(document.getElementById('saveSqlbutton')){
+				document.getElementById('saveSqlbutton').click();
+			}
+		}
+	});
+
+	// Call resize the chart on page load which seems to be necessary
+	// as its default render will overflow the container when the preview
+	// is showing as a card
+	// window.chartHandle.resize();
+
+
+	/**
+	* Here we setup split panes for the top and bottom panels, within the top panel
+	* the left (editor) and right (renderer). Whenever the user changes the splits
+	* we save them into the cookies (uzing the ZeroJs library) and the Js cookie library
+	*
+	* The cookies are read by the controller and the sizes are set in the HTML on rendering
+	* so that there is not any flashing of the panels when the page is rendered and before
+	* Split.js is initialized.
+	*
+	* We also resize the chart on the page when the split is resized. Initially I had this
+	* in the onDragEnd, but the performance is good enough that we can do it onDrag and
+	* it is much smoother.
+	*/
+
+	// When one of the panels is maximized we don't want to use the split library
+	{{#unless view_state.has_maximized_panel}}
+
+	// Grab the split sizes from the cookies and stored in the view state
+	// They will default to 50/50 if the cookies are not set
+	sizes = [{{view_state.editor_width}}, {{view_state.renderer_width}}] // default sizes
+
+	// The horizontal split between the editor and renderer
+	var splithoritontal = Split(['#editorPanel', '#rendererPanel'], {
+		sizes: sizes,
+		onDrag: function(){
+			if (window != null && window.chartHandle != null) {
+				window.chartHandle.resize();
+			}
+		},
+		onDragEnd: function (sizes) {
+			ZeroClient.set('editor_width', sizes[0])
+			ZeroClient.set('renderer_width', sizes[1])
+		},
+	})
+
+	// The vertical split between the top and bottom panels grabbed from the cookies and stored
+	// in the view state. They will default to 50/50 if the cookies are not set
+	sizes = [{{view_state.top_panel_height}}, {{view_state.bottom_panel_height}}] // default sizes
+
+	// The vertical split between the top and bottom panels
+	var splitvertical = Split(['#topPanel', '#infoPanel'], {
+		sizes: sizes,
+		onDrag: function(){
+			if (window != null && window.chartHandle != null) {
+				window.chartHandle.resize();
+			}
+		},
+		onDragEnd: function (sizes) {
+			ZeroClient.set('top_panel_height', sizes[0])
+			ZeroClient.set('bottom_panel_height', sizes[1])
+		},
+		direction: 'vertical'
+	})
+
+	{{/unless}}
+</script>

@@ -1,0 +1,31 @@
+{
+  "FriendlyName": "Examples",
+  "Storys": [
+    {
+      "Slides": [
+        {
+          "FullName": "websites.chartsql.studio.extensions.chartsql.examples.sql.combo.combo_column_series_with_secondary_line.sql",
+          "Id": "95665BF8-A324-4DFF-8349C533F436C10A",
+          "Title": "Combo - Column Chat with Secondary Line"
+        },
+        {
+          "FullName": "websites.chartsql.studio.extensions.chartsql.examples.sql.line.line_sales_by_month.sql",
+          "Id": "31DBC7BD-8C25-48CA-B5918F8E8E764735",
+          "Title": "Line - Sales by Month"
+        },
+        {
+          "FullName": "websites.chartsql.studio.extensions.chartsql.examples.sql.pie.pie_sales_by_channel.sql",
+          "Id": "B2737BA9-4471-4E75-AAA1BD960F28E4CD",
+          "Title": "Pie - Won Sales by Channel"
+        }
+      ],
+      "Name": "Testing",
+      "Id": "E5C45BD9-88FD-4691-BEA391BA7A635D51"
+    }
+  ],
+  "DefaultStudioDatasource": {
+    "Name": "Examples"
+  },
+  "Path": "C:\\websites\\chartsql\\studio\\extensions\\chartsql\\examples\\sql",
+  "FullName": "websites.chartsql.studio.extensions.chartsql.examples.sql"
+}

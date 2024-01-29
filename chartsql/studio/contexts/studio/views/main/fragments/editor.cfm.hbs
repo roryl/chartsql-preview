@@ -1,0 +1,193 @@
+<div id="editorCard" class="card" style="border-radius:0; border-right:none; width:100%; height:100%;">
+	<div class="card-header">
+		<ul id="editorTabs" class="nav nav-tabs card-header-tabs {{view_state.editor_width}}" role="tablist" style="padding:0;">
+			<li class="nav-item" role="presentation">
+				<a href="{{view_state.editor_panel.sql.link}}" class="nav-link {{#if (eq view_state.editor_panel.active_view "sql")}}active{{/if}}" aria-selected="true" role="tab">
+					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-type-sql me-1" style="--tblr-icon-size: 1.1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M5 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75" /><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" /><path d="M18 15v6h2" /><path d="M13 15a2 2 0 0 1 2 2v2a2 2 0 1 1 -4 0v-2a2 2 0 0 1 2 -2z" /><path d="M14 20l1.5 1.5" /></svg>
+					SQL
+				</a>
+			</li>
+
+			{{#if data.CurrentSqlFile.NamedDirectives.mongodb-query}}
+			<li class="nav-item" role="presentation">
+				<a href="{{view_state.editor_panel.mongodb-query.link}}" class="nav-link {{#if (eq view_state.editor_panel.active_view "mongodb-query")}}active{{/if}}" aria-selected="false" tabindex="-1" role="tab">
+					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-mongodb" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3v19" /><path d="M18 11.227c0 3.273 -1.812 4.77 -6 9.273c-4.188 -4.503 -6 -6 -6 -9.273c0 -4.454 3.071 -6.927 6 -9.227c2.929 2.3 6 4.773 6 9.227z" /></svg>
+					MongoDB Query
+					<!--- {{#if data.CurrentSqlFile.HasDirectiveErrors}}
+					<span class="status-dot status-dot-animated status-orange ms-2"></span>
+					{{/if}} --->
+				</a>
+			</li>
+			{{/if}}
+
+			<li class="nav-item" role="presentation">
+				<a href="{{view_state.editor_panel.directives.link}}" class="nav-link {{#if (eq view_state.editor_panel.active_view "directives")}}active{{/if}}" aria-selected="false" tabindex="-1" role="tab">
+					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-at me-1" style="--tblr-icon-size: 1.1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M16 12v1.5a2.5 2.5 0 0 0 5 0v-1.5a9 9 0 1 0 -5.5 8.28" /></svg>
+					Directives
+					{{#if data.CurrentSqlFile.HasDirectiveErrors}}
+					<span class="status-dot status-dot-animated status-orange ms-2"></span>
+					{{/if}}
+				</a>
+			</li>
+
+			{{#if (eq data.CurrentSqlFile.DetectionMode "auto")}}
+			<li class="nav-item d-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Rendering is being fully detected from data structure">
+				<small class="text-muted ps-2">Chart Mode:</small>
+				<span class="badge bg-green-lt ms-1">Auto</span>
+			</li>
+			{{else if (eq data.CurrentSqlFile.DetectionMode "assist")}}
+			<li class="nav-item d-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Assisting building you a chart">
+				<small class="text-muted ps-2">Chart Mode:</small>
+				<span class="badge bg-azure-lt ms-1">Assist</span>
+			</li>
+			{{else if (eq data.CurrentSqlFile.DetectionMode "manual")}}
+			<li class="nav-item d-flex align-items-center" data-bs-toggle="tooltip" data-bs-placement="top" title="Rendering is being fully specified by directives">
+				<small class="text-muted ps-2 ">Chart Mode:</small>
+				<span class="badge bg-purple-lt ms-1">Manual</span>
+			</li>
+			{{/if}}
+			<!--- <li class="nav-item dropdown">
+				<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
+				<div class="dropdown-menu" style="">
+					<a class="dropdown-item" href="#">
+						Action
+					</a>
+					<a class="dropdown-item" href="#">
+						Another action
+					</a>
+				</div>
+				<li class="nav-item">
+					{{#if view_state.editor_is_maximized}}
+					<a href="{{view_state.minimizeLink}}" class="nav-link">
+						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-minimize" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 19v-2a2 2 0 0 1 2 -2h2" /><path d="M15 5v2a2 2 0 0 0 2 2h2" /><path d="M5 15h2a2 2 0 0 1 2 2v2" /><path d="M5 9h2a2 2 0 0 0 2 -2v-2" /></svg>
+					</a>
+					{{else}}
+					<a href="{{view_state.maximizeEditorLink}}" class="nav-link">
+						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-maximize" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 8v-2a2 2 0 0 1 2 -2h2" /><path d="M4 16v2a2 2 0 0 0 2 2h2" /><path d="M16 4h2a2 2 0 0 1 2 2v2" /><path d="M16 20h2a2 2 0 0 0 2 -2v-2" /></svg>
+					</a>
+					{{/if}}
+				</li>
+				<!--- <li class="nav-item d-flex ms-auto align-items-center me-2">
+				</li> --->
+			</li> --->
+			<li id="saveButton" class="ms-auto align-items-center d-flex me-1">
+				<!--- <label class="form-check form-switch me-1 mt-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Automatically save changes to files">
+					<input class="form-check-input" type="checkbox" {{#if view_state.auto_save}}checked{{/if}}>
+					<span class="form-check-label text-muted" style=""><small>Auto Save</small></span>
+				</label> --->
+				<button id="saveSqlbutton" form="sqlSourceCode" class="btn btn-sm {{#if data.CurrentSqlFile.IsDirty}}btn-primary{{else}}btn-ghost-secondary{{/if}}" onclick="$(this).find('span').html('saving...')">
+					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-device-floppy" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M6 4h10l4 4v10a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2" /><path d="M12 14m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M14 4l0 4l-6 0l0 -4" /></svg>
+					<span>Save</span>
+				</button>
+			</li>
+		</ul>
+	</div>
+
+	<style>
+		.card {
+			border-left:0 !important;
+		}
+
+
+		/* Ensures the CodeMirror instance takes up 100% of the #editor's height */
+		.CodeMirror {
+			height: 100%;
+		}
+
+		.cm-s-dracula .CodeMirror-gutters, .cm-s-dracula.CodeMirror {
+			background-color: var(--tblr-card-bg) !important;
+			color: #f8f8f2!important;
+			border: none;
+		}
+
+		/* CSS to style the directives */
+		.cm-s-dracula .directive {
+			color: #2fb344 !important; /* Change this to your preferred color */
+			font-weight: bold;
+		}
+
+		/* CSS to style the directives */
+		.cm-s-dracula .already-seen-directive {
+			color: #2fb344 !important; /* Change this to your preferred color */
+			font-weight: bold;
+			opacity:.4;
+		}
+
+
+		/* Style for invalid directives */
+		.cm-s-dracula .invalid-directive {
+			/* Use your preferred color for the squiggly line */
+			color: #d63939 !important; /* Change this to your preferred color */
+			font-weight: bold;
+			text-decoration: underline wavy red !important;
+		}
+	</style>
+	<div>
+		{{#if (eq view_state.editor_panel.active_view "directives")}}
+			<table class="table table-dark table-sm table-striped m-0">
+				<thead>
+					<tr>
+						<th style="width:1%;">Disable</th>
+						<th class="text-end pe-2" style="width:30.15%;">Directive</th>
+						<th>Value</th>
+						<!--- <th></th> --->
+						<th></th>
+					</tr>
+				</thead>
+			</table>
+		{{/if}}
+	</div>
+	<div class="card-body p-0" style="overflow-y:auto;">
+		{{#if data.CurrentSqlFile.Id}}
+			<!--- #sqlSourceCode is moved out of the SQL editor panel so that it can be submitted from the directives panel
+				as well.
+			--->
+			<form id="sqlSourceCode" action="/studio/main/saveFile" method="POST" zero-target="#rendererPanel,#editorTabs,#directivesEditor,#infoPanel,#openFilesList,#fileList,#refreshExecution,#editorFooter">
+				<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
+				<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
+				<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
+				<textarea id="SqlSubmit{{Id}}" name="Sql" style="display:none;">{{{data.CurrentSqlFile.EditorContent}}}</textarea>
+			</form>
+			{{#if (eq view_state.editor_panel.active_view "sql")}}
+				<cfinclude template="sql_editor.cfm.hbs">
+			{{else if (eq view_state.editor_panel.active_view "mongodb-query")}}
+				<div id="mongodbQueryEditor">
+					<cfinclude template="mongodb_editor.cfm.hbs">
+				</div>
+			{{else if (eq view_state.editor_panel.active_view "directives")}}
+				<div id="directivesEditor">
+					<cfinclude template="directives.cfm" />
+				</div>
+				<script src="/assets/vendor/tabler/dist/libs/tom-select/dist/js/tom-select.base.min.js?1684106062" defer></script>
+			{{/if}}
+		{{else}}
+			<div class="p-2 text-muted align-items-center justify-content-center" style="display:flex; height:100%; width:100%; align-items:center; justify-content:center;">
+				<span class="btn btn-outline-info" style="pointer-events:none; opacity:.4">No file open</span>
+			</div>
+		{{/if}}
+	</div>
+	<div id="editorFooter" class="card-footer p-1 ps-2">
+		<span>
+			{{#if data.CurrentSqlFile.Id}}
+				{{#if data.CurrentSqlFile.IsDirty}}
+					{{!-- <span class="badge bg-orange-lt me-2">{{data.CurrentSqlFile.Name}}</span> --}}
+					<span class="text-muted me-2"><small>Changes unsaved...</small></span>
+				{{else}}
+					{{!-- <span class="badge bg-green-lt me-2">{{data.CurrentSqlFile.Name}}</span> --}}
+					<span class="text-muted me-2"><small>Changes saved.</small></span>
+				{{/if}}
+			{{/if}}
+		</span>
+
+		<span id="invalidJsonAlert" class="d-none">
+			<span class="badge me-2 bg-orange-lt">
+				Invalid MongoDB Query
+			</span>
+		</span>
+	</div>
+	<div id="editorProgressContainer" style="position:absolute; bottom:0; left:0; width:100%;">
+		<div id="editorProgress" class="progress progress-sm d-none">
+			<div class="progress-bar progress-bar-indeterminate"></div>
+		</div>
+	</div>
+</div>

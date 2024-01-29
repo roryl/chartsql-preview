@@ -1,0 +1,47 @@
+<cf_handlebars context="#result#">
+<li class="nav-item dropdown">
+	<a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+		<i class="ti ti-slideshow" style="font-size:1.2rem; font-weight:100; margin-top:1px;"></i>
+	</a>
+	<ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+		<li>
+			<form method="POST" action="/studio/storys/{{data.LatestStory.Id}}/addSlide">
+				<input type="hidden" name="goto" value="{{view_state.current_url}}">
+				<input type="hidden" name="goto_fail" value="{{view_state.current_url}}">
+				<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
+				<input type="hidden" name="Title" value="{{data.CurrentSqlFile.NamedDirectives.Title.ValueRaw}}">
+				<button class="dropdown-item" href="">
+					<i class="ti ti-photo-plus"></i>
+					&nbsp;Add to&nbsp;<i>{{data.LatestStory.Name}}</i>
+				</button>
+			</form>
+		</li>
+		{{!-- <li><hr class="dropdown-divider"></li>
+		<li>
+			<a class="dropdown-item" href="">
+				<i class="ti ti-photo-plus"></i>
+				&nbsp;Another action
+			</a>
+		</li> --}}
+		<li><hr class="dropdown-divider"></li>
+		<li>
+			<form method="POST" action="/studio/storys">
+				<input type="hidden" name="goto" value="{{view_state.current_url}}">
+				<input type="hidden" name="goto_fail" value="{{view_state.current_url}}">
+				<input type="hidden" name="Name" value="New Story">
+				<input type="hidden" name="PackageId" value="{{data.CurrentPackage.FullName}}">
+				<input type="hidden" name="ChartUrl" value="{{view_state.current_url}}">
+				{{#if data.CurrentSqlFile.NamedDirectives.Title.ValueRaw}}
+					<input type="hidden" name="Title" value="{{data.CurrentSqlFile.NamedDirectives.Title.ValueRaw}}">
+				{{else}}
+					<input type="hidden" name="Title" value="{{data.CurrentSqlFile.NamedDirectives.Name}}">
+				{{/if}}
+				<button class="dropdown-item" href="">
+					<i class="ti ti-library-plus"></i>
+					&nbsp;New Story
+				</button>
+			</form>
+		</li>
+	</ul>
+</li>
+</cf_handlebars>

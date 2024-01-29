@@ -1,0 +1,17 @@
+{
+    "app":{
+        "cfengine":"lucee@5.4.3+16"
+    },
+    "JVM":{
+        "heapSize":"1024",
+		"args": [
+			"--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED"
+		]
+    },
+    "name":"chartsql-preview",
+    "web":{
+        "rewrites":{
+            "enable":"true"
+        }
+    }
+}
