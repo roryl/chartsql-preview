@@ -28,11 +28,11 @@ When a new release is available it will be pushed to this repo. You can simply g
 # System Resources
 ChartSQL Studio Developer Preview runs a full copy of the ChartSQL server and client. It contains multiple copies of Windows, Linux and Mac distribution and the Java Runtime. Eventual production builds will be a smaller footprint.
 
-OS: Windows, Mac or Linux
-CPU: Any 64bit CPU
-Disk Space to clone: 1GB
-RAM: By default it reserves 1GB of RAM for the server
-HTTP: The Server will start on http://127.0.0.1:5****/
+* OS: Windows, Mac or Linux
+* CPU: Any 64bit CPU
+* Disk Space to clone: 1GB
+* RAM: By default it reserves 1GB of RAM for the server
+* HTTP: The Server will start on http://127.0.0.1:5****/
 
 # Support
 Support is provided in our [ChartSQL Discord Community](https://discord.gg/UbHYA6nyTg). Please join us there if you run into any issues.
