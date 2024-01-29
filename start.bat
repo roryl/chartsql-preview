@@ -3,14 +3,14 @@ echo Downloading zip file...
 
 :: Setting download path
 set "downloadPath=./box.zip"
+:: Setting URL
+set "url=https://www.ortussolutions.com/parent/download/commandbox/type/windows-jre64"
+
 :: Check if the file already exists
 IF EXIST "%downloadPath%" (
     echo File already exists. Skipping download.
 ) ELSE (
     echo Downloading zip file... this may take a couple minutes.
-    :: Setting URL
-    set "url=https://www.ortussolutions.com/parent/download/commandbox/type/windows-jre64"
-
     :: Using PowerShell to download the file
     powershell -Command "Invoke-WebRequest '%url%' -OutFile '%downloadPath%'"
     echo Download complete.
@@ -23,7 +23,7 @@ set "unzipTarget=./box"  :: Replace with the primary directory or file expected 
 
 IF NOT EXIST "%unzipTarget%" (
     echo Unzipping file...
-    powershell -Command "Expand-Archive -Path '%downloadPath%' -DestinationPath '.' -Force"
+    powershell -Command "Expand-Archive -Path '%downloadPath%' -DestinationPath './box' -Force"
     echo Unzip complete.
 ) ELSE (
     echo Unzip target already exists. Skipping unzip.
