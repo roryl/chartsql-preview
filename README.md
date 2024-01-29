@@ -1,5 +1,5 @@
 # ChartSQL Studio Developer Preview
-Welcome to the ChartSQL Developer Preview Repo. The purpose of this repo is to allow you access to the development build of ChartSQL Studio.
+Welcome to the ChartSQL Developer Preview Repo. The purpose of this repo is to allow you access to the development build of ChartSQL Studio. We are providing access to this repo so that you can easily update from development changes pushed to this repo.
 
 # Uses & Limitations
 ChartSQL is currently in pre-alpha status. Access to this repo is for demonstration and for you to provide development feedback. We do not recommend reliying on this version for any production purpose. See our [Roadmap](https://itr8studios.gitbook.io/chartsql/QY9tx3OTrQdien8dGApA/product-and-community/roadmap) for future plans.
