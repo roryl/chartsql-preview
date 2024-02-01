@@ -1,4 +1,4 @@
-<table class="table table-dark table-sm table-striped" >
+<table class="custom-table table table-dark table-sm table-striped" >
 	<tbody>
 		<!---
 			---------------------------
@@ -359,7 +359,7 @@
 							{{#if data.CurrentSqlFile.LastExecutionRequest.IsSuccess}}
 								<option value="">Select primary category</option>
 								{{#each data.CurrentSqlFile.NamedDirectives.Category.AvailableFields}}
-									{{#select data.CurrentSqlFile.NamedDirectives.Category.ValueRaw}}<option value="{{this}}">{{this}}</option>{{/select}}
+									{{#select (lowerCase data.CurrentSqlFile.NamedDirectives.Category.ValueRaw)}}<option value="{{lowerCase this}}">{{this}}</option>{{/select}}
 								{{/each}}
 							{{else}}
 							<option selected disabled style="">...run sql to see columns</option>
@@ -509,7 +509,7 @@
 						{{/if}}
 					</div>
 
-					<div id="directivesFieldAdd_formats" style="display:inline; position:absolute; right:0; top:0; height:100%; display:flex; align-items:center; justify-content:center;">
+					<div id="directivesFieldAdd_formats" style="display:inline; position:absolute; right:0; top:0; height:100%; display:flex; align-items:center; justify-content:center; z-index: 100;">
 						<div class="dropdown me-1">
 							<button class="btn btn-ghost-info btn-icon dropdown-toggle btn-sm ps-1" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
 								Add Format
@@ -583,3 +583,48 @@
 	</tbody>
 </table>
 </script>
+<style>
+	/* Since the Directives table header and body are on different tables,
+	to make all the columns the same width we need to explicitly put the same
+	width and max-width to all columns. That way both tables is going to
+	shrink and expand at the same rate whick will make them look synchronized.*/
+	table.custom-table tbody tr td:nth-child(1) {
+		width: 50px !important;
+		max-width: 50px !important;
+	}
+	
+	table.custom-table tbody tr td:nth-child(2) {
+		width: 100px !important;
+		max-width: 100px !important;
+	}
+	
+	table.custom-table tbody tr td:nth-child(3) {
+		width: 200px !important;
+	}
+	
+	table.custom-table tbody tr td:nth-child(4) {
+		width: 20px !important;
+		max-width: 20px !important;
+		max-width: 20px !important;
+	}
+	
+	table.custom-table thead tr th:nth-child(1) {
+		width: 50px !important;
+		max-width: 50px !important;
+	}
+	
+	table.custom-table thead tr th:nth-child(2) {
+		width: 100px !important;
+		max-width: 100px !important;
+	}
+	
+	table.custom-table thead tr th:nth-child(3) {
+		width: 200px !important;
+	}
+	
+	table.custom-table thead tr th:nth-child(4) {
+		width: 20px !important;
+		min-width: 20px !important;
+		max-width: 20px !important;
+	}
+</style>

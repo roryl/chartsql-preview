@@ -1,6 +1,7 @@
 -- @chart: bar
 -- @title: Bar Chart
 -- @subtitle: An basic example of a bar chart
+-- @formats: currency
 SELECT 
 Channel,
 count(*) as Won_Sales

@@ -78,6 +78,7 @@ component extends="zero.zero" {
 		arguments.controllerResult.MenuItems = this.serializeFast(ChartSQLStudio.getMenuItems(), {
 			Name:{},
 			Link:{},
+			OpenNewTab:{},
 			IconClass:{},
 			Location:{},
 			IsActive: function(MenuItem){
@@ -109,6 +110,28 @@ component extends="zero.zero" {
 		var controllerResult = arguments.controllerResult;
 
 		var ChartSQLStudio = this.getChartSQLStudio();
+		var qs = ChartSQLStudio.getEditorQueryString();
+
+		arguments.controllerResult.data.GlobalChartSQLStudio = this.serializeFast(ChartSQLStudio, {
+			Packages:{
+				FullName:{},
+				FriendlyName:{},
+				OpenPackageLink: function(Package){
+					var qs = qs.clone();
+					qs.setValue("PackageName", Package.getFullName())
+					.delete("Filter")
+					.delete("SchemaFilter");
+
+					var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
+					if(StudioDatasourceOptional.exists()){
+						var StudioDatasource = StudioDatasourceOptional.get();
+						qs.setValue("StudioDatasource", StudioDatasource.getName());
+					}
+
+					return qs.get();
+				},
+			}
+		});
 
 		if(this.getSubsystem() == "studio" and this.getSection() == "main"){
 			var qs = new zero.plugins.zerotable.model.queryStringNew(this.getQueryString());

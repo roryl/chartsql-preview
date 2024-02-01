@@ -18,6 +18,7 @@ component accessors="true" {
 	 * @EditorPanelView Which editor panel to show
 	 * @FileBrowserView Which file browser panel to show
 	 * @Filter A filter to apply to the file list
+	 * @SchemaFilter A filter to apply to the schema list
 	 * @RenderOnLoad Whether to run a preview when the file is opened
 	 * @PresentationMode Whether to show the editor or the presentation mode
 	 * @SliceDatetime A datetime to slice the data on
@@ -33,6 +34,7 @@ component accessors="true" {
 		string EditorPanelView = "sql",
 		string FileBrowserView = "files",
 		string Filter = "",
+		string SchemaFilter = "",
 		boolean RenderOnLoad = false,
 		boolean PresentationMode = false,
 		boolean ChangeActiveFileName = false,
@@ -563,7 +565,9 @@ component accessors="true" {
 				},
 				OpenPackageLink: function(Package){
 					var qs = qs.clone();
-					qs.setValue("PackageName", Package.getFullName());
+					qs.setValue("PackageName", Package.getFullName())
+					.delete("SchemaFilter")
+					.delete("Filter");
 
 					var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
 					if(StudioDatasourceOptional.exists()){
@@ -718,7 +722,11 @@ component accessors="true" {
 					},
 					OpenUrlParams: function(SqlFiles){
 						var keys = duplicate(openFileKeys);
-						keys[SqlFiles.getFullName()] = true;
+						// keys[SqlFiles.getFullName()] = true;
+						
+						if (!isNull(ActiveFile) && !isEmpty(ActiveFile)) {
+							keys[ActiveFile] = true;
+						}
 						var qs = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).setValue('RenderOnLoad', 'true');
 						var out = qs.getFields();
 						return qs.getFields();
@@ -849,7 +857,22 @@ component accessors="true" {
 						Name:{},
 						Fields:{
 							Name:{},
-							Type:{}
+							Type:{},
+							// Used to rerender the schema list if it has been filtered
+							IsFiltered: function(Field){
+								if(SchemaFilter == ""){
+									return false;
+								}
+
+								var SchemaFilter = SchemaFilter.toLowerCase();
+								var name = Field.getName().toLowerCase();
+
+								if(name.contains(SchemaFilter)){
+									return false;
+								} else {
+									return true;
+								}
+							},
 						}
 					}
 				})
@@ -950,6 +973,10 @@ component accessors="true" {
 		if(arguments.keyExists("Filter")){
 			out.view_state.filter = arguments.Filter;
 		}
+		
+		if(arguments.keyExists("SchemaFilter")){
+			out.view_state.SchemaFilter = arguments.SchemaFilter;
+		}
 
 		out.view_state.params = qs.getFields();
 		out.view_state.maximizeRendererLink = qs.clone().setValue('maximizePanel', 'renderer').get();
@@ -971,6 +998,7 @@ component accessors="true" {
 		out.view_state.preview_in_card_off_link = qs.clone().setValue("PreviewInCard", "false").get();
 		out.view_state.close_all_link = qs.clone().delete("OpenFiles").delete("ActiveFile").get();
 		out.view_state.clear_filter_link = qs.clone().delete("Filter").get();
+		out.view_state.clear_schema_filter_link = qs.clone().delete("SchemaFilter").get();
 		out.view_state.change_file_name_link = qs.clone().setValue("ChangeActiveFileName", "true").get();
 		out.view_state.stop_change_file_name_link = qs.clone().delete("ChangeActiveFileName").get();
 		out.view_state.rename_file_go_to = qs.clone().delete("ChangeActiveFileName").setValue("ActiveFile", "${data.FullName}").get();
@@ -987,7 +1015,7 @@ component accessors="true" {
 
 		// The main target objects that we want to replace within the view on form posts
 		out.view_state.main_zero_targets = "##rendererPanel,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links";
-		out.view_state.directives_editor_targets = "##editorTabs,##openFilesList,##sqlSourceCode,##saveButton,##rendererPanel,##editorProgressContainer,##fileList,.directiveErrorAlert,.directiveEditorTitle";
+		out.view_state.directives_editor_targets = "##editorTabs,##openFilesList,##sqlSourceCode,##editorPanel,##saveButton,##rendererPanel,##editorProgressContainer,##fileList,.directiveErrorAlert,.directiveEditorTitle";
 
 		// This was taking about 100ms to run and so we are not going to run it on every
 		// request. The application key will be reset by this.keyPerformanceInfo() function

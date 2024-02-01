@@ -20,13 +20,13 @@ component accessors="true" {
 		variables.type = arguments.type;
 		variables.config = arguments.config;
 		variables.ChartSQLStudio = arguments.ChartSQLStudio;
-		variables.Datasource = createObject("core.model.datasources.#variables.type#").init(argumentCollection=variables.config);
+		variables.Datasource = createObject("core.model.datasources.#variables.type#.#variables.type#").init(argumentCollection=variables.config);
 		variables.ChartSQLStudio.addStudioDatasource(this);
 		return this;
 	}
 
 	public function getMetadata(){
-		var metaData = getComponentMetadata("core.model.datasources.#variables.type#");
+		var metaData = getComponentMetadata("core.model.datasources.#variables.type#.#variables.type#");
 		var out = {
 			Name = metaData.displayName?:variables.Type,
 			Description = metaData.description?:"#variables.Type# Connector",
@@ -44,7 +44,7 @@ component accessors="true" {
 	}
 
 	public function updateConfig(required struct Config){
-		variables.Datasource = createObject("core.model.datasources.#variables.type#").init(argumentCollection=arguments.config);
+		variables.Datasource = createObject("core.model.datasources.#variables.type#.#variables.type#").init(argumentCollection=arguments.config);
 		variables.Config = arguments.config;
 		variables.ChartSQLStudio.saveConfig();
 		return this;

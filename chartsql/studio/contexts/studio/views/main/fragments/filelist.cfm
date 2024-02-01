@@ -19,10 +19,10 @@
 					<input type="hidden" name="{{{key}}}" value="{{{value}}}">
 			{{/if}}
 		{{/each}}
-		<button class="open-file" id="openFile{{@index}}" type="submit" style="display:none;"/></button>
+		<button class="open-file" id="keepFileOpenButton{{@index}}" type="submit" style="display:none;"/></button>
 	</form>
 
-	<div class="list-group-item {{#if IsActive}}active{{/if}}" onclick="document.getElementById('openFile{{@index}}').click(); document.getElementById('fileOpenProgress{{Id}}').classList.remove('d-none');" style="{{#if IsFiltered}}display:none;{{/if}}cursor: pointer; {{#if IsOpen}}border-right:solid 1px #4299e1;{{/if}}">
+	<div class="list-group-item {{#if IsActive}}active{{/if}}" onclick="if (isPressingCmdOrCtrl) {document.getElementById('keepFileOpenButton{{@index}}').click();} else { document.getElementById('openFile{{@index}}').click(); }; document.getElementById('fileOpenProgress{{Id}}').classList.remove('d-none');" style="{{#if IsFiltered}}display:none;{{/if}}cursor: pointer; {{#if IsOpen}}border-right:solid 1px #4299e1;{{/if}}">
 		<div class="row">
 			<div class="col text-truncate">
 				<span class="">
@@ -102,50 +102,16 @@
 </div>
 <script>
 	var isPressingCmdOrCtrl = false;
+
 	$(document).keydown(function(e) {
 		if (e.which == 91 || e.which == 17) {
 			isPressingCmdOrCtrl = true;
-			// Get every form with the class 'open-file-form' and remove the input element with name attribute 'OpenFiles'
-			$('.open-file').each(function() {
-				let button = $(this);
-
-				let sqlFileId = button.attr('data-sqlfile-id');
-
-				// Change the 'form' attribute of the botton to the form with the id 'keep-file-open-form-{{this.Id}}'
-				button.attr('form', `keep-file-open-form-${sqlFileId}`);
-			});
 		}
 	});
 
 	$(document).keyup(function(e) {
 		if (e.which == 91 || e.which == 17) {
 			isPressingCmdOrCtrl = false;
-			$('.open-file').each(function() {
-				let button = $(this);
-				let sqlFileId = button.attr('data-sqlfile-id');
-				button.removeAttr('form');
-			});
 		}
-	});
-
-	var mainElement = document.querySelector('#fileList');
-	var monitor = new MutationObserver(function(changes) {
-		if (!isPressingCmdOrCtrl) {
-			return;
-		}
-		$('.open-file').each(function() {
-			let button = $(this);
-
-			let sqlFileId = button.attr('data-sqlfile-id');
-
-			// Change the 'form' attribute of the botton to the form with the id 'keep-file-open-form-{{this.Id}}'
-			button.attr('form', `keep-file-open-form-${sqlFileId}`);
-		});
-	});
-
-	monitor.observe(mainElement, {
-		attributes: false,
-		childList: true,
-		characterData: true
 	});
 </script>

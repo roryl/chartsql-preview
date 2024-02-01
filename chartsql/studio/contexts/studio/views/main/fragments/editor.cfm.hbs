@@ -124,11 +124,11 @@
 	</style>
 	<div>
 		{{#if (eq view_state.editor_panel.active_view "directives")}}
-			<table class="table table-dark table-sm table-striped m-0">
+			<table class="custom-table table table-dark table-sm table-striped m-0">
 				<thead>
 					<tr>
-						<th style="width:1%;">Disable</th>
-						<th class="text-end pe-2" style="width:30.15%;">Directive</th>
+						<th>Disable</th>
+						<th class="text-end pe-2">Directive</th>
 						<th>Value</th>
 						<!--- <th></th> --->
 						<th></th>
@@ -142,7 +142,7 @@
 			<!--- #sqlSourceCode is moved out of the SQL editor panel so that it can be submitted from the directives panel
 				as well.
 			--->
-			<form id="sqlSourceCode" action="/studio/main/saveFile" method="POST" zero-target="#rendererPanel,#editorTabs,#directivesEditor,#infoPanel,#openFilesList,#fileList,#refreshExecution,#editorFooter">
+			<form id="sqlSourceCode" action="/studio/main/saveFile" method="POST" zero-target="#rendererPanel,#editorTabs,#directivesEditor,#infoPanel,#openFilesList,#fileList,#refreshExecution,#editorFooter,#editorCard">
 				<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 				<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
 				<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">

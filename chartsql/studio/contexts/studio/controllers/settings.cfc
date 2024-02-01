@@ -7,40 +7,9 @@ component accessors="true" {
 
 	public struct function list(
 	){
-		var ChartSQLStudio = variables.fw.getChartSQLStudio();
-		var qs = ChartSQLStudio.getEditorQueryString();
 		var out = {
 			"success":true,
-			"data":{
-				ChartSQLStudio = variables.fw.serializeFast(ChartSQLStudio, {
-					Packages:{
-						FullName:{},
-						FriendlyName:{},
-						SqlFiles:{
-							Content:{},
-							IsMissingFile: {},
-							NamedDirectives:{
-								Title:{
-									ValueRaw:{}
-								}
-							}
-						},
-						OpenPackageLink: function(Package){
-							var qs = qs.clone();
-							qs.setValue("PackageName", Package.getFullName());
-
-							var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
-							if(StudioDatasourceOptional.exists()){
-								var StudioDatasource = StudioDatasourceOptional.get();
-								qs.setValue("StudioDatasource", StudioDatasource.getName());
-							}
-
-							return qs.get();
-						},
-					},
-					ConfigPath:{}
-				}),
-			},
+			"data":{}
 		}
 		return out;
 	}

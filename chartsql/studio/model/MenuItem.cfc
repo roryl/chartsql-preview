@@ -11,6 +11,7 @@ component accessors="true" {
 	property name="Parent" type="MenuItem";
 	property name="Children" type="array";
 	property name="HasChildren" type="boolean" setter="false";
+	property name="OpenNewTab" type="boolean";
 	property name="Tooltip" type="string";
 
 	public function init(
@@ -20,7 +21,8 @@ component accessors="true" {
 		MenuItem Parent,
 		string Link,
 		string Tooltip,
-		string Location = 'top'
+		string Location = 'top',
+		boolean OpenNewTab = false
 	){
 
 		if(!structKeyExists(arguments, "Parent") and !structKeyExists(arguments, "ChartSQLStudio")){

@@ -117,7 +117,6 @@ component {
 								//If the series has a formatter, we need to eval it
 								if(typeof option.series[ii].label != "undefined"){
 									if(typeof option.series[ii].label.formatter != "undefined"){
-										console.log('formatted!');
 										eval(option.series[ii].label.formatter);
 										option.series[ii].label.formatter = func;
 									}
@@ -497,7 +496,6 @@ component {
 
 				case "decimal":
 					arguments.AxisItem.axisLabel.formatter = "var func = function(value) {
-						console.log('foo!');
 						return value.toFixed(2);
 					}";
 				break;
@@ -967,11 +965,7 @@ component {
 										groupBy2Value: {type=variables.metaData.columns[groupBy2].finalType, value= row[groupBy2]},
 									};
 
-									// writeDump(params);
-									// abort;
-
-									query name="groupByData3" dbtype="query" params=params {
-										echo("
+									var sql = "
 										SELECT #atValue# as #atValue#
 										FROM variables.data
 										WHERE #groupBy1# = :groupBy1Value
@@ -980,7 +974,10 @@ component {
 										-- that we are not charting on but are in the data
 										GROUP BY #groupBy2#
 										ORDER BY #groupBy2# ASC
-										")
+									"
+
+									query name="groupByData3" dbtype="query" params=params {
+										echo(sql)
 									}
 
 									valuesOut.append(groupByData3[atValue][1]);

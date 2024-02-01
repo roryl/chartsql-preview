@@ -308,7 +308,6 @@ $(document).ready(function() {
 						// Remove '&=' from the very end of the URL
 						var newUrl = newUrl.replace(/&=$/,'');
 
-						console.log(newUrl);
 						// window.history.pushState({}, '', newUrl);
 						window.history.pushState({formData: formData, formAction: formAction, target: target}, '', newUrl);
 					}
@@ -346,7 +345,6 @@ $(document).ready(function() {
 									var targetHTML = $(this);
 
 									var id = targetHTML.attr('id');
-									console.log('THIS!' + targetHTML.attr('id'));
 									if(typeof id === "undefined"){
 
 										// var targetPut = document.getElementsByTagName(targetHTML[0].tagName.toLowerCase())[0];
@@ -770,12 +768,9 @@ ZeroClient = {
 			if(typeof Cookies.get(getClientName(name)) == "undefined"){
 				Cookies.set(getClientName(name), true);
 			} else {
-				console.log(Cookies.get(getClientName(name)));
 				if(Cookies.get(getClientName(name)) == 'true'){
-					console.log('set cookie false');
 					Cookies.set(getClientName(name), false);
 				} else {
-					console.log('set cookie true');
 					Cookies.set(getClientName(name), true);
 				}
 			}

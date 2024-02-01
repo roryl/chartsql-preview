@@ -296,7 +296,7 @@ component accessors="true" {
 		var datasourceFiles = directoryList(datasourcePath, true, "query", "*.cfc", "", "file");
 		for(var file in datasourceFiles){
 			var className = replace(file.name, ".cfc", "");
-			var metaData = getComponentMetaData("core.model.datasources.#className#")
+			var metaData = getComponentMetaData("core.model.datasources.#className#.#className#")
 			if(metaData.keyExists("isStudioDatasource") and metaData.isStudioDatasource){
 				out.append({
 					Name = metaData.displayName?:className,
@@ -321,7 +321,7 @@ component accessors="true" {
 	public function getDatasourceTemplate(
 		required string Type
 	){
-		var datasource = createObject("core.model.datasources.#arguments.Type#");
+		var datasource = createObject("core.model.datasources.#arguments.Type#.#arguments.Type#");
 		return datasource.getStudioConfigTemplate();
 	}
 
@@ -449,7 +449,18 @@ component accessors="true" {
 			IconClass = "ti ti-settings",
 			Link = "/studio/settings",
 			Tooltip = "Editor Settings",
-			Location = "bottom"
+			Location = "bottom",
+			OpenNewTab = false
+		);
+
+		var MenuItem = new MenuItem(
+			ChartSQLStudio = this,
+			Name = "Docs",
+			IconClass = "ti ti-book",
+			Link = "https://itr8studios.gitbook.io/chartsql/QY9tx3OTrQdien8dGApA/basics/intro",
+			Tooltip = "Open Docs",
+			Location = "top",
+			OpenNewTab = true
 		);
 	}
 

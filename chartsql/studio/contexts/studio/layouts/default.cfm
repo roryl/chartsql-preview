@@ -462,7 +462,7 @@
 									<div class="dropdown-menu">
 										<div class="dropdown-menu-columns">
 											<div class="dropdown-menu-column">
-												{{#each data.ChartSQLStudio.Packages}}
+												{{#each data.GlobalChartSQLStudio.Packages}}
 													<a class="dropdown-item" href="{{OpenPackageLink}}">
 														<!--- {{this}} --->
 														{{FriendlyName}}
@@ -521,27 +521,6 @@
 										</a>
 									</div>
 								</li>
-								<li class="nav-item dropdown">
-									<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
-										<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Open Docs"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
-											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-book" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 19a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><path d="M3 6a9 9 0 0 1 9 0a9 9 0 0 1 9 0" /><path d="M3 6l0 13" /><path d="M12 6l0 13" /><path d="M21 6l0 13" /></svg>
-										</span>
-										<span class="nav-link-title">
-											Docs
-										</span>
-									</a>
-									<div class="dropdown-menu">
-										<a class="dropdown-item" href="https://tabler.io/docs" target="_blank" rel="noopener">
-											Introduction
-										</a>
-										<a class="dropdown-item" href="./changelog.html">
-											Getting Started
-										</a>
-										<a class="dropdown-item" href="https://github.com/tabler/tabler" target="_blank" rel="noopener">
-											Reference
-										</a>
-									</div>
-								</li>
 								<div class="d-flex flex-column" style="height: 80%;">
 								{{#each MenuItems}}
 									{{#if (neq Location 'bottom')}}
@@ -565,7 +544,7 @@
 											</li>
 										{{else}}
 											<li class="nav-item {{#if IsActive}}active{{/if}}">
-												<a class="nav-link" href="{{Link}}">
+												<a class="nav-link" href="{{Link}}" {{#if OpenNewTab}}target="_blank"{{/if}}>
 													<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 														<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
 													</span>
@@ -600,7 +579,7 @@
 												</li>
 											{{else}}
 												<li class="nav-item {{#if IsActive}}active{{/if}}">
-													<a class="nav-link" href="{{Link}}">
+													<a class="nav-link" href="{{Link}}" {{#if OpenNewTab}}target="_blank"{{/if}}>
 														<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 															<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
 														</span>

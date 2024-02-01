@@ -57,7 +57,7 @@
 			{{#if IsMissingFile}}
 				<li class="nav-item border-info" role="presentation" style="{{#if IsActive}}border-bottom:2px solid; text-decoration:none; color:white{{/if}}">
 					<span class="nav-link {{#if IsActive}}active{{/if}}">
-						<span class="file-link {{#if IsActive}}active{{/if}}" zero-target="{{view_state.main_zero_targets}},#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none;">
+						<a href="{{OpenLink}}" class="file-link {{#if IsActive}}active{{/if}}" zero-target="{{view_state.main_zero_targets}},#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none;">
 							<span class="me-2">
 								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chart-area" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 19l16 0" /><path d="M4 15l4 -6l4 2l4 -5l4 4l0 5l-16 0" /></svg>
 							</span>
@@ -66,7 +66,7 @@
 							</span>
 							<span class="status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 	
-						</span>
+						</a>
 						<a href="{{CloseLink}}" class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0" zero-icon="false">
 							<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
 						</a>
@@ -111,7 +111,7 @@
 					{{#if IsMissingFile}}
 						<li class="nav-item border-info" role="presentation" style="{{#if IsActive}}border-bottom:2px solid; text-decoration:none; color:white{{/if}}">
 							<span class="nav-link {{#if IsActive}}active{{/if}}">
-								<span class="file-link {{#if IsActive}}active{{/if}}" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none;">
+								<a href="{{OpenLink}}" class="file-link {{#if IsActive}}active{{/if}}" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none;">
 									<span class="me-2">
 										<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chart-area" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 19l16 0" /><path d="M4 15l4 -6l4 2l4 -5l4 4l0 5l-16 0" /></svg>
 									</span>
@@ -120,7 +120,7 @@
 	
 									<span class="status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 	
-								</span>
+								</a>
 								<a href="{{PreviewCloseLink}}" class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0" zero-icon="false">
 									<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
 								</a>
@@ -230,11 +230,14 @@
 		<script>
 			$(document).keydown(function(e) {
 				if (e.key === "Escape") {
-					console.log("Escape key was pressed")
 					// Submit to 'stopChangeFileNameForm'
 					let stopChangeFileNameFormElement = $('#stopChangeFileNameForm');
 					if (stopChangeFileNameFormElement.length > 0) {
 						stopChangeFileNameFormElement.submit();
+					}
+					// If 'createFileContainer' element doest have a 'd-none property'
+					if ($('#createFileContainer').hasClass('d-none') === false) {
+						$('#createFileContainer').addClass('d-none');
 					}
 				}
 			});

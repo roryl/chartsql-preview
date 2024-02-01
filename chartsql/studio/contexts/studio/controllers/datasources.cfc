@@ -46,7 +46,7 @@ component accessors="true" {
 		numeric timeout = 5
 	) {
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
-		var Datasource = createObject("component", "core.model.datasources.#arguments.Type#").init(argumentCollection=arguments.config);
+		var Datasource = createObject("component", "core.model.datasources.#arguments.Type#.#arguments.Type#").init(argumentCollection=arguments.config);
 		try {
 			Datasource.verify(arguments.timeout);
 			var out = {

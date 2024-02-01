@@ -3,6 +3,7 @@
  * a chart.  It will parse the SQL and find all of the @directives that define
  * the chart
 */
+import values.CleanedDirectiveName;
 component accessors="true" {
 	processingdirective preservecase="true";
 	property name="ChartSql" type="ChartSql";
@@ -126,10 +127,14 @@ component accessors="true" {
 	public string function cleanLine(line) {
 		// Remove any word between '@' and ':' and any amount of following white space
 		// line = REReplace(line, "@[a-zA-Z-]+:\s+", "", "one").trim();
+		line = line.REReplace("\s+", " ", "all").trim();
 		line = replace(line, "//", "", "one").trim();
 		line = replace(line, "--", "", "one").trim();
-		line = replace(line, "@", "", "one").trim();
-		line = line.REReplace("\s+", " ", "all").trim();
+		// Check if the first character is a '@'
+		if (left(line, 1) == "@") {
+			// Remove any word between '@' and ':' and any amount of following white space
+			line = replace(line, "@", "", "one").trim();
+		}
 		return line;
 	}
 
@@ -170,7 +175,7 @@ component accessors="true" {
 				line = this.commentOutLine(line);
 			}
 
-			if(!directiveIsAlreadyFound && this.lineContainsMatchinDirective(line, directiveName)){
+			if(!directiveIsAlreadyFound && this.lineContainsMatchinDirective(line, new CleanedDirectiveName(directiveName))){
 				directiveIsAlreadyFound = true;
 				if(this.isLineCommentedOut(line)){
 					line = this.uncommentLine(line);
@@ -201,15 +206,15 @@ component accessors="true" {
 	 * Takes the given @directive string and gets the content after
 	 * the : until the next line
 	 */
-	public string function getAtDirectiveContentRaw(string directiveName){
-		arguments.directiveName = directiveName.replace("@", "", "one").replace(":", "", "one").replace("//", "", "one").trim();
+	public string function getAtDirectiveContentRaw(required CleanedDirectiveName CleanedDirectiveName){
+		//var cleanedName = directiveName.toString().replace("@", "", "one").replace(":", "", "one").replace("//", "", "one").trim();
 		var sql = this.getSql();
 		var lines = listToArray(sql, server.separator.line);
 		var content = "";
 		var directiveIsAlreadyFound = false;
 		var isMultilineDirective = false;
 
-		if (variables.multilineDirectives.contains(directiveName)) {
+		if (variables.multilineDirectives.contains(arguments.cleanedDirectiveName.toString())) {
 			isMultilineDirective = true;
 		}
 		for(var line in lines){
@@ -227,7 +232,7 @@ component accessors="true" {
 				continue;
 			}
 
-			if(!directiveIsAlreadyFound && this.lineContainsMatchinDirective(line, arguments.directiveName)){
+			if(!directiveIsAlreadyFound && this.lineContainsMatchinDirective(line, arguments.CleanedDirectiveName)){
 				directiveIsAlreadyFound = true;
 				content &= this.cleanLine(line);
 				continue;
@@ -235,7 +240,7 @@ component accessors="true" {
 		}
 
 		//Remove the original directive from the content
-		content = replace(content, "#arguments.directiveName#:", "", "all").trim();
+		content = replace(content, "#arguments.CleanedDirectiveName.toString()#:", "", "all").trim();
 		return content;
 	}
 
@@ -255,7 +260,7 @@ component accessors="true" {
 		for (var directive in arguments.directives){
 			var finalName = replaceNoCase(directive, "@", "", "all");
 			finalName = replaceNoCase(finalName, ":", "", "all");
-			out[finalName] = trim(this.getAtDirectiveContentRaw(directive));
+			out[finalName] = trim(this.getAtDirectiveContentRaw(new CleanedDirectiveName(directive)));
 		}
 
 		// 2024-01-29: out[finalName] will be either like 'chart' or '//chart'
@@ -686,7 +691,7 @@ component accessors="true" {
 		for (var match in matches){
 			var finalName = replaceNoCase(match, "@", "", "all");
 			finalName = replaceNoCase(finalName, ":", "", "all");
-			rawContents[finalName] = trim(this.getAtDirectiveContentRaw(match));
+			rawContents[finalName] = trim(this.getAtDirectiveContentRaw(new CleanedDirectiveName(match)));
 		}
 
 		// writeDump(contents);
@@ -782,36 +787,39 @@ component accessors="true" {
 			manual: false
 		}
 
-		var plottingDirectives = {
-			"chart": true,
-			"category": true,
-			"series": true,
-			"groups": true,
-			"secondary-series": true,
-		}
+		// var plottingDirectives = {
+		// 	"chart": true,
+		// 	"category": true,
+		// 	"series": true,
+		// 	"groups": true,
+		// 	"secondary-series": true,
+		// }
 
 		var directives = this.getParsedDirectives();
 
 		//var count the plotting directives found
-		var plottingDirectivesFound = 0;
-		for(var key in plottingDirectives){
-			if(directives.keyExists(key)){
-				plottingDirectivesFound++;
-			}
-		}
+		// var plottingDirectivesFound = 0;
+		// for(var key in plottingDirectives){
+		// 	if(directives.keyExists(key)){
+		// 		plottingDirectivesFound++;
+		// 	}
+		// }
 
-		if(plottingDirectivesFound == 0){
-			return "auto";
-			// mode.auto = true
-		} else if(directives.keyExists("chart")) {
-
-			if(plottingDirectivesFound == 1){
-				return "assist";
-				// mode.auto = true
-			} else {
+		if(directives.keyExists("chart")) {
+		 	if (
+				!(directives.keyExists("series") or directives.keyExists("secondary-series")) 
+				or !(directives.keyExists("category") or directives.keyExists("groups"))
+			) {
+				 return "assist";
+			} else if(
+				(directives.keyExists("series") or directives.keyExists("secondary-series"))
+				and (directives.keyExists("category") or directives.keyExists("category-groups"))){
 				return "manual";
-				// mode.manual = true
+			} else {
+				return "assist";
 			}
+		} else {
+			return "auto";
 		}
 	}
 
@@ -835,7 +843,7 @@ component accessors="true" {
 		var lines = listToArray(sql, server.separator.line);
 		var newLines = [];
 		for(var line in lines){
-			if(!this.lineContainsMatchinDirective(line, arguments.directive)){
+			if(!this.lineContainsMatchinDirective(line, new CleanedDirectiveName(arguments.directive))){
 				newLines.append(line);
 			}
 		}
@@ -871,7 +879,7 @@ component accessors="true" {
 		for(var ii=1; ii <= arrayLen(lines); ii++){
 			var line = lines[ii];
 
-			if(this.lineContainsMatchinDirective(line, directive)){
+			if(this.lineContainsMatchinDirective(line, new CleanedDirectiveName(directive))){
 				directiveAlreadyExists = true;
 				this.replaceDirectiveText(directive, newText);
 				return;
@@ -917,8 +925,15 @@ component accessors="true" {
 	 * @line
 	 * @directive
 	 */
-	public boolean function lineContainsMatchinDirective(required string line, required string directive){
-		var matches = reMatchNoCase("((\/{2})?@#arguments.directive#)", line);
+	public boolean function lineContainsMatchinDirective(required string line, required CleanedDirectiveName directive){
+		// 2024-01-31: This doesn't work because we need to match directives
+		// that contain hyphens. So we need to match any word character up to :
+		// if (!line.contains(":")) {
+		// 	return false;
+		// }
+		// line = line.split(":")[1];
+		// @series: or @series-types:
+		var matches = reMatchNoCase("((\/{2})?@#arguments.directive.toString()#:)", line);
 		return arrayLen(matches) > 0;
 	}
 

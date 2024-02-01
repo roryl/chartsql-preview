@@ -1,17 +1,17 @@
-<div class="accordion" id="accordionPanelsStayOpenExample">
+<div class="accordion" id="schemaList">
 	{{#each data.CurrentDatasourceInfo.Tables}}
 	<div class="accordion-item border-start-0 border-end-0 {{#if @first}}border-top-0{{/if}}">
 		<h2 class="accordion-header" id="panelsStayOpen-headingTwo{{Name}}">
-		<button class="accordion-button py-0 collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo{{Name}}" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo{{Name}}">
+		<button class="accordion-button py-0 {{#if (eq view_state.SchemaFilter '')}}collapsed{{/if}}" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo{{Name}}" aria-expanded="{{#if (eq view_state.SchemaFilter '')}}false{{else}}true{{/if}}" aria-controls="panelsStayOpen-collapseTwo{{Name}}">
 			<i class="ti ti-table"></i><span class="ms-2">{{Name}}</span>
 		</button>
 		</h2>
-		<div id="panelsStayOpen-collapseTwo{{Name}}" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingTwo{{Name}}">
+		<div id="panelsStayOpen-collapseTwo{{Name}}" class="accordion-collapse collapse {{#if (neq view_state.SchemaFilter '')}}show{{/if}}" aria-labelledby="panelsStayOpen-headingTwo{{Name}}">
 		<ul class="accordion-body list-group list-group-flush p-0">
 				{{#each Fields}}
-					<li class="list-group-item py-1 ps-5">
+					<li class="list-group-item py-1 ps-5" style="{{#if IsFiltered}}display: none;{{/if}}">
 						{{!-- <i class="ti ti-table-column"></i>&nbsp; --}}
-						<span class="text-azure">{{Name}}</span> <small class="text-muted">[{{Type}}]</small>
+						<span class="text-azure">{{Name}} {{Testing}}</span> <small class="text-muted">[{{Type}}]</small>
 					</li>
 				{{/each}}
 
