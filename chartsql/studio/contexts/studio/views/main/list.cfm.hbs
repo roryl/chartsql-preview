@@ -4,7 +4,7 @@
 		<cfinclude template="fragments/header.cfm">
 	</div>
 	<div class="" style="flex:1; display:flex; flex-flow:row; height:94%;">
-		<div id="fileListContainer" class="" style="width:20%; height:100%; display:flex; flex-flow:column;">
+		<div id="fileListContainer" class="" style="width:{{view_state.file_list_width}}%; height:100%; display:flex; flex-flow:column;">
 			<div class="card" style=" height:100%;">
 					{{#if (eq view_state.browser_panel.active_view 'files')}}
 					<div class="input-icon">
@@ -60,7 +60,7 @@
 											<input type="hidden" name="{{key}}" value="{{value}}">
 										{{/unless}}
 									{{/each}}
-									<button id="filterClear" type="submit" class="btn btn-sm" zero-icon="false" onclick="document.getElementById('schemaFilterSearch').value = ''" style="{{#if view_state.SchemaFilter}}display:flex;{{else}}display:none{{/if}}">clear</button>
+									<button id="schemaFilterClear" type="submit" class="btn btn-sm" zero-icon="false" onclick="document.getElementById('schemaFilterSearch').value = ''" style="{{#if view_state.SchemaFilter}}display:flex;{{else}}display:none{{/if}}">clear</button>
 								</form>
 								{{!-- <button id="schemaFilterSubmit" type="submit" class="btn btn-sm" style="{{#if view_state.SchemaFilter}}display:flex;{{else}}display:none;{{/if}}">clear</button> --}}
 							</div>
@@ -85,20 +85,29 @@
 						{{/if}}
 					{{/each}}
 				</div>
-				<div id="file-browswer-view-links" style="position:absolute; bottom:0px; width:100%; z-index:1000;">
+				<div id="file-browswer-view-links" style="width:100%; z-index:2000;">
 					<ul class="nav nav-tabs card-header-tabs nav-fill" style="padding:0; margin:0;">
 						{{#each data.ChartSQLStudio.FileBrowserViews}}
 							<li class="nav-item">
-								<a class="nav-link py-1 pt-2 {{#if IsActive}}active{{/if}}" aria-current="page" href="{{Link}}">
-									<i class="{{IconClass}}" style="font-size:1.1rem; font-width:.5rem;"></i>
-								</a>
+								<form action="/studio/main" method="GET" zero-target="#fileListContainer">
+									{{#each view_state.params}}
+										{{#unless (eq key "FileBrowserView")}}
+											<input type="hidden" name="{{key}}" value="{{value}}">
+										{{/unless}}
+									{{/each}}
+									<input type="hidden" name="FileBrowserView" value="{{Name}}">
+									<button class="nav-link py-2 {{#if IsActive}}active{{/if}}" aria-current="page" style="border-radius:0; border-top:none; border-left:none; border-right:none; padding:0; margin:0; height:100%;" type="submit" zero-icon="false" onclick="$(this).find('.spinner-border').removeClass('d-none'); $(this).find('i').addClass('d-none');">
+										<span class="spinner-border spinner-border-sm d-none" role="status"></span>
+										<i class="{{IconClass}}" style="font-size:1rem;"></i>
+									</button>
+								</form>
 							</li>
 						{{/each}}
 					  </ul>
 				</div>
 			</div>
 		</div>
-		<div id="renderingContainer" class="" style="width:80%; display:flex; flex-flow:column; height:100%;">
+		<div id="renderingContainer" class="" style="width: {{view_state.main_container_width}}%; display:flex; flex-flow:column; height:100%;">
 
 			<div id="openFilesList" style="width:100%;">
 				<div class="card border-top-1 border-bottom-0">
@@ -108,7 +117,7 @@
 
 			<cql-open-file-path id="openFilePath" style="width:100%;">
 				<div class="card" style="border:none; font-size:.8rem; height:28px;">
-					<div class="card-footer p-1 ps-2 text-muted">
+					<div class="card-footer m-0 p-1 ps-2 text-muted">
 						<!--- Override the separator to > because it looks weird with the file paths \ --->
 						<style>
 							.openFilePath .breadcrumb-item + .breadcrumb-item::before {
@@ -152,7 +161,7 @@
 										<li class="nav-item" role="presentation">
 											<form action="{{view_state.info_panel.resultset.link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" aria-selected="true" role="tab">
 												<button class="nav-link {{#if (eq view_state.info_panel.active_view "resultset")}}active{{/if}}">
-												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-table me-2" style="--tblr-icon-size: 1.1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z" /><path d="M3 10h18" /><path d="M10 3v18" /></svg>
+												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-table me-2" style="--tblr-icon-size: 1rem; " width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z" /><path d="M3 10h18" /><path d="M10 3v18" /></svg>
 												<!--- <span class="badge bg-azure-lt me-2" style="{{#unless (eq view_state.info_panel.active_view "resultset")}}opacity:.5;{{/unless}}">{{data.CurrentSqlFile.Name}}</span>  --->
 												Data
 												<!--- <span class="badge ms-2">{{#if data.CurrentSqlFile.ResultSet}}{{length data.CurrentSqlFile.ResultSet.Data}}{{else}}-{{/if}}</span> --->
@@ -161,7 +170,8 @@
 										</li>
 										<li class="nav-item" role="presentation">
 											<form action="{{view_state.info_panel.executions.link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" class="" aria-selected="false" role="tab" tabindex="-1">
-												<button class="nav-link {{#if (eq view_state.info_panel.active_view "executions")}}active{{/if}}"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sql me-2" style="--tblr-icon-size: 1.3rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 8a2 2 0 0 1 2 2v4a2 2 0 1 1 -4 0v-4a2 2 0 0 1 2 -2z" /><path d="M17 8v8h4" /><path d="M13 15l1 1" /><path d="M3 15a1 1 0 0 0 1 1h2a1 1 0 0 0 1 -1v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1" /></svg>
+												<button class="nav-link {{#if (eq view_state.info_panel.active_view "executions")}}active{{/if}}">
+												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sql me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 8a2 2 0 0 1 2 2v4a2 2 0 1 1 -4 0v-4a2 2 0 0 1 2 -2z" /><path d="M17 8v8h4" /><path d="M13 15l1 1" /><path d="M3 15a1 1 0 0 0 1 1h2a1 1 0 0 0 1 -1v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1" /></svg>
 												Executions
 												<!--- {{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
 													<span class="ms-2 status-dot status-green" style="{{#unless (eq view_state.info_panel.active_view "executions")}}opacity:.5;{{/unless}}"></span>
@@ -174,7 +184,7 @@
 										<li class="nav-item" role="presentation">
 											<form action="{{view_state.info_panel.server.link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" aria-selected="false" role="tab" tabindex="-1">
 												<button class="nav-link {{#if (eq view_state.info_panel.active_view "server")}}active{{/if}}">
-													<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bolt" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11" /></svg>
+													<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bolt me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11" /></svg>
 													Editor Perf
 													<!--- {{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
 														<span class="ms-2 status-dot status-green" style="{{#unless (eq view_state.info_panel.active_view "executions")}}opacity:.5;{{/unless}}"></span>
@@ -363,7 +373,6 @@
 	</div>
 	<!--- <div class="bg-info" style="">footer</div> --->
 </div>
-<script src="/assets/js/filter-files.js" defer></script>
 <script>
 
 	/**********************************************
@@ -423,6 +432,7 @@
 		},
 	})
 
+
 	// The vertical split between the top and bottom panels grabbed from the cookies and stored
 	// in the view state. They will default to 50/50 if the cookies are not set
 	sizes = [{{view_state.top_panel_height}}, {{view_state.bottom_panel_height}}] // default sizes
@@ -443,4 +453,21 @@
 	})
 
 	{{/unless}}
+
+
+	sizes = [{{view_state.file_list_width}}, {{view_state.main_container_width}}] // default sizes
+
+	// The horizontal split between the editor and renderer
+	var splithoritontal = Split(['#fileListContainer', '#renderingContainer'], {
+		sizes: sizes,
+		onDrag: function(){
+			if (window != null && window.chartHandle != null) {
+				window.chartHandle.resize();
+			}
+		},
+		onDragEnd: function (sizes) {
+			ZeroClient.set('file_list_width', sizes[0])
+			ZeroClient.set('main_container_width', sizes[1])
+		},
+	})
 </script>

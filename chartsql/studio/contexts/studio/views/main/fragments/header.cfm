@@ -3,7 +3,7 @@
 		/* border-radius:0; */
 	}
 </style>
-<div id="header" class="container-xl pt-2">
+<div id="header" class="container-xl py-1">
 	<!--- <script>alert();</script> --->
 	<div class="d-flex flex-row align-items-center">
 		<div class="col-auto" style="">

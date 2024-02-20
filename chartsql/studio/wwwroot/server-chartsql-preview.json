@@ -13,5 +13,6 @@
         "rewrites":{
             "enable":"true"
         }
-    }
+    },
+	"trayIcon":"assets/img/mascot.fw.png"
 }

@@ -17,6 +17,11 @@
           "FullName": "websites.chartsql.studio.extensions.chartsql.examples.sql.pie.pie_sales_by_channel.sql",
           "Id": "B2737BA9-4471-4E75-AAA1BD960F28E4CD",
           "Title": "Pie - Won Sales by Channel"
+        },
+        {
+          "FullName": "",
+          "Id": "F62C62DB-D1F9-444B-8EC6C18B94E5C1DF",
+          "Title": ""
         }
       ],
       "Name": "Testing",

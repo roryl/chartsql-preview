@@ -2,7 +2,7 @@
 -- @title: Bar Chart
 -- @subtitle: An basic example of a bar chart
 -- @formats: currency
-SELECT 
+SELECT
 Channel,
 count(*) as Won_Sales
 FROM Sales

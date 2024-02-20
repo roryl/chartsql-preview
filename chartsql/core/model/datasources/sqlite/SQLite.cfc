@@ -30,8 +30,6 @@ component
 		query name="result" datasource="#this.getConnectionInfo()#" result="meta" {
 			echo(sql);
 		}
-		// writeDump(result);
-
 		// ------------------------
 		// DATE/TIME CONVERSION
 		// ------------------------
@@ -47,7 +45,6 @@ component
 		// We might improve this by allowing a datasource to override the getMetaData(result) method
 		// so that it can control the datatype of each column for rendering. However, this would
 		// still interferre with if we want to do an QoQ on dates and times.
-
 
 		// Setup some structs which will keep track of which columns are date and date/time
 		var dateColumns = {};
@@ -87,11 +84,17 @@ component
 				// Convert and swap the date column
 				var newColumn = dateColumn & "_chartsql_date";
 				queryAddColumn(result, newColumn, "datetime");
+
+				// var originalColumn = dateColumn & "original_";
+				// queryAddColumn(result, originalColumn, "varchar");
+
 				var ii = 0;
 				for(var row in result){
 					ii++;
 					var newValue = parseDateTime(row[dateColumn]);
 					querySetCell(result, newColumn, newValue, ii);
+
+					// querySetCell(result, originalColumn, row[dateColumn], ii);
 				}
 
 				queryDeleteColumn(result, dateColumn);

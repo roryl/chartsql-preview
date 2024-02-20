@@ -376,6 +376,31 @@ component accessors="true" {
 						return false;
 					}
 				},
+				OpenUrlParams: function(SqlFiles){
+					var keys = duplicate(openFileKeys);
+					keys[SqlFiles.getFullName()] = true;
+					var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).getFields();
+					return out;
+				},
+				CloseUrlParams: function(SqlFiles){
+					// When we are just previewing and are not yet open, when we
+					// close this file we want to go back to the package last open
+					// file
+					var keys = duplicate(openFileKeys);
+					if (keys.keyExists(SqlFiles.getFullName())) {
+						keys.delete(SqlFiles.getFullName());
+					}
+					var qs = qs.clone();
+					qs.setValue("OpenFiles", keys.keyList());
+
+					if(keys.len() > 0){
+						qs.setValue("ActiveFile", keys.keyArray().last());
+					} else {
+						qs.delete("ActiveFile");
+					}
+					var out = qs.getFields();
+					return out;
+				},
 				PreviewCloseLink: function(SqlFiles){
 					// When we are just previewing and are not yet open, when we
 					// close this file we want to go back to the package last open
@@ -594,8 +619,50 @@ component accessors="true" {
 			SqlFiles:{
 				Id:{},
 				Name:{},
+				FullName:{},
 				IsDirty:{},
 				IsMissingFile:{},
+				NamedDirectives:{
+					Chart:{
+						ValueRaw:{},
+						IsValid:{}
+					}
+				},
+				OpenLinkOpenFilesParam: function(SqlFiles){
+					var keys = duplicate(openFileKeys);
+					keys[SqlFiles.getFullName()] = true;
+					return keys.keyList();
+				},
+				CloseLinkOpenFilesParam: function(SqlFiles){
+					var keys = duplicate(openFileKeys);
+					keys.delete(SqlFiles.getFullName());
+					return keys.keyList();
+				},
+				OpenUrlParams: function(SqlFiles){
+					var keys = duplicate(openFileKeys);
+					keys[SqlFiles.getFullName()] = true;
+					var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).getFields();
+					return out;
+				},
+				CloseUrlParams: function(SqlFiles){
+					// When we are just previewing and are not yet open, when we
+					// close this file we want to go back to the package last open
+					// file
+					var keys = duplicate(openFileKeys);
+					if (keys.keyExists(SqlFiles.getFullName())) {
+						keys.delete(SqlFiles.getFullName());
+					}
+					var qs = qs.clone();
+					qs.setValue("OpenFiles", keys.keyList());
+
+					if(keys.len() > 0){
+						qs.setValue("ActiveFile", keys.keyArray().last());
+					} else {
+						qs.delete("ActiveFile");
+					}
+					var out = qs.getFields();
+					return out;
+				},
 				OpenLink: function(SqlFiles){
 					var keys = duplicate(openFileKeys);
 					keys[SqlFiles.getFullName()] = true;
@@ -635,6 +702,19 @@ component accessors="true" {
 		})
 		var endTick = getTickCount();
 		request.timerData.ChartSQLStudio = endTick - startTick;
+
+		// Order the out.data.CurrentPackage.SqlFiles by their order on OpenFiles
+		if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
+			OpenFilesArray = [];
+		} else {
+			var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+		}
+
+		out.data.ChartSqlStudio.SqlFiles = out.data.ChartSqlStudio.SqlFiles.sort(function(a, b) {
+			var aIndex = OpenFilesArray.contains(a.FullName);
+			var bIndex = OpenFilesArray.contains(b.FullName);
+			return aIndex - bIndex;
+		});
 
 		// --------------------------------------
 		// CURRENT PACKAGE
@@ -711,25 +791,34 @@ component accessors="true" {
 						return qs.clone().setValue("ActiveFile", SqlFiles.getFullName()).get();
 						// return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
 					},
+					// OpenedOrder: function(SqlFiles){
+					// 	if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
+					// 		OpenFilesArray = [];
+					// 	} else {
+					// 		var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+					// 	}
+
+					// 	return OpenFilesArray.contains(SqlFiles.getFullName());
+					// },
 					// A structure of URL parameters so we can make the open link a form GET which improves
 					// the browser respnsiveness
 					UrlParams: function(SqlFiles){
-						var keys = duplicate(openFileKeys);
-						// keys[SqlFiles.getFullName()] = true;
-						var qs = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).setValue('RenderOnLoad', 'true');
-						var out = qs.getFields();
-						return qs.getFields();
+						// var keys = duplicate(openFileKeys);
+						if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
+							OpenFilesArray = [];
+						} else {
+							var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+						}
+						var SqlFileFullName = SqlFiles.getFullName();
+						// keys[SqlFileFullName] = true;
+						var out = qs.clone().setValue("OpenFiles", OpenFilesArray.toList(',')).setValue("ActiveFile", SqlFileFullName).setValue('RenderOnLoad', 'true').getFields();
+						return out;
 					},
 					OpenUrlParams: function(SqlFiles){
 						var keys = duplicate(openFileKeys);
-						// keys[SqlFiles.getFullName()] = true;
-						
-						if (!isNull(ActiveFile) && !isEmpty(ActiveFile)) {
-							keys[ActiveFile] = true;
-						}
-						var qs = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).setValue('RenderOnLoad', 'true');
-						var out = qs.getFields();
-						return qs.getFields();
+						keys[SqlFiles.getFullName()] = true;
+						var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).getFields();
+						return out;
 					}
 				}
 			})
@@ -940,6 +1029,8 @@ component accessors="true" {
 		out.view_state.bottom_panel_height = request.context.client_state?.bottom_panel_height?:"40";
 		out.view_state.editor_width = request.context.client_state?.editor_width?:"50";
 		out.view_state.renderer_width = request.context.client_state?.renderer_width?:"50";
+		out.view_state.file_list_width = request.context.client_state?.file_list_width?:"20";
+		out.view_state.main_container_width = request.context.client_state?.main_container_width?:"80";
 
 
 		// Rendering panel can be maximized in which case we will force the heights
@@ -950,6 +1041,8 @@ component accessors="true" {
 				out.view_state.bottom_panel_height = "0";
 				out.view_state.editor_width = "0";
 				out.view_state.renderer_width = "100";
+				out.view_state.file_list_width = "20";
+				out.view_state.main_container_width = "80";
 				out.view_state.renderer_is_maximized = true;
 			} else {
 				out.view_state.renderer_is_maximized = false;
@@ -960,6 +1053,8 @@ component accessors="true" {
 				out.view_state.bottom_panel_height = "0";
 				out.view_state.editor_width = "100";
 				out.view_state.renderer_width = "0";
+				out.view_state.file_list_width = "20";
+				out.view_state.main_container_width = "80";
 				out.view_state.editor_is_maximized = true;
 			} else {
 				out.view_state.editor_is_maximized = false;
@@ -973,7 +1068,7 @@ component accessors="true" {
 		if(arguments.keyExists("Filter")){
 			out.view_state.filter = arguments.Filter;
 		}
-		
+
 		if(arguments.keyExists("SchemaFilter")){
 			out.view_state.SchemaFilter = arguments.SchemaFilter;
 		}
@@ -1014,8 +1109,8 @@ component accessors="true" {
 		out.view_state.save_or_update_file_redirect = qs.clone().setValue("OpenFiles", newOpenKeys.keyList()).get();
 
 		// The main target objects that we want to replace within the view on form posts
-		out.view_state.main_zero_targets = "##rendererPanel,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links";
-		out.view_state.directives_editor_targets = "##editorTabs,##openFilesList,##sqlSourceCode,##editorPanel,##saveButton,##rendererPanel,##editorProgressContainer,##fileList,.directiveErrorAlert,.directiveEditorTitle";
+		out.view_state.main_zero_targets = "##renderer-card-header,##renderContainer,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders";
+		out.view_state.directives_editor_targets = "##editorTabs,##openFilesList,##sqlSourceCode,##editorBody,##saveButton,##rendererPanel,##editorProgressContainer,##fileList,.directiveErrorAlert,.directiveEditorTitle";
 
 		// This was taking about 100ms to run and so we are not going to run it on every
 		// request. The application key will be reset by this.keyPerformanceInfo() function
@@ -1404,6 +1499,12 @@ component accessors="true" {
 	 */
 	public struct function result( required struct controllerResult ){
 		return controllerResult;
+	}
+
+	private function arrayRemoveDuplicates(array){
+		return array.reduce(function(deduped, el){
+			return deduped.find(el) ? deduped : deduped.append(el);
+		}, []);
 	}
 
 }

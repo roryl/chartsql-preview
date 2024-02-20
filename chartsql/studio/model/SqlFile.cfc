@@ -9,9 +9,6 @@ component accessors="true" {
 	property name="FullName";
 	property name="Directives";
 	property name="NamedDirectives";
-	property name="TitleDirective";
-	property name="SubtitleDirective";
-	property name="ChartDirective";
 	property name="LastExecutionRequest";
 	property name="LastSuccessfulExecutionRequest";
 	property name="LastRendering";
@@ -51,9 +48,6 @@ component accessors="true" {
 		this.setEditorContent(this.getContent());
 		this.loadDirectives();
 
-		variables.TitleDirective = variables.NamedDirectives["Title"]?:nullValue();
-		variables.ChartDirective = variables.NamedDirectives["Chart"]?:nullValue();
-		variables.SubtitleDirective = variables.NamedDirectives["Subtitle"]?:nullValue();
 		variables.Id = createUUID();
 		return this;
 	}

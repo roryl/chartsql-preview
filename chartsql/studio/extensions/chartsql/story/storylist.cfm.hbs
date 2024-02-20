@@ -24,7 +24,7 @@
 						{{!-- <form action="{{Link}}" method="GET" zero-target="{{view_state.main_zero_targets}}">{{Title}}</form> --}}
 						<li class="list-group-item align-items-center d-flex pe-2">
 								{{!-- <a href="{{Link}}" studio-form-links="false">{{Title}}</a> --}}
-							<form method="GET" action="/studio/main">
+							<form method="GET" action="/studio/main" zero-target="#renderer-card-header,#renderContainer,#editorTabs,#infoPanel,#openFilesList,#fileList,#openFilePath,#file-browswer-view-links,#editorTabs,#editorBody,#aside,#header">
 								{{#each LinkParams}}
 									<input type="hidden" name="{{key}}" value="{{value}}">
 								{{/each}}

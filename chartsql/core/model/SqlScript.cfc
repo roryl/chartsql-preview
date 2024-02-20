@@ -813,7 +813,7 @@ component accessors="true" {
 				 return "assist";
 			} else if(
 				(directives.keyExists("series") or directives.keyExists("secondary-series"))
-				and (directives.keyExists("category") or directives.keyExists("category-groups"))){
+				and (directives.keyExists("category") or directives.keyExists("groups"))){
 				return "manual";
 			} else {
 				return "assist";

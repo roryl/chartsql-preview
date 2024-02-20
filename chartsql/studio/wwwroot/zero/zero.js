@@ -340,7 +340,7 @@ $(document).ready(function() {
 
 							for(var i=0; i < targetArray.length; i++){
 
-								$(response).find(targetArray[i]).each(function(){
+								response.find(targetArray[i]).each(function(){
 
 									var targetHTML = $(this);
 
@@ -361,9 +361,24 @@ $(document).ready(function() {
 									if(!targetPut.length){
 										throw "Could not find the target " + targetArray[i] + " check your references and ensure it exists";
 									}
-									// console.log(targetPut);
+
+
+									// if(targetPut.data('raw-html') == undefined){
+									// 	targetPut.data('raw-html', 'unset');
+									// }
+
+									// var newHTML = targetHTML.html();
+
+									// if(targetPut.data('raw-html') != newHTML){
+									// 	targetPut.html(targetHTML.html());
+									// 	targetPut.data('raw-html', newHTML);
+									// 	console.log('Changed ' + targetPut.attr('id'));
+									// } else {
+									// 	console.log('No change ' + targetPut.attr('id'));
+									// }
+
 									targetPut.html(targetHTML.html());
-									zeroAuto($(targetPut));
+									zeroAuto(targetPut);
 								});
 							}
 

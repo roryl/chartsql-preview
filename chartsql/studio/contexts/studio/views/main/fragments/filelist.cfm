@@ -2,7 +2,7 @@
 	<div class="list-group-header sticky-top">A</div>
 	{{#each data.CurrentPackage.SqlFiles}}
 	<form class="open-file-form" method="get" action="/studio/main/" class="text-body d-block" style="text-decoration:none;"
-	zero-target="{{view_state.main_zero_targets}},#editorCard,#header,#aside"
+	zero-target="{{view_state.main_zero_targets}}"
 	>
 		{{#each UrlParams}}
 			{{#if value}}
@@ -12,9 +12,9 @@
 		<button class="open-file" data-sqlfile-id="{{this.Id}}" id="openFile{{@index}}" type="submit" style="display:none;"/></button>
 	</form>
 	<form id="keep-file-open-form-{{this.Id}}" class="keep-file-open" method="get" action="/studio/main/" class="text-body d-block" style="text-decoration:none;"
-	zero-target="{{view_state.main_zero_targets}},#editorCard,#header,#aside"
+	zero-target="{{view_state.main_zero_targets}}"
 	>
-		{{#each openUrlParams}}
+		{{#each OpenUrlParams}}
 			{{#if value}}
 					<input type="hidden" name="{{{key}}}" value="{{{value}}}">
 			{{/if}}
@@ -92,7 +92,7 @@
 			</div>
 		</div>
 		<div style="position:absolute; bottom:0; left:0; width:100%;">
-			<div id="fileOpenProgress{{Id}}" class="progress progress-sm d-none">
+			<div id="fileOpenProgress{{Id}}" class="progress progress-sm d-none" style="height:2px;">
 				<div class="progress-bar progress-bar-indeterminate"></div>
 			</div>
 		</div>
@@ -115,3 +115,4 @@
 		}
 	});
 </script>
+<script src="/assets/js/filter-files.js" defer></script>

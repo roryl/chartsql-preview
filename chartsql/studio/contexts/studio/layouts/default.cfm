@@ -13,7 +13,7 @@
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-			<title>Sales Insights - Delaware Limo Research</title>
+			<title>Sales Insights - GR0 Research</title>
 			<!-- CSS files -->
 			<link href="/assets/vendor/tabler/dist/css/tabler.min.css?1684106062" rel="stylesheet"/>
 			<link href="/assets/vendor/tabler/dist/css/tabler-flags.min.css?1684106062" rel="stylesheet"/>
@@ -36,6 +36,7 @@
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/search/searchcursor.min.js" integrity="sha512-+ZfZDC9gi1y9Xoxi9UUsSp+5k+AcFE0TRNjI0pfaAHQ7VZTaaoEpBZp9q9OvHdSomOze/7s5w27rcsYpT6xU6g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+			<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/comment/comment.min.js" integrity="sha512-UaJ8Lcadz5cc5mkWmdU8cJr0wMn7d8AZX5A24IqVGUd1MZzPJTq9dLLW6I102iljTcdB39YvVcCgBhM0raGAZQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 			<!--- Jquery CDN --->
 			<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -149,6 +150,13 @@
 					display: none !important;
 				}
 
+				.navbar-nav * .nav-item {
+					min-height: 40px !important;
+				}
+
+				.dropdown-toggle.show {
+					padding-top: 10px !important;
+				}
 			</style>
 			<script>
 				function toggleNavbar() {
@@ -188,11 +196,12 @@
 						<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
 							<span class="navbar-toggler-icon"></span>
 						</button>
-						<h1 class="navbar-brand navbar-brand-autodark mt-3">
+						<h1 class="navbar-brand navbar-brand-autodark mt-2" style="margin-bottom: 3px;">
 							<span href="" style="display:flex; flex-flow:row; align-items:center;">
-								<img src="/assets/img/logo.fw.png" width="175" alt="Tabler" class="me-3">
-								<!--- <img src="/assets/img/mascot.fw.png" width="50" alt="Tabler" class="me-3">
-								<div style="margin-top:2px;">ChartSQL<br /><i class="text-uppercase text-info" style="">Studio</i></div> --->
+								<!--- <img src="/studio/main/logo" width="175" alt="Tabler" class="me-3" style="margin-top:-2px; cursor: pointer;"  onclick="toggleNavbar();"> --->
+								<img src="/assets/img/logo-white.png" width="175" alt="Tabler" class="me-3" style="margin-top:-2px; cursor: pointer;"  onclick="toggleNavbar();">
+								<!--- <img src="/assets/img/mascot.fw.png" width="50" alt="Tabler" class="me-3"> --->
+								<!--- <div style="margin-top:2px;">ChartSQL<br /><i class="text-uppercase text-info" style="">Studio</i></div> --->
 								<a class="" onclick="toggleNavbar();" style="margin-top:0px; margin-left:0px;">
 									<span class="" type="button" style="">
 										<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-menu-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg>
@@ -201,12 +210,12 @@
 							</span>
 						</h1>
 						<div class="collapse navbar-collapse" id="sidebar-menu">
-							<ul id="applicationMenu" class="navbar-nav pt-lg-3 h-100">
-								<li class="nav-item navbar-collapsed-restore">
+							<ul id="applicationMenu" class="navbar-nav  h-100">
+								<li class="nav-item navbar-collapsed-restore pt-lg-3" style="padding-bottom: 7px;">
 									<a class="nav-link" onclick="toggleNavbar();" style="width:70px; margin-left:-5px; margin-top:-10px; margin-bottom:10px;">
 										<span class="nav-link-icon d-md-none d-lg-inline-block" type="button" style="width:70px;">
-											<!--- <img src="/assets/img/mark-white.png" width="70" alt="Tabler" class="me-3" style=""> --->
-											<img src="/studio/main/mascot" width="70" alt="ChartSQL Studio" class="me-3" style="">
+											<img src="/assets/img/mark-white.png" width="70" alt="Tabler" class="me-3" style="">
+											<!--- <img src="/studio/main/mascot" width="70" alt="ChartSQL Studio" class="me-3" style=""> --->
 											<!--- <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-menu-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg> --->
 										</span>
 									</a>
@@ -236,7 +245,7 @@
 								</div> --->
 
 								<div id="main-menu-nav-items" class="h-100">
-								<li id="editorMenuLink" class="nav-item {{#if (eq action "studio:main.list")}}active{{/if}}">
+								<li id="editorMenuLink" class="nav-item d-flex justify-content-center align-items-between {{#if (eq action "studio:main.list")}}active{{/if}}">
 									<a class="nav-link" href="{{view_state.editor_link}}">
 										<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Chart Editor"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 8l-4 4l4 4" /><path d="M17 8l4 4l-4 4" /><path d="M14 4l-4 16" /></svg>
@@ -246,7 +255,7 @@
 										</span>
 									</a>
 								</li>
-								<!--- <li class="nav-item">
+								<!--- <li class="nav-item d-flex justify-content-center align-items-between">
 									<a class="nav-link" href="{{view_state.presentation_mode.link}}">
 										<span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-presentation" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 4l18 0" /><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" /><path d="M12 16l0 4" /><path d="M9 20l6 0" /><path d="M8 12l3 -3l2 2l3 -3" /></svg>
@@ -256,7 +265,7 @@
 										</span>
 									</a>
 								</li> --->
-								<li class="nav-item dropdown d-none">
+								<li class="nav-item d-flex justify-content-center align-items-between dropdown d-none">
 									<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-base" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
 										<span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/package -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-database" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0" /><path d="M4 6v6a8 3 0 0 0 16 0v-6" /><path d="M4 12v6a8 3 0 0 0 16 0v-6" /></svg>
@@ -440,7 +449,7 @@
 										</div>
 									</div>
 								</li>
-								<!--- <li class="nav-item">
+								<!--- <li class="nav-item d-flex justify-content-center align-items-between">
 									<a class="nav-link" href="./form-elements.html" >
 										<span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/checkbox -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l3 3l8 -8" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
@@ -450,7 +459,7 @@
 										</span>
 									</a>
 								</li> --->
-								<li class="nav-item dropdown">
+								<li class="nav-item d-flex justify-content-center align-items-between dropdown">
 									<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-extra" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
 										<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Switch Charts Package"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
@@ -503,7 +512,7 @@
 										</div>
 									</div>
 								</li>
-								<li class="nav-item dropdown d-none">
+								<li class="nav-item d-flex justify-content-center align-items-between dropdown d-none">
 									<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
 										<span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-layout-dashboard" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4h6v8h-6z" /><path d="M4 16h6v4h-6z" /><path d="M14 12h6v8h-6z" /><path d="M14 4h6v4h-6z" /></svg>
@@ -525,7 +534,7 @@
 								{{#each MenuItems}}
 									{{#if (neq Location 'bottom')}}
 										{{#if HasChildren}}
-											<li class="nav-item dropdown">
+											<li class="nav-item d-flex justify-content-center align-items-between dropdown">
 												<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
 													<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
 														<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
@@ -543,7 +552,7 @@
 												</div>
 											</li>
 										{{else}}
-											<li class="nav-item {{#if IsActive}}active{{/if}}">
+											<li class="nav-item d-flex justify-content-center align-items-between {{#if IsActive}}active{{/if}}">
 												<a class="nav-link" href="{{Link}}" {{#if OpenNewTab}}target="_blank"{{/if}}>
 													<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 														<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
@@ -560,7 +569,7 @@
 									{{#each MenuItems}}
 										{{#if (eq Location 'bottom')}}
 											{{#if HasChildren}}
-												<li class="nav-item dropdown">
+												<li class="nav-item d-flex justify-content-center align-items-between dropdown">
 													<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
 														<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
 															<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
@@ -578,7 +587,7 @@
 													</div>
 												</li>
 											{{else}}
-												<li class="nav-item {{#if IsActive}}active{{/if}}">
+												<li class="nav-item d-flex justify-content-center align-items-between {{#if IsActive}}active{{/if}}">
 													<a class="nav-link" href="{{Link}}" {{#if OpenNewTab}}target="_blank"{{/if}}>
 														<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 															<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
@@ -637,6 +646,12 @@
 				ZERO_JS_ICON_CLASS = "spinner-border spinner-border-sm me-2";
 				ZERO_JS_LOG_LEVEL = "debug";
 			</script>
+			<!--- <style>
+				.spinner-border-sm {
+					width:.9rem !important;
+					height:.9rem !important;
+				}
+			</style> --->
 			<script src="/zero/zero.js"></script>
 			<script src="/assets/js/form-links.js" defer></script>
 			<!--- ZERO AUTO FORMS

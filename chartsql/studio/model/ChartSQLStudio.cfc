@@ -295,8 +295,19 @@ component accessors="true" {
 		var datasourcePath = expandPath("/core/model/datasources");
 		var datasourceFiles = directoryList(datasourcePath, true, "query", "*.cfc", "", "file");
 		for(var file in datasourceFiles){
+			// writeDump(file);
+			// writeDump(datasourcePath);
+			var cfcPath = file.directory.replace(datasourcePath, "")
+			var name = file.name.replace(".cfc", "");
+			cfcPath = "/core/model/datasources" & cfcPath & "/" & name;
+			cfcPath = replace(cfcPath, "/", ".", "all").replace("\", ".", "all");
+			if(left(cfcPath, 1) == "."){
+				cfcPath = right(cfcPath, len(cfcPath)-1);
+			}
+			// writeDump(cfcPath);
 			var className = replace(file.name, ".cfc", "");
-			var metaData = getComponentMetaData("core.model.datasources.#className#.#className#")
+
+			var metaData = getComponentMetaData(cfcpath)
 			if(metaData.keyExists("isStudioDatasource") and metaData.isStudioDatasource){
 				out.append({
 					Name = metaData.displayName?:className,

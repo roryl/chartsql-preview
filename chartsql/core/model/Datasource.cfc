@@ -5,6 +5,7 @@ abstract component accessors="true" {
 
 	public function init(){
 		var metaData = getMetaData(this);
+		variables.RemoteMethods = [];
 		// writeDump(metaData);
 		// writeDump(getAllProperties());
 
@@ -28,6 +29,20 @@ abstract component accessors="true" {
 	}
 
 	/**
+	 * The addRemoteMethod function will take a DatasourceRemoteMethod and add it to the
+	 * list of remote methods for this datasource.
+	 *
+	 * @DatasourceRemoteMethod
+	 */
+	public function addRemoteMethod(required DatasourceRemoteMethod RemoteMethod){
+
+		if(!this.findRemoteMethodByName(RemoteMethod.getName()).exists()){
+			variables.RemoteMethods.append(arguments.RemoteMethod);
+		}
+
+	}
+
+	/**
 	 * The execute function will take a SqlScript, run it against the datasource
 	 * and return a query object.
 	 *
@@ -35,6 +50,20 @@ abstract component accessors="true" {
 	 */
 	public query function execute(SqlScript){
 		throw("You must implement execute method in your datasource component")
+	}
+
+	/**
+	 * Returns an instance of the DatasourceRemoteMethod if it exists
+	 *
+	 * @name The string name of the remote method we wish to find
+	 */
+	public optional function findRemoteMethodByName(required string name){
+		for(var remoteMethod in variables.RemoteMethods){
+			if(remoteMethod.getName() == arguments.name){
+				return new optional(remoteMethod);
+			}
+		}
+		return new optional(nullValue());
 	}
 
 	/**
@@ -87,6 +116,41 @@ abstract component accessors="true" {
 
 		var allProperties = recurseMeta(meta, allProperties);
 		return allProperties;
+	}
+
+	public function getRemoteMethods(){
+
+		var meta = getMetaData(this);
+		var funcsOut = [];
+		var out = [];
+
+		var recurseFuncs = function(meta, funcsOut){
+			var meta = arguments.meta;
+			var funcsOut = arguments.funcsOut;
+			if(meta.fullname != "lucee.Component"){
+				for(var func in meta.functions?:[]){
+					funcsOut.append(func);
+				}
+			}
+
+			if(meta.keyExists("extends")){
+				recurseFuncs(meta.extends, funcsOut);
+			}
+		}
+		recurseFuncs(meta, funcsOut);
+
+		for(var func in funcsOut){
+			if(func.access == "remote"){
+				new DatasourceRemoteMethod(
+					Datasource = this,
+					name = func.name,
+					description = func.description?:nullValue(),
+					arguments = func.arguments?:nullValue(),
+					returnType = func.returnType?:nullValue()
+				);
+			}
+		}
+		return variables.RemoteMethods;
 	}
 
 	public function getStudioConfigTemplate(){

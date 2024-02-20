@@ -51,6 +51,8 @@ component accessors="true" {
 			variables.Tooltip = arguments.Tooltip;
 		}
 
+		variables.OpenNewTab = arguments.OpenNewTab;
+
 		if (!structKeyExists(arguments, "Location") || isNull(arguments.Location)){
 			// Make 'top' location default if no Location is present
 			variables.Location = 'top';

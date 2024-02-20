@@ -6,4 +6,4 @@ Channel,
 count(*) as Sales
 FROM Sales
 WHERE Sales.Status = 'Won'
-GROUP BY Owner, Channel
+GROUP BY Owner, Channel;

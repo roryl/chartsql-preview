@@ -17,7 +17,7 @@
 <script>
 
 	{{#if data.CurrentSqlFile.Id}}
-
+		{{#unless view_state.presentation_mode.is_active}}
 		{{#if (eq view_state.editor_panel.active_view "sql")}}
 
 
@@ -25,14 +25,77 @@
 		/**********************************************
 		* CODEMIRROR
 		**********************************************/
+		var CurrentSqlFileId = "{{data.CurrentSqlFile.Id}}";
+
 		var sqlEditor = CodeMirror.fromTextArea(document.getElementById('sqlTextarea'), {
 			mode: 'text/x-sql',
 			theme: 'dracula',
 			lineNumbers: true,
 			extraKeys: {
-				"Tab": "indentMore",
 				"Shift-Tab": "indentLess"
 			}
+		});
+
+		var PreviousHistory = localStorage.getItem(`SqlFileHistory-${CurrentSqlFileId}`);
+
+		if (PreviousHistory != null && PreviousHistory != "") {
+			sqlEditor.doc.setHistory(JSON.parse(PreviousHistory));
+		}
+
+
+		function handleToggleComment(cm) {
+			function isOnlyWhitespace(str) {
+				return str.match(/^\s*$/) !== null;
+			}
+
+			let fromCursor = sqlEditor.getCursor(true);
+			let toCursor = sqlEditor.getCursor(false);
+			let lines = sqlEditor.getValue().split('\n');
+			let newLines = [...lines];
+
+			for (let i = fromCursor.line; i <= toCursor.line; i++) {
+				let line = sqlEditor.getLineHandle(i);
+				if (lines[i].match(/^\s*--\s*\/\/@/)) {
+					// If directive is commented then uncomment it
+					newLines[i] = lines[i].replace("//", "");
+				} else if (lines[i].match(/^\s*--\s*@\w+/)) {
+					// If directive is not commented out then comment it
+					newLines[i] = lines[i].replace("@", "//@");
+				} else if (lines[i].match(/^\s*--/)) {
+					// If the MySql line is commented out then uncomment it
+					newLines[i] = lines[i].replace("--", "");
+				} else if(isOnlyWhitespace(lines[i])) {
+					continue;
+				} else {
+					newLines[i] = `--${lines[i]}`;
+				}
+			}
+			sqlEditor.setValue(newLines.join("\n"));
+			sqlEditor.setSelection(
+				{
+					line: fromCursor.line,
+					ch: fromCursor.ch + (newLines[fromCursor.line].length - lines[fromCursor.line].length)
+				},
+				{
+					line: toCursor.line,
+					ch: toCursor.ch + (newLines[toCursor.line].length - lines[toCursor.line].length)
+				}
+			);
+		}
+		
+		function betterTab(cm) {
+			if (cm.somethingSelected()) {
+				cm.indentSelection("add");
+			} else {
+				cm.replaceSelection(cm.getOption("indentWithTabs")? "\t":
+				Array(cm.getOption("indentUnit") + 1).join(" "), "end", "+input");
+			}
+		}
+
+		sqlEditor.addKeyMap({
+			"Cmd-/": handleToggleComment,
+			"Ctrl-/": handleToggleComment,
+			"Tab": betterTab
 		});
 
 		// Define a function to find directives in the editor
@@ -100,6 +163,7 @@
 
 		// Define the function that will be called when the content changes
 		function onEditorContentChange(instance, changeObj) {
+			localStorage.setItem(`SqlFileHistory-${CurrentSqlFileId}`, JSON.stringify(sqlEditor.doc.getHistory()));
 
 			// Find the directives in the editor and mark them as
 			// 'directive' or 'invalid-directive'
@@ -127,5 +191,6 @@
 		// Attach the change event listener to your CodeMirror instance
 		sqlEditor.on('change', onEditorContentChange);
 		{{/if}}
+		{{/unless}}
 	{{/if}}
 </script>
