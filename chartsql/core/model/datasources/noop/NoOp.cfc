@@ -11,4 +11,11 @@ component extends="com.chartsql.core.model.Datasource" {
 		return 1;
 	}
 
+	remote function functionWithArguments(
+		required string foo,
+		string bar = ""
+	) {
+		return trim(foo  & " " & bar);
+	}
+
 }

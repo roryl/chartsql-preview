@@ -3,6 +3,7 @@ var fKeyWasHandled = false;
 var fileSearch = document.getElementById('fileSearch');
 
 window.addEventListener('keydown', function(e) {
+    fileSearch = document.getElementById('fileSearch');
     if (fileSearch === null) {
         return;
     }

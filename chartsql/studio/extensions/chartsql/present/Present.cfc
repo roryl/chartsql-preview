@@ -54,14 +54,25 @@ component accessors="true" {
 			```
 			<cf_handlebars context="#arguments.result#">
 			<li class="nav-item {{#if view_state.presentation_mode.is_active}}active{{/if}}">
-				<a class="nav-link" href="{{view_state.presentation_mode.link}}">
-					<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Present Charts"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
-						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-presentation" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 4l18 0" /><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" /><path d="M12 16l0 4" /><path d="M9 20l6 0" /><path d="M8 12l3 -3l2 2l3 -3" /></svg>
-					</span>
-					<span class="nav-link-title">
-						Present
-					</span>
-				</a>
+				<form action="/studio/main" method="GET" zero-target="#aside,#pageContent,#headTitle">
+					{{#each view_state.params}}
+						{{#unless (eq key "RenderPanelView")}}
+							{{#unless (eq key "PresentationMode")}}
+								<input type="hidden" name="{{key}}" value="{{value}}">
+							{{/unless}}
+						{{/unless}}
+					{{/each}}
+					<input type="hidden" name="RenderPanelView" value="chart">
+					<input type="hidden" name="PresentationMode" value="true">
+					<button type="submit" class="nav-link" zero-icon-class="nav-link-icon-custom-loading-indicator">
+						<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Present Charts"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+							<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-presentation" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 4l18 0" /><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" /><path d="M12 16l0 4" /><path d="M9 20l6 0" /><path d="M8 12l3 -3l2 2l3 -3" /></svg>
+						</span>
+						<span class="nav-link-title">
+							Present
+						</span>
+					</button>
+				</form>
 			</li>
 			</cf_handlebars>
 			```
@@ -125,23 +136,38 @@ component accessors="true" {
 		if(isDefined('arguments.result.view_state.presentation_mode') and arguments.result.view_state.presentation_mode.is_active){
 
 			editorMenuLink.removeClass('active');
-			doc.select("##openFilePath")[1].addClass('d-none');
-			doc.select("##headerActions")[1].before(dateslicerHtml);
-			doc.select("##headerActions")[1].addClass('d-none');
-			doc.select("##renderer-card-header")[1].addClass('d-none');
-			doc.select("##new-file-dropdown")[1].addClass('d-none');
+			if (doc.select("##openFilePath").size() > 0) {
+				doc.select("##openFilePath")[1].addClass('d-none');
+			}
+			if (doc.select("##headerActions").size() > 0) {
+				doc.select("##headerActions")[1].before(dateslicerHtml);
+			}
+			if (doc.select("##headerActions").size() > 0) {
+				doc.select("##headerActions")[1].addClass('d-none');
+			}
+			if (doc.select("##renderer-card-header").size() > 0) {
+				doc.select("##renderer-card-header")[1].addClass('d-none');
+			}
+			if (doc.select("##new-file-dropdown").size() > 0) {
+				doc.select("##new-file-dropdown")[1].addClass('d-none');
+			}
+			
 			doc.select(".open-file-name").html(openFileName);
 
 			doc.select("##header .page-pretitle").html('Presenting');
 
 			var rendererNoOpenFile = doc.select("##renderer-no-open-file");
-			if(rendererNoOpenFile.size() > 0){
+			if(rendererNoOpenFile.size() > 0) {
 				rendererNoOpenFile.html(noOpenFile);
 			}
-			doc.select("##renderer-card")[1].prepend('<canvas class="js-paint  paint-canvas" style="position:absolute; top:0; left:0; z-index:1; pointer-events:none;"></canvas>')
+			if (doc.select("##renderer-card").size() > 0) {
+				doc.select("##renderer-card")[1].prepend('<canvas class="js-paint  paint-canvas" style="position:absolute; top:0; left:0; z-index:1; pointer-events:none;"></canvas>')
+			}
 			doc.select("##header .avatar").html('<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-presentation" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 4l18 0" /><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" /><path d="M12 16l0 4" /><path d="M9 20l6 0" /><path d="M8 12l3 -3l2 2l3 -3" /></svg>')
 
-			doc.select("##renderer-card")[1].after(canvasScript);
+			if (doc.select("##renderer-card").size() > 0) {
+				doc.select("##renderer-card")[1].after(canvasScript);
+			}
 		}
 		return doc;
 	}

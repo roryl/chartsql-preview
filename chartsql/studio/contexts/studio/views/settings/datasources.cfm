@@ -181,6 +181,14 @@
 						</div>
 					</div>
 					{{/each}}
+
+					{{#each MetaData.RemoteMethods}}
+					<div class="mb-3">
+						<label class="form-label {{#if required}}required{{/if}}" style="padding-left:3px;">{{Name}}</label>
+						<button form="runRemote_{{Name}}" type="submit" class="btn btn-outline-primary">{{Name}}</button>
+					</div>
+					{{/each}}
+
 				</div>
 				<div class="card-footer">
 					{{#if view_state.update_datasource.success}}
@@ -227,6 +235,14 @@
 				<input type="hidden" name="goto" value="/studio/settings/datasources"/>
 				<input type="hidden" name="goto_fail" value="/studio/settings/datasources"/>
 			</form>
+			<!--- REMOTE METHODS: Custom remote methods on the datasource that can be called --->
+			{{#each MetaData.RemoteMethods}}
+				<form id="runRemote_{{Name}}" method="POST" action="/studio/datasources/{{../Name}}/runRemote">
+					<input type="hidden" name="goto" value="{{EditLink}}"/>
+					<input type="hidden" name="goto_fail" value="{{EditLink}}"/>
+					<input type="hidden" name="method" value="{{Name}}">
+				</form>
+			{{/each}}
 		</div>
 		{{/if}}
 	</div>

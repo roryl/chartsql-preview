@@ -11,7 +11,7 @@ component
 {
 
 	property name="FilePath" required="true" description="The local path to the CSV file";
-	property name="Name" required="true" description="The name of the table to put the CSV data into";
+	property name="TableName" required="true" description="The name of the table to put the CSV data into. Must be unique to other CSV datasources.";
 
 	public function init(){
 
@@ -19,7 +19,7 @@ component
 
 		// Create a backing SQLite database to store the CSV data
 		// we will use this to execute SQL queries against the CSV data
-		var path = expandPath("/com/chartsql/userdata/db/csvfile/#variables.name#");
+		var path = expandPath("/com/chartsql/userdata/db/csvfile/#variables.TableName#");
 		// writeDump(path);
 		if(!directoryExists(path)){
 			directoryCreate(path, true);
@@ -57,7 +57,7 @@ component
 	/**
 	 * Imports the CSV into the database
 	 */
-	public function importCSv() {
+	remote function importCSv() {
 
 		var data = new cfcsv().parseCSV(file=variables.FilePath);
 		var QueryUtil = new QueryUtil(data);
@@ -65,7 +65,7 @@ component
 
 		query datasource="#this.getConnectionInfo()#" result="create" {
 			echo("
-				DROP TABLE IF EXISTS #variables.Name#;
+				DROP TABLE IF EXISTS #variables.TableName#;
 			")
 		}
 
@@ -96,7 +96,7 @@ component
 		// writeDump(createColumns);
 
 		var sql = "
-			CREATE TABLE #variables.Name# (
+			CREATE TABLE #variables.TableName# (
 				#arrayToList(createColumns, ",")#
 			);
 		"
@@ -206,7 +206,7 @@ component
 		}
 
 		var insertSql = "
-			INSERT INTO #variables.Name# (#arrayToList(insertColumns, ",")#)
+			INSERT INTO #variables.TableName# (#arrayToList(insertColumns, ",")#)
 			VALUES #arrayToList(rowOutput, ",")#
 		";
 

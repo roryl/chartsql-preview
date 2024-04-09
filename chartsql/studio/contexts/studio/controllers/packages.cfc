@@ -51,7 +51,10 @@ component accessors="true" {
 	public struct function update(
 		required id,
 		string FriendlyName,
-		string DefaultStudioDatasource
+		string DefaultStudioDatasource,
+		boolean setAsDefaultPackage = false,
+		string DashId,
+		string PublisherKey
 	) {
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
 		var Package = ChartSQLStudio.findPackageByFullName(arguments.id).elseThrow("Could not find that package");
@@ -64,6 +67,21 @@ component accessors="true" {
 			var StudioDatasource = ChartSQLStudio.findStudioDatasourceByName(arguments.DefaultStudioDatasource).elseThrow("Could not find that datasource");
 			Package.setDefaultStudioDatasource(StudioDatasource);
 		}
+
+		if (arguments.setAsDefaultPackage) {
+			ChartSQLStudio.setDefaultPackage(Package);
+			Package.setIsDefaultPackage(true);
+		}
+
+		if (arguments.keyExists("DashId")) {
+			Package.setDashId(DashId);
+		}
+
+		if (arguments.keyExists("PublisherKey")) {
+			Package.setPublisherKey(PublisherKey);
+		}
+
+		Package.saveConfig();
 
 		var out = {
 			"success":true,
@@ -83,6 +101,38 @@ component accessors="true" {
 		var out = {
 			"success":true
 		}
+		return out;
+	}
+
+	public struct function verifyPublisherKey( required id ) method="POST" {
+
+		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		var Package = ChartSQLStudio.findPackageByFullName(arguments.id).elseThrow("Could not find that package");
+		var PackagePublisher = Package.getPackagePublisher();
+
+		PublishingRequest = PackagePublisher.verify();
+
+		// writeDump(PublishingRequest);
+		// abort;
+
+		if(PublishingRequest.getIsSuccess()){
+			var out = {
+				"success": PublishingRequest.getIsSuccess(),
+				"message": "Publisher key verified",
+			}
+		} else {
+			var out = {
+				"success": PublishingRequest.getIsSuccess(),
+				"message": PublishingRequest.getErrorMessage(),
+			}
+		}
+
+		out.data = {
+			"PublishingRequest": variables.fw.serializeFast(PublishingRequest, {
+				RawContent:{}
+			})
+		}
+
 		return out;
 	}
 

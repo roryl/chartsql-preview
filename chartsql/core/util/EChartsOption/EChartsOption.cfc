@@ -626,6 +626,14 @@ component {
 			mode.assist = true;
 		}
 
+		if(variables.directives.keyExists("groups")){
+			for (group in variables.directives.groups) {
+				if (!variables.metaData.columnArray.containsNoCase(group)) {
+					throw(type="ColumnNotFoundError", message="Column '#group#' on @groups value not found (available columns: #variables.metaData.columnArray.toList(', ')#)");
+				}
+			}
+		}
+
 		if(mode.auto) {
 
 			var detectedType = variables.QueryUtil.detectChartType();
@@ -767,7 +775,6 @@ component {
 		} else {
 			//Handle when we have groups directives
 			if(variables.directives.keyExists("groups")){
-
 				// One of the feature is we want the data to plot in the order it is received.
 				// So we are going to add a _sortId column to the data to ensure our group by
 				// is in the order it is received
@@ -1057,7 +1064,16 @@ component {
 					var categoryName = primaryCategoryField.name;
 				}
 
+				// var columnNames = variables.metaData.columns.map(function(item){
+				// 	return item.name;
+				// });
+
 				if(variables.directives.keyExists("series")){
+					for (serie in variables.directives.series) {
+						if (!variables.metaData.columnArray.containsNoCase(serie)) {
+							throw(type="ColumnNotFoundError", message="Column '#serie#' on @series value not found (available columns: #variables.metaData.columnArray.toList(', ')#)");
+						}
+					}
 					var valuesFields = variables.QueryUtil.getNumericFieldsMatching(variables.directives.series);
 				} else {
 					var valuesFields = variables.metaData.types.numeric.columnsArray;

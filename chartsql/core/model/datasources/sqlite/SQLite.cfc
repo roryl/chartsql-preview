@@ -1,6 +1,7 @@
 /**
 
 */
+import com.chartsql.core.model.DatasourceProcess;
 component
 	accessors="true"
 	extends="com.chartsql.core.model.JdbcDatasource"
@@ -12,6 +13,8 @@ component
 
 	property name="FolderPath" required="true" description="The local folder to store the database file.";
 	property name="Database" required="true" description="The name of the database to connect to";
+
+	variables.processes = structNew("ordered");
 
 	public function install(){
 
@@ -26,7 +29,15 @@ component
 	}
 
 	public query function executeSql(string sql){
+
 		var results = "";
+		var processId = createUUID().replace("-", "", "all");
+
+		variables.processes[processId] = {
+			sql: arguments.sql,
+			id: processId
+		};
+
 		query name="result" datasource="#this.getConnectionInfo()#" result="meta" {
 			echo(sql);
 		}
@@ -110,6 +121,9 @@ component
 
 			}
 		}
+		// writeDump(variables.processes);
+		// Now delete the process from the processes struct
+		structDelete(variables.processes, processId);
 		return result;
 	}
 
@@ -189,6 +203,64 @@ component
 			out.append(Field);
 		}
 		return out;
+	}
+
+	public DatasourceProcess[] function getProcesses(){
+		var out = [];
+		// writeDump(variables.processes);
+		for(var processId in variables.processes){
+			var process = variables.processes[processId];
+			// writeDump(process);
+			out.append(new DatasourceProcess(
+				Id = process.id,
+				Sql = process.sql
+			));
+		}
+		return out;
+	}
+
+	public void function killProcess(required DatasourceProcess DatasourceProcess){
+
+		// We curently NoOp because there is no way to kill a running query
+		// with SQLite.  We will need to wait for the query to finish.
+
+		// if(structKeyExists(variables.processes, arguments.DatasourceProcess.getId())){
+		// 	threadTerminate("executeSql_#arguments.DatasourceProcess.getId()#");
+		// 	structDelete(variables.processes, arguments.DatasourceProcess.getId());
+		// }
+	}
+
+	public function dropTable(required string name){
+
+		// We are going to drop the table if it exists and recreate
+				// it so that we always match the result and datatypes exactly
+		var sql = ""
+		sql &= "DROP TABLE IF EXISTS #arguments.name#;"
+
+		query name="test" datasource="#this.getConnectionInfo()#"{
+			echo(sql);
+		}
+	}
+
+	public function createTable(
+		required string name,
+		required SqlField[] fields
+	){
+		// Create the table matching the collection
+		var colOut = [];
+		for(var field in arguments.fields){
+			arrayAppend(colOut, field.getName() & " " & field.getType());
+		}
+
+		var sql = "
+			CREATE TABLE #arguments.name# (
+			#arrayToList(colOut)#
+			);
+		"
+		query name="test" datasource="#this.getConnectionInfo()#" {
+			echo(sql);
+		}
+		// create table
 	}
 
 }

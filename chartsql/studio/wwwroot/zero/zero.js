@@ -119,18 +119,23 @@ $(document).ready(function() {
 					}
 				}
 				if(showIcons){
+					additionalZeroIconClasses = '';
+					if (typeof element.attr('zero-icon-class') !== 'undefined') {
+						additionalZeroIconClasses = element.attr('zero-icon-class');
+					}
+
 					if(typeof element.attr('zero-icon-target') !== 'undefined') {
 						zeroIconTargetElement = element.find(element.attr('zero-icon-target'));
-						zeroIconTargetElement.replaceWith(`<i class="${ZERO_JS_ICON_CLASS}"></i>`);
+						zeroIconTargetElement.replaceWith(`<i class="${ZERO_JS_ICON_CLASS} ${additionalZeroIconClasses}"></i>`);
 					} else if(element.has('i').length){
 						var icon = $(element).find('i');
 						icon.removeClass();
-						icon.addClass(ZERO_JS_ICON_CLASS);
+						icon.addClass(`${ZERO_JS_ICON_CLASS} ${additionalZeroIconClasses}`);
 					} else {
 						if(element.has('svg').length){
 							element.find('svg').remove();
 						}
-						element.prepend(`<i class="${ZERO_JS_ICON_CLASS}"></i>`);
+						element.prepend(`<i class="${ZERO_JS_ICON_CLASS} ${additionalZeroIconClasses}"></i>`);
 					}
 					element.addClass('disabled');
 				}
@@ -379,6 +384,9 @@ $(document).ready(function() {
 
 									targetPut.html(targetHTML.html());
 									zeroAuto(targetPut);
+									if (ZERO_TARGET_CALLBACK !== undefined && typeof ZERO_TARGET_CALLBACK == "function") {
+										ZERO_TARGET_CALLBACK(targetPut);
+									}
 								});
 							}
 
@@ -499,7 +507,6 @@ $(document).ready(function() {
 			}
 
 		}
-
 	}
 	zeroOnChange($(document));
 

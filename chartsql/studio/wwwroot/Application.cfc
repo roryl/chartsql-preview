@@ -12,6 +12,12 @@ component extends="zero.zero" {
 	this.mappings[ "/studio"] = "../../studio";
 	this.mappings[ "/com/chartsql"] = "../../";
 
+	// USER DATA MAPPINGS:
+	// Sets up the users home directory as a mapping. Put into a separate include
+	// so that we can re-use this in other Application.cfcs
+	// this.mappings[ "/com/chartsql/userdata"]
+	include template="userdata_mapping.cfm";
+
 	//Maintain key case of default serializer implementation.
 	variables.zero.serializeToSnakeCase = false;
 
@@ -28,6 +34,10 @@ component extends="zero.zero" {
 	variables.zero.maintainScrollPosition = cgi.path_info.contains("/studio/settings");
 	variables.zero.scrollPositionBackgroundColor = "##151f2c;";
 	variables.framework.defaultSubsystem = "studio";
+
+	if (!isDefined("server.ShouldLoadDefaultPackage")) {
+		server.ShouldLoadDefaultPackage = true;
+	}
 
 	/**
 	 * Used to manipulate request variables before they are passed to controllers.
@@ -75,6 +85,8 @@ component extends="zero.zero" {
 
 		var ChartSQLStudio = this.getChartSQLStudio();
 
+		var openedDropdownMenuItems = request.context.client_state?.opened_dropdown_menu_items ?: "";
+
 		arguments.controllerResult.MenuItems = this.serializeFast(ChartSQLStudio.getMenuItems(), {
 			Name:{},
 			Link:{},
@@ -96,7 +108,14 @@ component extends="zero.zero" {
 				Link:{},
 				IconClass:{}
 			},
-			Tooltip:{}
+			Tooltip:{},
+			IsOpen: function (MenuItem) {
+				if (openedDropdownMenuItems.contains(MenuItem.getName())) {
+					return true;
+				} else {
+					return false;
+				}
+			}
 		})
 
 		ChartSQLStudio.executeExtensions("onResult", {
@@ -113,9 +132,31 @@ component extends="zero.zero" {
 		var qs = ChartSQLStudio.getEditorQueryString();
 
 		arguments.controllerResult.data.GlobalChartSQLStudio = this.serializeFast(ChartSQLStudio, {
+			isPackagesDropdownOpened: function (GlobalChartSQLStudio) {
+				if (openedDropdownMenuItems.contains("packages-menu-item")) {
+					return true;
+				} else {
+					return false;
+				}
+			},
 			Packages:{
 				FullName:{},
 				FriendlyName:{},
+				IsReadOnly:{},
+				OpenPackageParams: function(Package){
+					var qs = qs.clone();
+					qs.setValue("PackageName", Package.getFullName())
+					.delete("Filter")
+					.delete("SchemaFilter");
+
+					var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
+					if(StudioDatasourceOptional.exists()){
+						var StudioDatasource = StudioDatasourceOptional.get();
+						qs.setValue("StudioDatasource", StudioDatasource.getName());
+					}
+
+					return qs.getFields();
+				},
 				OpenPackageLink: function(Package){
 					var qs = qs.clone();
 					qs.setValue("PackageName", Package.getFullName())
@@ -140,6 +181,23 @@ component extends="zero.zero" {
 			ChartSQLStudio.setLastEditorUrl(qs.clone().delete("PresentationMode").get());
 		}
 
+		controllerResult.data.isGlobalSearching = false;
+		controllerResult.view_state.globalSearchQuery = nullValue();
+		
+		// Get param globalSearchQuery from request
+		if (isDefined("request.context.globalSearchQuery")) {
+			controllerResult.data.isGlobalSearching = true;
+			var globalSearchQuery = request.context.globalSearchQuery;
+			controllerResult.view_state.globalSearchQuery = globalSearchQuery;
+			if (!isNull(globalSearchQuery) && !isEmpty(globalSearchQuery)) {
+				var searchResults = ChartSQLStudio.globalSearch(globalSearchQuery);
+				controllerResult.data.globalSearchResults = searchResults;
+			} else {
+				controllerResult.data.globalSearchResults = [];
+			}
+		}
+
+		controllerResult.view_state.section = this.getSection();
 		// The editor link should remove the PresentationMode variable from the URL
 		// to get back to the same file as we were in preview mode
 		controllerResult.view_state.editor_link = ChartSQLStudio.getLastEditorUrl();
@@ -157,7 +215,6 @@ component extends="zero.zero" {
 	 * @return {string} Must return a string for the response to complete;
 	 */
 	public string function response( string response){
-
 		request.timerData.htmlRendering = getTickCount() - request.startTick;
 
 		var startTick = getTickCount();
@@ -180,33 +237,35 @@ component extends="zero.zero" {
 		// We are going to create a new JSOUP document from the response that will be
 		// passed to the extensions for manipulation
 		var extensionsRenderStartTick = getTickCount();
-		var jsoup = this.getJsoup();
-		var doc = jsoup.parse(response);
+		if(this.getContentType() == "html" ){
+			var jsoup = this.getJsoup();
+			var doc = jsoup.parse(response);
 
-		var ChartSQLStudio = this.getChartSQLStudio();
-		if(this.getSubsystem() == "studio" and this.getItem() != "keyPerformanceInfo"){
-			var extensionsTimes = {}
-			for(var Extension in ChartSQLStudio.getExtensions()){
-				var startTick = getTickCount();
-				try {
-					var response = Extension.onRender(
-						requestContext = request.extensionsContext,
-						result = request.context,
-						doc = doc
-					);
+			var ChartSQLStudio = this.getChartSQLStudio();
+			if(this.getSubsystem() == "studio" and this.getItem() != "keyPerformanceInfo"){
+				var extensionsTimes = {}
+				for(var Extension in ChartSQLStudio.getExtensions()){
+					var startTick = getTickCount();
+					try {
+						var response = Extension.onRender(
+							requestContext = request.extensionsContext,
+							result = request.context,
+							doc = doc
+						);
 
-				}catch(any e){
-					// writeDump(Extension);
-					writeDump(e);
-					abort;
+					}catch(any e){
+						// writeDump(Extension);
+						writeDump(e);
+						abort;
 
+					}
+					extensionsTimes[Extension.getName()] = getTickCount() - startTick;
 				}
-				extensionsTimes[Extension.getName()] = getTickCount() - startTick;
+				request.timerData.extensionsOnRenderTimes = extensionsTimes;
 			}
-			request.timerData.extensionsOnRenderTimes = extensionsTimes;
-		}
 
-		var response = doc.toString();
+			var response = doc.toString();
+		}
 		request.timerData.extensionsOnRender = getTickCount() - extensionsRenderStartTick;
 
 		// writeDump(request.timerData);
@@ -215,14 +274,61 @@ component extends="zero.zero" {
 		return response;
 	}
 
-	function onError(){
-		writeDump(arguments);
-		abort;
+	function onError(error, template){
+		// writeDump(error);
+		// abort;
+		writeLog(file="onError", text=error.message);
+		if(variables.zero.devmode > 0){
+			if(isDefined('arguments[1].cause.SQLException')){
+				writeDump(arguments[1].cause.SqlException.getMessage());
+				writeDump(arguments);
+			} else {
+				writeDump(arguments);
+			}
+			abort;
+		} else {
+			// writeDump(arguments.error);
+			// abort;
+			// this.logPageView(Error=arguments.error);
+
+			if(this.getContentType() == "json"){
+				echo(serializeJson({
+					error: {
+						message: arguments.error.message,
+						type: arguments.error.type,
+						detail: arguments.error.detail
+					}
+				}));
+				abort;
+			} else {
+				//Include the default error handler template
+				include template="500.cfm";
+				abort;
+			}
+		}
 	}
 
-	function onFailure(){
-		writeDump(arguments);
-		abort;
+	function onFailure(error){
+		// writeDump(error);
+		// abort;
+
+
+
+		writeLog(file="onFailure", text=error.message);
+		if(arguments.error.type == "auth.resourceNotAuthorized"){
+			header statuscode="400" statustext="Method Not Allowed";
+			echo("Your account is not authorized for #request.action#. <a href=""javascript:history.back()"">Go back</a>");
+			abort;
+		} else {
+			if(
+				   error.type == "application"
+				or error.type == "expression"
+				or error.type contains "org.hibernate"
+			){
+				//Will throw to the onError and be caught there
+				this.onError(arguments.error);
+			}
+		}
 	}
 
 	/**
@@ -343,6 +449,11 @@ component extends="zero.zero" {
 			ChartSQLStudio = application.ChartSQLStudio
 		)
 
+		var PublishExtension = new studio.model.Extension(
+			Name = "chartsql.publish.Publish",
+			ChartSQLStudio = application.ChartSQLStudio
+		)
+
 		// If the samples code exists then we are in dev and we
 		// should setup the samples package if it does not exist
 		var samplesPath = expandPath("/core/sample");
@@ -353,6 +464,8 @@ component extends="zero.zero" {
 				Package.setFriendlyName("Sample Charts");
 			}
 		}
+
+		application.ChartSQLStudio.setPublishingHost("http://127.0.0.1:54060");
 
 		request.timerData.getChartSQLStudio = getTickCount() - startTick;
 

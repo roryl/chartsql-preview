@@ -1,6 +1,7 @@
 /**
-
+ * A MySQL database connector
 */
+import com.chartsql.core.model.DatasourceProcess;
 component
 	extends="com.chartsql.core.model.JdbcDatasource"
 	accessors="true"
@@ -15,4 +16,28 @@ component
 	property name="Database" required="true" description="The name of the database to connect to";
 	property name="Username" required="true" description="The username to use when connecting to the database";
 	property name="Password" required="true" description="The password to use when connecting to the database";
+
+	public DatasourceProcess[] function getProcesses(){
+
+		var result = this.executeSql("SELECT * FROM information_schema.processlist WHERE command != 'Sleep'");
+
+		var out = [];
+		for(var row in result){
+			out.append(
+				new DatasourceProcess(
+					Id = row.ID,
+					Sql = row.Info
+				)
+			)
+		}
+
+		return out;
+
+	}
+
+	public function killProcess(required DatasourceProcess DatasourceProcess){
+
+		this.executeSql("KILL #DatasourceProcess.getId()#;");
+
+	}
 }

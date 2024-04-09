@@ -2,7 +2,7 @@
 	<div class="list-group-header sticky-top">A</div>
 	{{#each data.CurrentPackage.SqlFiles}}
 	<form class="open-file-form" method="get" action="/studio/main/" class="text-body d-block" style="text-decoration:none;"
-	zero-target="{{view_state.main_zero_targets}}"
+	zero-target="{{view_state.main_zero_targets}},#filterContainer"
 	>
 		{{#each UrlParams}}
 			{{#if value}}
@@ -12,7 +12,7 @@
 		<button class="open-file" data-sqlfile-id="{{this.Id}}" id="openFile{{@index}}" type="submit" style="display:none;"/></button>
 	</form>
 	<form id="keep-file-open-form-{{this.Id}}" class="keep-file-open" method="get" action="/studio/main/" class="text-body d-block" style="text-decoration:none;"
-	zero-target="{{view_state.main_zero_targets}}"
+	zero-target="{{view_state.main_zero_targets}},#filterContainer"
 	>
 		{{#each OpenUrlParams}}
 			{{#if value}}

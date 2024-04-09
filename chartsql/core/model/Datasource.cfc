@@ -3,9 +3,14 @@
 */
 abstract component accessors="true" {
 
+	variables.RemoteMethods = [];
+
 	public function init(){
+
 		var metaData = getMetaData(this);
-		variables.RemoteMethods = [];
+
+		//Setup the remote method when we are created
+		this.getRemoteMethods();
 		// writeDump(metaData);
 		// writeDump(getAllProperties());
 
@@ -196,6 +201,55 @@ abstract component accessors="true" {
 		}
 
 		return DatasourceInfo;
+	}
+
+	/**
+	 * Empty method to list Datasource Processes. By default this will return an empty array
+	 * but each datasource can override this method to return an array of DatasourceProcess
+	 */
+	public DatasourceProcess[] function getProcesses(){
+		return [];
+	}
+
+	/**
+	 * Takes a struct of data and inserts it into the specified table.
+	 *
+	 * @table The name of the table to insert the data into
+	 * @data A struct of data to insert into the table
+	 */
+	public function insertRow(required string table, required struct data){
+
+		var columns = [];
+		var params = [];
+		var paramValues = [];
+
+		for(var key in data){
+			columns.append(key);
+			params.append("?");
+			paramValues.append(data[key]);
+		}
+
+		var sql = "
+			INSERT INTO #table# (#arrayToList(columns, ",")#)
+			VALUES (#arrayToList(params, ",")#)
+		";
+
+		query name="result" datasource="#this.getConnectionInfo()#" params="#paramValues#" result="insert" {
+			echo(sql);
+		}
+		return insert;
+	}
+
+	/**
+	 * Empty method to kill a Datasource Process. By default this will do nothing
+	 * but each datasource can override this method to kill a DatasourceProcess if
+	 * that type of database supports it
+	 */
+	public function killProcess(required DatasourceProcess DatasourceProcess){
+	}
+
+	public function getTableInfos(){
+		throw("You must implement getTableInfos method in your datasource component")
 	}
 
 }

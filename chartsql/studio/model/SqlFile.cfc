@@ -84,8 +84,7 @@ component accessors="true" {
 	public function writeContent(string content){
 		variables.content = arguments.content;
 		this.setEditorContent(content);
-		fileWrite(variables.path, content);
-		variables.IsDirty = false;
+		this.save();
 		structDelete(variables, "LastRenderContent");
 		structDelete(variables, "LastOptionContent");
 	}
@@ -235,5 +234,14 @@ component accessors="true" {
 		var SqlScript = new core.model.SqlScript(ChartSql, this.getEditorContent());
 		SqlScript.toggleDirective(name);
 		this.setEditorContent(SqlScript.getSql());
+	}
+
+	/**
+	 * Writes the current content of the editor to the file system
+	 */
+	public function save(){
+		variables.content = this.getEditorContent();
+		fileWrite(variables.path, this.getEditorContent());
+		variables.IsDirty = false;
 	}
 }

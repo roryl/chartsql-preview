@@ -12,24 +12,35 @@ component accessors="true" {
 	property name="Path";
 	property name="Config";
 	property name="FriendlyName";
+	property name="IsReadOnly" type="boolean" default="false";
+	property name="IsDefaultPackage" type="boolean" default="false";
 	property name="DefaultStudioDatasource";
 	property name="Storys";
 	property name="LatestStory";
+	property name="PublisherKey";
+	property name="DashId";
 
 	public function init(
 		required string path,
-		required ChartSQLStudio ChartSQLStudio
+		required ChartSQLStudio ChartSQLStudio,
+		string PublisherKey
 	){
 		variables.path = path;
 		variables.SqlFiles = [];
 		variables.Id = createUUID();
 		variables.ChartSQLStudio = arguments.ChartSQLStudio;
+		variables.IsReadOnly = false;
 
 		//Replace all file characters which periods
 		variables.FullName = new values.FullyQualifiedPathName(variables.path).toString();
 		variables.ChartSQLStudio.addPackage(this);
 		variables.Storys = [];
 		variables.IsLoadingConfig = false;
+
+		if(isDefined("arguments.PublisherKey")){
+			variables.PublisherKey = arguments.PublisherKey;
+		}
+
 		this.loadConfig();
 		return this;
 	}
@@ -43,6 +54,22 @@ component accessors="true" {
 	public function clearStorys(){
 		for(var Story in variables.Storys){
 			Story.delete();
+		}
+	}
+
+	function getIsDefaultPackage() {
+		return variables.IsDefaultPackage;
+	}
+
+	public function setIsDefaultPackage(required boolean IsDefaultPackage){
+		variables.IsDefaultPackage = arguments.IsDefaultPackage;
+		// Make all the other Packages not default
+		if(arguments.IsDefaultPackage){
+			for(var Package in variables.ChartSQLStudio.getPackages()){
+				if(Package.getId() != this.getId()){
+					Package.setIsDefaultPackage(false);
+				}
+			}
 		}
 	}
 
@@ -107,6 +134,18 @@ component accessors="true" {
 			directoryCreate(directory, true);
 		}
 		return new Package(path=directory, ChartSQLStudio=ChartSQLStudio);
+	}
+
+	public function getPackagePublisher(){
+
+		if(isNull(variables.PublisherKey)){
+			throw("Publisher key is not set");
+		} else {
+			return new PackagePublisher(
+				ChartSQLStudio = variables.ChartSQLStudio,
+				key=variables.PublisherKey
+			);
+		}
 	}
 
 	/**
@@ -196,6 +235,9 @@ component accessors="true" {
 		required string name,
 		required string dotpath=""
 	){
+		if (this.getIsReadOnly()) {
+			throw("Package is read only");
+		}
 		var basePath = variables.path;
 		var paths = listToArray(arguments.dotpath, ".");
 		var subPath = arrayToList(paths, server.separator.file);
@@ -221,6 +263,9 @@ component accessors="true" {
 	}
 
 	public function removeSqlFile(SqlFile) {
+		if (this.getIsReadOnly()) {
+			throw("Package is read only");
+		}
 		var newSqlFiles = [];
 		for(var sqlFile in variables.SqlFiles){
 			if(sqlFile.getFullName() != arguments.SqlFile.getFullName()){
@@ -249,6 +294,9 @@ component accessors="true" {
 	}
 
 	public function setFriendlyName(required string FriendlyName){
+		if (this.getIsReadOnly()) {
+			throw("Package is read only");
+		}
 		variables.FriendlyName = arguments.FriendlyName;
 		this.saveConfig();
 	}
@@ -286,6 +334,18 @@ component accessors="true" {
 				if(DefaultStudioDatasourceOptional.exists()){
 					variables.DefaultStudioDatasource = DefaultStudioDatasourceOptional.get();
 				}
+			}
+
+			if (isDefined("config.IsReadOnly")) {
+				this.setIsReadOnly(config.IsReadOnly);
+			}
+
+			if (isDefined("config.DashId")) {
+				this.setDashId(config.DashId);
+			}
+
+			if (isDefined("config.PublisherKey")) {
+				this.setPublisherKey(config.PublisherKey);
 			}
 
 			//Load the stories
@@ -333,9 +393,12 @@ component accessors="true" {
 			FullName:{},
 			Path:{},
 			FriendlyName:{},
+			IsReadOnly:{},
 			DefaultStudioDatasource:{
 				Name:{}
 			},
+			DashId:{},
+			PublisherKey:{},
 			Storys:{
 				Name:{},
 				Id:{},

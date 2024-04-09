@@ -17,7 +17,9 @@ component accessors="true" {
 	}
 
 	public function execute(){
-		return variables.Datasource[ variables.Name ]();
+		return variables.Datasource[ variables.Name ](
+			argumentCollection = arguments
+		);
 	}
 
 }

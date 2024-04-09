@@ -22,7 +22,7 @@
 		</div>
 		<div class="card-body">
 			<h3 class="card-title">Chart SQL Packages</h3>
-			<p>Packages are a folder of SQL files that share a relationship with one another. They are like projects or workspaces. You can add any folder from your filesystem as a package in ChartSQL. All subfolders are a part of the package.</p>
+			<p>Packages are a folder of SQL files that share a relationship with one another against a particular type of datasource. You can add any folder from your filesystem as a package in ChartSQL. All subfolders are a part of the package.</p>
 		</div>
 	</div>
 
@@ -80,6 +80,12 @@
 				{{/if}}
 			</div>
 			<div class="ms-auto d-flex align-items-center">
+				{{#if IsDefaultPackage}}
+					<span class="d-flex flex-row align-items-center justify-content-center badge bg-cyan-lt me-2">
+						<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-pin"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5 -1.5l1.5 -4l4 -4" /><path d="M9 15l-4.5 4.5" /><path d="M14.5 4l5.5 5.5" /></svg>
+						<div class="ms-1">Default Package</div>
+					</span>
+				{{/if}}
 				<span class="badge bg-azure-lt me-2"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-database" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0" /><path d="M4 6v6a8 3 0 0 0 16 0v-6" /><path d="M4 12v6a8 3 0 0 0 16 0v-6" /></svg>
 					{{DefaultStudioDatasource.Name}}
 				</span>
@@ -100,6 +106,7 @@
 					</h3>
 				</div>
 				<div class="card-body">
+					<h4 class="subheader">Basic Settings</h4>
 					<div class="mb-3">
 						<label class="form-label">Directory Path</label>
 						<div>
@@ -117,6 +124,18 @@
 						</div>
 					</div>
 					<div class="mb-3">
+						<label class="form-label">Is Read Only</label>
+						<div>
+							<select class="form-control" placeholder="Yes/No" disabled>
+								<option value="false" {{#if IsReadOnly}}{{else}}selected{{/if}}>No</option>
+								<option value="true" {{#if IsReadOnly}}selected{{else}}{{/if}}>Yes</option>
+							</select>
+							<small class="form-hint">
+								When a package is read-only, it cannot be modified
+							</small>
+						</div>
+					</div>
+					<div class="mb-3">
 						<label class="form-label">Default Datasource</label>
 						<div>
 							<select class="form-control" name="DefaultStudioDatasource" placeholder="Friendly Name">
@@ -130,6 +149,47 @@
 							</small>
 						</div>
 					</div>
+					<hr/>
+					<h4 class="subheader">DashSQL Publushing</h4>
+					<div class="row mb-3">
+						<div class="mb-3 col">
+							<label class="form-label">DashSQL Package ID</label>
+							<div>
+								<input type="input" class="form-control" name="DashId" placeholder="xxxxxxxx" value="{{DashId}}">
+								<small class="form-hint">
+									The global unique identifier for this package provided by DashSQL
+								</small>
+							</div>
+						</div>
+						<div class="mb-3 col">
+							<label class="form-label">Private Publishing Key</label>
+							<div>
+								<input type="input" class="form-control" name="PublisherKey" placeholder="xxxxxxxx" value="{{PublisherKey}}">
+								<small class="form-hint">
+									Do not share. API Key with publishing permissions for this package on DashSQL. This is your private password to publish to the package.
+								</small>
+							</div>
+						</div>
+					</div>
+					<div class="row mb-3">
+						<div class="mb-3 col">
+							{{#if view_state.verify_publisher_key}}
+							{{#if view_state.verify_publisher_key.success}}
+							<div class="alert alert-success bg-green-lt">
+								<h4 class="alert-title">Successful Verification!</h4>
+								<div class="text-secondary">{{view_state.verify_publisher_key.message}}</div>
+							</div>
+							{{else}}
+							<div class="alert alert-danger bg-red-lt">
+								<h4 class="alert-title">Error verifying Publisher Key:</h4>
+								<div class="text-secondary">{{view_state.verify_publisher_key.message}}</div>
+								{{{view_state.verify_publisher_key.data.PublishingRequest.RawContent}}}
+							</div>
+							{{/if}}
+							{{/if}}
+							<button class="btn btn-outline-info" form="verifyPublisherKey">Verify Publisher Key</button>
+						</div>
+					</div>
 				</div>
 				<div class="card-footer">
 					<div class="row">
@@ -137,11 +197,24 @@
 							<button form="removeForm" type="submit" class="btn btn-ghost-info" zero-confirm="Are you sure?">Remove</button>
 						</div>
 						<div class="col text-end">
+							{{#unless IsDefaultPackage}}
+								<button form="setAsDefaultPackageForm" type="submit" class="btn btn-outline-danger me-2">Set as Default Package</button>
+							{{/unless}}
 							<a href="{{CloseEditLink}}" class="btn btn-outline-secondary me-2">Close</a>
 							<button type="submit" class="btn btn-primary">Update</button>
 						</div>
 					</div>
 				</div>
+			</form>
+			<form id="verifyPublisherKey" method="POST" action="/studio/packages/{{FullName}}/verifyPublisherKey">
+				<input type="hidden" name="goto" value="{{EditLink}}">
+				<input type="hidden" name="goto_fail" value="{{EditLink}}">
+				<input type="hidden" name="preserve_response" value="view_state.verify_publisher_key">
+			</form>
+			<form id="setAsDefaultPackageForm" method="POST" action="/studio/packages/{{FullName}}">
+				<input type="hidden" name="setAsDefaultPackage" value="true">
+				<input type="hidden" name="goto" value="{{EditLink}}">
+				<input type="hidden" name="goto_fail" value="{{EditLink}}">
 			</form>
 			<form id="removeForm" method="POST" action="/studio/packages/{{FullName}}/delete">
 				<input type="hidden" name="goto" value="/studio/settings/packages"/>

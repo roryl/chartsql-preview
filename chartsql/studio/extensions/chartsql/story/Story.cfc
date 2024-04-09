@@ -80,7 +80,7 @@ component accessors="true" {
 		required struct result
 	){
 
-		if(result.method == "GET" and result.keyExists("section") and result.section == "main"){
+		if(result.method == "GET" and result.keyExists("section") and result.section == "main" && isDefined("result.data.CurrentPackage")){
 			var PackageFullName = result.data.CurrentPackage.FullName;
 			var Package = ChartSQLStudio.findPackageByFullName(PackageFullName).elseThrow("Package not found");
 
@@ -177,8 +177,10 @@ component accessors="true" {
 				doc.select('##renderingContainer')[1].prepend(slideSelector);
 			}
 
-			doc.select("##renderer-card-tabs")[1].append(addstory);
-
+			var renderCardTabs = doc.select("##renderer-card-tabs");
+			if (len(renderCardTabs) > 1) {
+				doc.select("##renderer-card-tabs")[1].append(addstory);
+			}
 		}
 
 	}

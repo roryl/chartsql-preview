@@ -5,9 +5,7 @@ abstract component extends="Datasource" accessors="true" {
 
 	public query function execute(SqlScript){
 		var results = "";
-		query name="result" datasource="#this.getConnectionInfo()#" {
-			echo(SqlScript.stripDirectives());
-		}
+		this.executeSql(SqlScript.stripDirectives());
 		return result;
 	}
 
@@ -35,6 +33,8 @@ abstract component extends="Datasource" accessors="true" {
 			password: '#this.getPassword()#',
 			timezone:'UTC'
 		};
+
+
 		return out;
 	}
 

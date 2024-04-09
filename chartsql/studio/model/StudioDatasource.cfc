@@ -26,13 +26,18 @@ component accessors="true" {
 	}
 
 	public function getMetadata(){
-		var metaData = getComponentMetadata("core.model.datasources.#variables.type#.#variables.type#");
+		var datasource = createObject("core.model.datasources.#variables.type#.#variables.type#");
+		var metaData = getMetaData(datasource);
+
 		var out = {
 			Name = metaData.displayName?:variables.Type,
 			Description = metaData.description?:"#variables.Type# Connector",
 			Type = variables.Type,
 			IconClass = metaData.iconClass?:"ti ti-database",
-			Fields = variables.ChartSQLStudio.getDatasourceTemplate(variables.Type)
+			Fields = variables.ChartSQLStudio.getDatasourceTemplate(variables.Type),
+			RemoteMethods = new zero.serializerFast(datasource.getRemoteMethods(), {
+				Name:{}
+			})
 		}
 
 		//Populate the current values

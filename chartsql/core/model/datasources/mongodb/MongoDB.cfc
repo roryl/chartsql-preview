@@ -1,6 +1,9 @@
 /**
  * Implements a MongoDB datasource
 */
+import com.chartsql.core.model.datasources.sqlite.SQLite;
+import com.chartsql.core.model.TableInfo;
+import com.chartsql.core.model.FieldInfo;
 component
 	extends="com.chartsql.core.model.Datasource"
 	accessors="true"
@@ -15,10 +18,30 @@ component
 	property name="Port" description="Your MongoDB port" required="true" default="27017" placeholder="27017" order="4";
 	property name="Database" description="Your MongoDB database" required="true" placeholder="mydb" order="5";
 
+	public function init(){
+
+		super.init(argumentCollection=arguments);
+
+		// Create a backing SQLite database to store the CSV data
+		// we will use this to execute SQL queries against the collection
+		// data returned from the MongoDB query
+		var path = expandPath("/com/chartsql/userdata/db/mongodb/#variables.database#");
+		// writeDump(path);
+		if(!directoryExists(path)){
+			directoryCreate(path, true);
+		}
+
+		variables.SQLite = new SQLite(
+			FolderPath = path,
+			Database = "#variables.database#.sqlite"
+		)
+		return this;
+	}
+
 	public function verify(){
 		//Just get the database which should error if it cannot connect
 		this.getMongoClient();
-		variables.mongoClient.close();
+		// variables.mongoClient.close();
 	}
 
 	public function getMongoClient(){
@@ -35,6 +58,11 @@ component
 			variables.mongoClient = MongoClients.create(MongoClientSettings);
 		}
 		return variables.mongoclient;
+	}
+
+	public function executeSql(required string sql){
+		var data = variables.SQLite.executeSql(arguments.sql);
+        return data;
 	}
 
 	public function execute(required SqlScript SqlScript){
@@ -79,16 +107,6 @@ component
 		var startTick = getTickCount();
 			var collection = databaseConnection.getCollection(collectionName);
 		var timers.collection = getTickCount() - startTick;
-
-		var startTick = getTickCount();
-			var HSQLDB = new core.model.datastores.HSQLDB(
-				Database = "mongodb",
-				FolderPath = "C:\websites\chartsql\editor\db\mongo\",
-				Username = "root",
-				Password = "123456"
-			);
-		var timers.hsqldb = getTickCount() - startTick;
-
 
 
 		// Parse the JSON into JAVA objects that mongo collection can use
@@ -146,7 +164,7 @@ component
 					}
 
 					var startTick = getTickCount();
-					HSQLDB.dropTable(collectionName);
+					variables.SQLite.dropTable(collectionName);
 
 					// Collect the types with the column names that we will use
 					// for the table creation
@@ -154,13 +172,13 @@ component
 					for(var ii = 1; ii <= arrayLen(projectionArray); ii++){
 						SqlFields.append(
 							new core.model.datastores.SqlField(
-								projectionArray[ii],
-								types[ii]
+								Name = projectionArray[ii],
+								Type = types[ii]
 							)
 						)
 					}
 
-					HSQLDB.createTable(collectionName, SqlFields);
+					SQLite.createTable(collectionName, SqlFields);
 					var timers.tableCreate = getTickCount() - startTick;
 
 				}
@@ -179,7 +197,7 @@ component
 				var startTick = getTickCount();
 
 				// Inset a row into mongodb datasource
-				HSQLDB.insertRow(collectionName, workingOut);
+				variables.SQLite.insertRow(collectionName, workingOut);
 				var timers.insertRow += getTickCount() - startTick;
 			}
 		var timers.processResult = getTickCount() - processResultTick;
@@ -195,11 +213,194 @@ component
 				throw("SQL contains @ symbol");
 			}
 
-			var result = HSQLDB.executeSql(SqlScript.stripDirectives());
+			var result = variables.SQLite.executeSql(SqlScript.stripDirectives());
 		var timers.query = getTickCount() - startTick;
 		// writeDump(timers);
 		return result;
 
 	}
+
+	/**
+	 * We need to return the collection names as TableInfo objects
+	 */
+	public function getTableInfos(){
+		// Load the MongoDB collections and create TableInfo objects
+		var mongoClient = this.getMongoClient();
+		var databaseConnection = mongoClient.getDatabase(this.getDatabase());
+		var collections = databaseConnection.listCollectionNames();
+		var collectionsIterable = collections.iterator();
+		var tableInfos = [];
+
+		while(collectionsIterable.hasNext()){
+			var collection = collectionsIterable.next();
+			tableInfos.append(
+				new TableInfo(
+					Name = collection
+
+				)
+			);
+		}
+
+		return tableInfos;
+	}
+
+	public function getFieldInfos(required string tableName){
+
+		// Load the MongoDB collections and create TableInfo objects
+		var mongoClient = this.getMongoClient();
+		var databaseConnection = mongoClient.getDatabase(this.getDatabase());
+		var collection = databaseConnection.getCollection(tableName);
+		var findIterable = collection.find().limit(1);
+		var iterator = findIterable.iterator();
+		var record = iterator.next();
+		var jsonResult = deserializeJson(record.toJson());
+		// writeDump(jsonResult);
+		var fieldInfos = [];
+
+		for(var key in jsonResult){
+			fieldInfos.append(
+				new FieldInfo(
+					Name = key,
+					Type = "VARCHAR(256)"
+				)
+			);
+		}
+
+		return fieldInfos;
+	}
+
+	/**
+	 * Creates a collection. Idempotent, will not error if the collection already exists
+	 *
+	 * @collectionName The name of the collection
+	 */
+	public function createCollection(required string collectionName){
+
+		var mongoClient = this.getMongoClient();
+		// writeDump(mongoClient);
+
+		// var sess = mongoClient.startSession();
+		var databaseConnection = mongoClient.getDatabase(this.getDatabase());
+		// writeDump(databaseConnection);
+
+		// Check if the collection already exists and if not, we will create it
+
+		var collections = databaseConnection.listCollectionNames();
+		var collectionsIterable = collections.iterator();
+		var collectionExists = false;
+		while(collectionsIterable.hasNext()){
+			var collection = collectionsIterable.next();
+			if(collection == collectionName){
+				collectionExists = true;
+				break;
+			}
+		}
+
+		if(!collectionExists){
+			databaseConnection.createCollection(collectionName);
+		}
+	}
+
+	/**
+	 * Inserts a single record into the collection
+	 *
+	 * @collectionName The name of the collection
+	 * @data The data to insert
+	 */
+	public function insertOne(required string collectionName, required struct data){
+
+		var mongoClient = this.getMongoClient();
+		var databaseConnection = mongoClient.getDatabase(this.getDatabase());
+		var collection = databaseConnection.getCollection(collectionName);
+		var document = createObject("java", "org.bson.Document").parse(serializeJson(arguments.data));
+		collection.insertOne(document);
+
+	}
+
+	/**
+	 * Inserts many records into the collection
+	 *
+	 * @collectionName The name of the collection
+	 * @data The data to insert
+	 */
+	public function insertMany(required string collectionName, required array data){
+
+		var mongoClient = this.getMongoClient();
+		var databaseConnection = mongoClient.getDatabase(this.getDatabase());
+		var collection = databaseConnection.getCollection(collectionName);
+		var documents = createObject("java", "java.util.ArrayList").init();
+		for(var ii = 1; ii <= arrayLen(data); ii++){
+			documents.add(createObject("java", "org.bson.Document").parse(serializeJson(data[ii])));
+		}
+		collection.insertMany(documents);
+
+	}
+
+	/**
+	 * Drops a collection. Idempotent, will not error if the collection does not exist
+	 *
+	 * @collectionName The name of the collection
+	 */
+	public function dropCollection(required string collectionName){
+
+		var mongoClient = this.getMongoClient();
+		var databaseConnection = mongoClient.getDatabase(this.getDatabase());
+
+		var collections = databaseConnection.listCollectionNames();
+		var collectionsIterable = collections.iterator();
+		var collectionExists = false;
+		while(collectionsIterable.hasNext()){
+			var collection = collectionsIterable.next();
+			if(collection == collectionName){
+				collectionExists = true;
+				break;
+			}
+		}
+
+		if(collectionExists){
+			databaseConnection.getCollection(collectionName).drop();
+		}
+	}
+
+	public DatasourceProcess[] function getProcesses(){
+		var out = [];
+		return out;
+
+		// 2024-02-15: Investigating returning processes from MongoDB using the "currentOp" command
+
+		// Get the running MongoDB queries from the current client
+		var mongoClient = this.getMongoClient();
+		writeDump(mongoClient);
+		var databaseConnection = mongoClient.getDatabase("admin");
+
+		writeDump(databaseConnection);
+
+		// Get the current operations
+		// Java version: Document document1 = database.runCommand(new Document("currentOp", 1).append("active", true));
+
+		//Lucee Version:
+		var document1 = databaseConnection.runCommand(
+			createObject("java", "org.bson.Document")
+				.append("currentOp", 1)
+		);
+
+		writeDump(document1);
+
+
+		// var operations = databaseConnection.listOperations();
+		// var operationsIterable = operations.iterator();
+		// while(operationsIterable.hasNext()){
+		// 	var operation = operationsIterable.next();
+
+		// 	out.append(
+		// 		new DatasourceProcess(
+		// 			sql = "MongoDB Query",
+		// 			Id = operation.getId()
+		// 		)
+		// 	);
+		// }
+		return out;
+	}
+
 
 }

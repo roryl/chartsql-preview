@@ -5,13 +5,14 @@ component accessors="true" {
 	processingdirective preservecase="true";
 	property name="Packages";
 	property name="SqlFiles";
-	property name="DashPublishers";
+	property name="PackagePublishers";
 	property name="PublishingHost" type="string";
 	property name="ConfigPath";
 	property name="Config";
 	property name="LastEditorUrl";
 	property name="LastPresentationUrl";
 	property name="StudioDatasources";
+	property name="DefaultPackage" type="Package" hint="The default package";
 	property name="AvailableDatasourceTypes";
 	property name="Extensions";
 	property name="Storys";
@@ -21,6 +22,8 @@ component accessors="true" {
 	property name="MascotBinary" setter="false" type="binary";
 	property name="LogoBinary" setter="false" type="binary";
 	property name="StudioModelHash" type="string" hint="Stored in Application to detect when source code has changed and needs to be reloaded";
+	property name="PublishingAppId" type="numeric";
+	property name="PublishingRequests" type="array";
 
 
 	public function init(
@@ -28,13 +31,15 @@ component accessors="true" {
 	){
 		variables.Packages = [];
 		variables.SqlFiles = [];
-		variables.DashPublishers = [];
+		variables.PackagePublishers = [];
 		variables.StudioDatasources = [];
 		variables.Storys = [];
 		variables.Extensions = [];
 		variables.FileBrowserViews = [];
 		variables.MenuItems = [];
 		variables.StudioModelHash = "";
+		variables.DefaultPackage = nullValue();
+		variables.PublishingRequests = [];
 
 		variables.LastEditorUrl = "/studio/main";
 		variables.LastPresentationUrl = "/studio/main?PresentationMode=true&RenderPanelView=chart";
@@ -73,8 +78,8 @@ component accessors="true" {
 		}
 	}
 
-	public function addDashPublisher(DashPublisher){
-		variables.DashPublishers.append(DashPublisher);
+	public function addPackagePublisher(PackagePublisher){
+		variables.PackagePublishers.append(PackagePublisher);
 	}
 
 	public function addExtension(Extension){
@@ -103,6 +108,10 @@ component accessors="true" {
 
 		variables.StudioDatasources.append(StudioDatasource);
 		this.saveConfig();
+	}
+
+	public function addPublishingRequest(PublishingRequest){
+		variables.PublishingRequests.append(PublishingRequest);
 	}
 
 	public function clearExtensions(){
@@ -165,6 +174,9 @@ component accessors="true" {
 	 */
 	public void function deletePackage(required Package Package){
 		var newPackages = [];
+		if (Package.getFullName() == variables.DefaultPackage.getFullName()){
+			variables.DefaultPackage = nullValue();
+		}
 		for(var Package in variables.Packages){
 			if(Package.getFullName() != arguments.Package.getFullName()){
 				arrayAppend(newPackages, Package);
@@ -323,6 +335,12 @@ component accessors="true" {
 		return out;
 	}
 
+	/**
+	 * Globablly define the base publishing url for the ChartSQL Studio which takes a key
+	 * that is the ID of the publisher that the user is publishing to.
+	 *
+	 * @key
+	 */
 	public function getBasePublishingUrl(
 		required string key
 	){
@@ -404,8 +422,22 @@ component accessors="true" {
 	 */
 	public function addPackage(required Package Package){
 		if(!findPackageByFullName(Package.getFullName()).exists()){
+			if (variables.Packages.len() == 0){
+				variables.DefaultPackage = Package;
+			}
 			variables.Packages.append(Package);
 		}
+		this.saveConfig();
+	}
+
+	public function setDefaultPackage(required Package Package){
+		if(findPackageByFullName(arguments.Package.getFullName()).exists()){
+			variables.DefaultPackage = arguments.Package;
+			arguments.Package.setIsDefaultPackage(true);
+		} else {
+			throw("The package '#arguments.Package.getFullName()#' does not exist");
+		}
+
 		this.saveConfig();
 	}
 
@@ -436,7 +468,11 @@ component accessors="true" {
 			var out = new zero.serializerFast(this, {
 				Packages:{
 					FullName:{},
-					Path:{}
+					Path:{},
+					IsReadOnly:{}
+				},
+				DefaultPackage: {
+					FullName:{}
 				},
 				StudioDatasources:{
 					Name:{},
@@ -497,11 +533,79 @@ component accessors="true" {
 			for(var Package in variables.Config.Packages){
 				var NewPackage = new Package(
 					path = Package.Path,
-					ChartSQLStudio = this
-				)
+					ChartSQLStudio = this,
+					PublisherKey = Package.PublisherKey?:nullValue()
+				);
+				if (variables.Config.keyExists("DefaultPackage") && variables.Config.DefaultPackage.FullName == Package.FullName) {
+					this.setDefaultPackage(NewPackage);
+					NewPackage.setIsDefaultPackage(true);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Searches the Packages, DataSources, and SqlFiles for the search string
+	 * in that order
+	 *
+	 * @search
+	 */
+	public function globalSearch(string search) {
+		var out = [];
+
+		if (isNull(arguments.search) || isEmpty(arguments.search)) {
+			return out;
+		};
+		
+		for(var Package in variables.Packages){
+			if(Package.getFriendlyName().findNoCase(arguments.search) > 0){
+				if (Package.getDefaultStudioDatasource().exists()) {
+					var PackageStudioDatasource = Package.getDefaultStudioDatasource().get();
+					link = "/studio/main?PackageName=#Package.getFullName()#&StudioDatasource=#PackageStudioDatasource.getName()#";
+				} else {
+					link = "/studio/main?PackageName=#Package.getFullName()#";
+				}
+				arrayAppend(out, {
+					"name": Package.getFriendlyName(),
+					"entityType": "package",
+					"openLink": link,
+					"priority": 1
+				});
 			}
 		}
 
+		for(var StudioDatasource in variables.StudioDatasources){
+
+
+			if(StudioDatasource.getName().findNoCase(arguments.search) > 0){
+				arrayAppend(out, {
+					"name": StudioDatasource.getName(),
+					"entityType": "datasource",
+					"openLink": "/studio/settings/datasources?EditStudioDatasource=#StudioDatasource.getName()#",
+					"priority": 2
+				});
+			}
+		}
+
+		for(var SqlFile in variables.SqlFiles){
+			if(SqlFile.getName().findNoCase(arguments.search) > 0){
+				var Package = SqlFile.getPackage();
+				var link = "";
+				if (Package.getDefaultStudioDatasource().exists()) {
+					var StudioDatasource = Package.getDefaultStudioDatasource().get();
+					link = "/studio/main?PackageName=#Package.getFullName()#&StudioDatasource=#StudioDatasource.getName()#&OpenFiles=#SqlFile.getFullName()#&ActiveFile=#SqlFile.getFullName()#";
+				} else {
+					link = "/studio/main?PackageName=#Package.getFullName()#&OpenFiles=#SqlFile.getFullName()#&ActiveFile=#SqlFile.getFullName()#";
+				}
+				arrayAppend(out, {
+					"name": "#SqlFile.getName()# (#Package.getFriendlyName()#)", 
+					"entityType": "sqlfile",
+					"openLink": link,
+					"priority": 3
+				});
+			}
+		}
+		return out;
 	}
 
 	public function getCurrentQueryString(){

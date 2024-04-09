@@ -31,6 +31,9 @@
   "DefaultStudioDatasource": {
     "Name": "Examples"
   },
+  "PublisherKey": "",
+  "DashId": "",
   "Path": "C:\\websites\\chartsql\\studio\\extensions\\chartsql\\examples\\sql",
-  "FullName": "websites.chartsql.studio.extensions.chartsql.examples.sql"
+  "FullName": "websites.chartsql.studio.extensions.chartsql.examples.sql",
+  "IsReadOnly": false
 }

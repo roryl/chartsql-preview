@@ -1,18 +1,22 @@
 <!-- Page header -->
 <div class="" style="display:flex; flex-flow:column; height:100vh;">
-	<div class="" style="height:6%;">
+	<div class="" style="">
+		{{#if data.HasOpenedPackage}}
 		<cfinclude template="fragments/header.cfm">
+		{{/if}}
 	</div>
 	<div class="" style="flex:1; display:flex; flex-flow:row; height:94%;">
+		{{#if data.HasOpenedPackage}}
 		<div id="fileListContainer" class="" style="width:{{view_state.file_list_width}}%; height:100%; display:flex; flex-flow:column;">
 			<div class="card" style=" height:100%;">
+				<div id="filterContainer">
 					{{#if (eq view_state.browser_panel.active_view 'files')}}
 					<div class="input-icon">
 						<span id="filterActiveIcon" class="input-icon-addon">
 							<!-- Download SVG icon from http://tabler-icons.io/i/search -->
 							<svg xmlns="http://www.w3.org/2000/svg" class="{{#if view_state.filter}}text-info{{/if}} icon icon-tabler icon-tabler-filter ms-4" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" /></svg>
 						</span>
-						<form id="fileFilterForm" method="GET" action="/studio/main" zero-target="#filterClearContainer,#fileList,#filterActiveIcon">
+						<form id="fileFilterForm" method="GET" action="/studio/main" zero-target="#filterClearContainer,#fileList,#filterActiveIcon,#openFilesList">
 							{{#each view_state.params}}
 								{{#unless (eq key "Filter")}}
 									<input type="hidden" name="{{key}}" value="{{value}}">
@@ -24,7 +28,7 @@
 							<button id="filterSubmit" type="submit" class="d-none">submit</button>
 						</form>
 						<div id="filterClearContainer" class="" style="position:absolute; top:0; right:0; width:50px; height:100%; align-items:center; justify-content:center; display:flex;">
-							<form id="fileFilterForm" method="GET" action="/studio/main" zero-target="#filterClearContainer,#fileList,#filterActiveIcon">
+							<form id="fileFilterForm" method="GET" action="/studio/main" zero-target="#filterClearContainer,#fileList,#filterActiveIcon,#openFilesList">
 								{{#each view_state.params}}
 									{{#unless (eq key "Filter")}}
 										<input type="hidden" name="{{key}}" value="{{value}}">
@@ -42,7 +46,7 @@
 								<!-- Download SVG icon from http://tabler-icons.io/i/search -->
 								<svg xmlns="http://www.w3.org/2000/svg" class="{{#if view_state.SchemaFilter}}text-info{{/if}} icon icon-tabler icon-tabler-filter ms-4" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" /></svg>
 							</span>
-							<form id="schemaFilterForm" method="GET" action="/studio/main" zero-target="#schemaFilterClearContainer,#schemaList,#schemaFilterActiveIcon">
+							<form id="schemaFilterForm" method="GET" action="/studio/main" zero-target="#schemaFilterClearContainer,#schemaList,#schemaFilterActiveIcon,#openFilesList">
 								{{#each view_state.params}}
 									{{#unless (eq key "SchemaFilter")}}
 										<input type="hidden" name="{{key}}" value="{{value}}">
@@ -54,7 +58,7 @@
 								<button id="schemaFilterSubmit" type="submit" class="d-none">submit</button>
 							</form>
 							<div id="schemaFilterClearContainer" class="" style="position:absolute; top:0; right:0; width:50px; height:100%; align-items:center; justify-content:center; display:flex;">
-								<form id="schemaFilterForm" method="GET" action="/studio/main" zero-target="#schemaFilterClearContainer,#schemaList,#schemaFilterActiveIcon">
+								<form id="schemaFilterForm" method="GET" action="/studio/main" zero-target="#schemaFilterClearContainer,#schemaList,#schemaFilterActiveIcon,#openFilesList">
 									{{#each view_state.params}}
 										{{#unless (eq key "SchemaFilter")}}
 											<input type="hidden" name="{{key}}" value="{{value}}">
@@ -66,6 +70,7 @@
 							</div>
 						</div>
 					{{/if}}
+					</div>
 
 				<!--- <div class="bg-warning" style="min-height:2000px;">
 					foo
@@ -315,9 +320,9 @@
 										{{/if}}
 
 										{{#if data.EditorSession.LastExecutionRequest.IsError}}
-										<span class="badge badge-outline text-red ms-3" style="max-width:50%;">{{toString data.EditorSession.LastExecutionRequest.ErrorMessage}}</span>
+										<span class="badge badge-outline text-red ms-2" style="max-width:50%;">{{toString data.EditorSession.LastExecutionRequest.ErrorMessage}}</span>
 										{{else if data.EditorSession.LastExecutionRequest.IsCancelled}}
-										<span class="badge badge-outline text-orange ms-3" style="max-width:50%;">Execution Cancelled</span>
+										<span class="badge badge-outline text-orange ms-2" style="max-width:50%;">Execution Cancelled</span>
 										{{/if}}
 										{{#if data.EditorSession.LastExecutionRequest.IsRunning}}
 										<form method="POST" action="/studio/main/cancelExecution" style="display:inline;">
@@ -370,8 +375,79 @@
 				</div>
 			</div>
 		</div>
+	{{else}}
+		<div id="gettingStartedContainer" class="" style="width: 100%; display:flex; flex-flow:column; height:100%;">			
+			<div class="card p-0 m-0" style="border-radius:0; border-top:none; border-left:none; border-bottom:none; border-right:none; flex:1; width:100%; display:flex; overflow:hidden;">
+				<div class="card-body p-0" style="display:flex; width:100%; height:100%">
+					<div class="tab-content splitVertical" style="display:flex; flex-flow:column; height:100%; width:100%;">
+						<div class="d-flex flex-column h-100 justify-content-center align-items-center" style="padding-bottom: 100px;">
+							<div class="w-100" style="max-width: 600px !important;">
+								<h1 class="w-100" style="text-align: start;">Getting Started</h1>
+								<div class="d-flex w-100 flex-row justify-content-between align-items-start" >
+									<div>
+										<div>
+											<div class="h3 text-muted">
+												Actions
+											</div>
+											<div>
+												<div class="mb-2">
+													<a href="/studio/settings/datasources?ShowCreate=true">
+													<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-database-cog"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 6c0 1.657 3.582 3 8 3s8 -1.343 8 -3s-3.582 -3 -8 -3s-8 1.343 -8 3" /><path d="M4 6v6c0 1.657 3.582 3 8 3c.21 0 .42 -.003 .626 -.01" /><path d="M20 11.5v-5.5" /><path d="M4 12v6c0 1.657 3.582 3 8 3" /><path d="M19.001 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" /><path d="M19.001 15.5v1.5" /><path d="M19.001 21v1.5" /><path d="M22.032 17.25l-1.299 .75" /><path d="M17.27 20l-1.3 .75" /><path d="M15.97 17.25l1.3 .75" /><path d="M20.733 20l1.3 .75" /></svg>
+													Configure datasources...</a>
+												</div>
+												<div>
+													<a href="/studio/settings/packages?ShowCreate=true"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-package"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg> Create new package...</a>
+												</div>
+											</div>
+											<div class="h3 mt-3 text-muted">
+												Examples
+											</div>
+											<div>
+												<div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples"><i class="ti ti-border-all"></i> All Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=area"><i class="ti ti-chart-area"></i> Area Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=bar"><i class="ti ti-chart-bar"></i> Bar Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=column"><i class="ti ti-chart-arrows-vertical"></i> Column Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=combo"><i class="ti ti-stack-back"></i> Combo Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=heatmap"><i class="ti ti-chart-grid-dots-filled"></i> Heatmap Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=line"><i class="ti ti-chart-line"></i> Line Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=pie"><i class="ti ti-chart-pie"></i> Pie Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=scatter"><i class="ti ti-chart-scatter"></i> Scatter Charts</a></div>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div>
+										<div class="h3 text-muted">
+											Documentation
+										</div>
+										<div>
+											<div class="mb-2">
+												<a href="https://itr8studios.gitbook.io/chartsql/QY9tx3OTrQdien8dGApA"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-clipboard-text"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M9 12h6" /><path d="M9 16h6" /></svg> Introduction</a>
+											</div>
+											<div class="mb-2">
+												<a href="https://itr8studios.gitbook.io/chartsql/QY9tx3OTrQdien8dGApA/basics/quick-start"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-clipboard-text"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M9 12h6" /><path d="M9 16h6" /></svg> Quick Start</a>
+											</div>
+											<div class="mb-2">
+												<a href="https://itr8studios.gitbook.io/chartsql/QY9tx3OTrQdien8dGApA/basics/example-charts"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-clipboard-text"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M9 12h6" /><path d="M9 16h6" /></svg> Example Charts</a>
+											</div>
+											<div class="mb-2">
+												<a href="https://itr8studios.gitbook.io/chartsql/QY9tx3OTrQdien8dGApA/chartsql-studio/creating-charts"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-clipboard-text"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M9 12h6" /><path d="M9 16h6" /></svg> Creating Charts</a>
+											</div>
+											<div class="mb-2">
+												<a href="https://itr8studios.gitbook.io/chartsql/QY9tx3OTrQdien8dGApA/integrations/datasources"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-clipboard-text"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M9 12h6" /><path d="M9 16h6" /></svg> Configuring Datasources</a>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	{{/if}}
 	</div>
-	<!--- <div class="bg-info" style="">footer</div> --->
 </div>
 <script>
 
@@ -454,20 +530,26 @@
 
 	{{/unless}}
 
+	// 2023-02-27: When we are in story mode, we do don't have the file list
+	// and so we don't want to use the split library on that page.
+	var elementStoryPlayer = document.getElementById('storyPlayer');
+	var isInStoryMode = elementStoryPlayer != null;
 
-	sizes = [{{view_state.file_list_width}}, {{view_state.main_container_width}}] // default sizes
+	if (!isInStoryMode) {
+		sizes = [{{view_state.file_list_width}}, {{view_state.main_container_width}}] // default sizes
 
-	// The horizontal split between the editor and renderer
-	var splithoritontal = Split(['#fileListContainer', '#renderingContainer'], {
-		sizes: sizes,
-		onDrag: function(){
-			if (window != null && window.chartHandle != null) {
-				window.chartHandle.resize();
-			}
-		},
-		onDragEnd: function (sizes) {
-			ZeroClient.set('file_list_width', sizes[0])
-			ZeroClient.set('main_container_width', sizes[1])
-		},
-	})
+		// The horizontal split between the editor and renderer
+		var splithoritontal = Split(['#fileListContainer', '#renderingContainer'], {
+			sizes: sizes,
+			onDrag: function(){
+				if (window != null && window.chartHandle != null) {
+					window.chartHandle.resize();
+				}
+			},
+			onDragEnd: function (sizes) {
+				ZeroClient.set('file_list_width', sizes[0])
+				ZeroClient.set('main_container_width', sizes[1])
+			},
+		});
+	}
 </script>

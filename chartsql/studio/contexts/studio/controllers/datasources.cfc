@@ -40,6 +40,38 @@ component accessors="true" {
 		return {};
 	}
 
+	/**
+	 * Executes a remote custom function on the datasource
+	 *
+	 */
+	public struct function runRemote(
+		required string id,
+		required string method,
+		struct args = {}
+	) method="POST" {
+		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		var StudioDatasource = ChartSQLStudio.findStudioDatasourceByName(arguments.id).elseThrow("Could not find that StudioDatasource");
+		var Datasource = StudioDatasource.getDatasource();
+		var DatasourceRemoteMethod = Datasource.findRemoteMethodByName(arguments.method).elseThrow("Could not find that remote method '#arguments.method#' on datasource '#StudioDatasource.getName()#'");
+
+		try {
+			var result = DatasourceRemoteMethod.execute(argumentCollection = arguments.args);
+			var out = {
+				"success":true,
+				"data": {
+					"result": result?:nullValue()
+				}
+			}
+		}catch(any e){
+			var out = {
+				"success":false,
+				"message":e.message
+			}
+		}
+
+		return out;
+	}
+
 	public struct function validate(
 		required string Type,
 		required struct Config,

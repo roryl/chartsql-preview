@@ -289,6 +289,24 @@ component accessors="true" {
 		return out;
 	}
 
+	/**
+	 * Returns an execution Id from the query if it was added to
+	 * this sql script with tagExecutionId(). This can be used to
+	 * identify the query running on the database server that was
+	 * initiated from this script
+	 */
+	public string function getExecutionIdTag(){
+		// Example of the tag:
+		// -- Execution ID: 97F7340E1E8C40FBBF636D66A55B5ADF
+		var matches = reMatchNoCase("-- Execution ID: ([A-Z0-9]+)", this.getSql());
+		if(arrayLen(matches) > 0){
+			var out = replaceNoCase(matches[1], "-- Execution ID: ", "", "all");
+			return out;
+		} else {
+			return "";
+		}
+	}
+
 	public struct function getParsedDirectives(){
 		var matches = this.matchAtDirectives();
 		var out = this.getAtDirectiveContents(matches);
@@ -807,7 +825,7 @@ component accessors="true" {
 
 		if(directives.keyExists("chart")) {
 		 	if (
-				!(directives.keyExists("series") or directives.keyExists("secondary-series")) 
+				!(directives.keyExists("series") or directives.keyExists("secondary-series"))
 				or !(directives.keyExists("category") or directives.keyExists("groups"))
 			) {
 				 return "assist";
@@ -951,6 +969,31 @@ component accessors="true" {
 			}
 		}
 		return arrayToList(newLines, server.separator.line);
+
+	}
+
+	/**
+	 * Adds a unique identifer to the query that we can use to track the execution
+	 * and kill the database process if necessary. This is useful for long running
+	 * queries that the user may need to kill from the UI.
+	 *
+	 * Can use getExecutionIdTag() to get the execution id from the query if one exists
+	 */
+	public string function tagWithExecutionId(){
+		var sql = this.getSql();
+		var executionId = replace(createUUID(), "-", "", "all");
+		var newSql = "-- Execution ID: #executionId##server.separator.line##sql#";
+		this.setSql(newSql);
+		return executionId;
+	}
+
+	/**
+	 * Utility function to echo the script in a text area so that we can see it
+	 * in the browser with proper formatting
+	 */
+	public function textarea(){
+
+		echo("<textarea style='width: 800px; height: 600px;'>#this.getSql()#</textarea>");
 
 	}
 

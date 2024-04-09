@@ -108,10 +108,14 @@ component accessors="true" {
 					Packages:{
 						FriendlyName:{},
 						FullName:{},
+						IsReadOnly:{},
 						Path:{},
 						DefaultStudioDatasource:{
 							Name:{}
 						},
+						IsDefaultPackage: {},
+						DashId:{},
+						PublisherKey:{},
 						IsEditing: function(Package){
 							if (Package.getFullName() == args.EditPackage){
 								return true;

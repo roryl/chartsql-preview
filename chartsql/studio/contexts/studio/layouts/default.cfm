@@ -13,7 +13,11 @@
 			<meta charset="utf-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-			<title>Sales Insights - GR0 Research</title>
+			{{#if data.CurrentPackage}}
+				<title id="headTitle">{{data.CurrentPackage.FriendlyName}}</title>
+			{{else}}
+				<title id="headTitle">ChartSQL</title>
+			{{/if}}
 			<!-- CSS files -->
 			<link href="/assets/vendor/tabler/dist/css/tabler.min.css?1684106062" rel="stylesheet"/>
 			<link href="/assets/vendor/tabler/dist/css/tabler-flags.min.css?1684106062" rel="stylesheet"/>
@@ -157,6 +161,48 @@
 				.dropdown-toggle.show {
 					padding-top: 10px !important;
 				}
+
+				* {
+					scrollbar-width: thin;
+				}
+
+				.bottom-menu-items {
+						position:absolute;
+						bottom: 10px;
+						width:100%;
+					}
+
+				.nav-tabs .nav-link {
+					border-radius:0;
+					border-top:none;
+				}
+
+				.nav-tabs:first-child {
+					border-left:none;
+				}
+				.nav-item {
+					border-radius:0;
+				}
+
+				.card {
+					box-shadow:none;
+				}
+
+				.nav-link-icon-custom {
+					color: #929DAB !important;
+					margin-right: 10px;
+					max-height: 20px !important;
+					max-width: 20px !important;
+				}
+
+				.nav-link-icon-custom-loading-indicator {
+					margin-right: 4px !important;
+				}
+
+				/* .nav-link.dropdown-toggle {
+					height: 36px !important;
+					padding: 8px 16px !important;
+				} */
 			</style>
 			<script>
 				function toggleNavbar() {
@@ -187,7 +233,7 @@
 				// });
 			</script>
 		</head>
-		<body class="{{#if data.CurrentPackage}}layout-fluid{{/if}}" data-bs-theme="dark">
+		<body class="layout-fluid" data-bs-theme="dark">
 			<div class="page">
 				<!-- Sidebar -->
 				<aside id="aside" class="{{#if client_state.navbar_collapsed}}navbar-collapsed{{/if}} navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark" style="overflow-y:unset;">
@@ -196,7 +242,7 @@
 						<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
 							<span class="navbar-toggler-icon"></span>
 						</button>
-						<h1 class="navbar-brand navbar-brand-autodark mt-2" style="margin-bottom: 3px;">
+						<h1 class="navbar-brand navbar-brand-autodark mt-2" style="margin-bottom: 0px;">
 							<span href="" style="display:flex; flex-flow:row; align-items:center;">
 								<!--- <img src="/studio/main/logo" width="175" alt="Tabler" class="me-3" style="margin-top:-2px; cursor: pointer;"  onclick="toggleNavbar();"> --->
 								<img src="/assets/img/logo-white.png" width="175" alt="Tabler" class="me-3" style="margin-top:-2px; cursor: pointer;"  onclick="toggleNavbar();">
@@ -213,7 +259,7 @@
 							<ul id="applicationMenu" class="navbar-nav  h-100">
 								<li class="nav-item navbar-collapsed-restore pt-lg-3" style="padding-bottom: 7px;">
 									<a class="nav-link" onclick="toggleNavbar();" style="width:70px; margin-left:-5px; margin-top:-10px; margin-bottom:10px;">
-										<span class="nav-link-icon d-md-none d-lg-inline-block" type="button" style="width:70px;">
+										<span class="nav-link-icon-custom d-md-none d-lg-inline-block" type="button" style="width:70px;">
 											<img src="/assets/img/mark-white.png" width="70" alt="Tabler" class="me-3" style="">
 											<!--- <img src="/studio/main/mascot" width="70" alt="ChartSQL Studio" class="me-3" style=""> --->
 											<!--- <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-menu-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg> --->
@@ -224,7 +270,7 @@
 								<!--- <div id="storyMenu" style="display:none;">
 									<li id="" class="nav-item">
 										<a class="nav-link" href="{{view_state.editor_link}}">
-											<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="From beginning"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+											<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="From beginning"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-slideshow" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 6l.01 0" /><path d="M3 3m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z" /><path d="M3 13l4 -4a3 5 0 0 1 3 0l4 4" /><path d="M13 12l2 -2a3 5 0 0 1 3 0l3 3" /><path d="M8 21l.01 0" /><path d="M12 21l.01 0" /><path d="M16 21l.01 0" /></svg>
 											</span>
 											<span class="nav-link-title">
@@ -234,7 +280,7 @@
 									</li>
 									<li id="" class="nav-item">
 										<a class="nav-link" href="{{view_state.editor_link}}">
-											<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Exit Presenation"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+											<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Exit Presenation"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-stop" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 5m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z" /></svg>
 											</span>
 											<span class="nav-link-title">
@@ -245,19 +291,42 @@
 								</div> --->
 
 								<div id="main-menu-nav-items" class="h-100">
-								<li id="editorMenuLink" class="nav-item d-flex justify-content-center align-items-between {{#if (eq action "studio:main.list")}}active{{/if}}">
-									<a class="nav-link" href="{{view_state.editor_link}}">
-										<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Chart Editor"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
-											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 8l-4 4l4 4" /><path d="M17 8l4 4l-4 4" /><path d="M14 4l-4 16" /></svg>
-										</span>
-										<span class="nav-link-title">
-											Editor
-										</span>
-									</a>
-								</li>
+									<!--- If we are in settings menu --->
+									{{#if (eq view_state.section 'settings')}}
+										<li id="editorMenuLink" class="nav-item d-flex justify-content-center align-items-between {{#if (eq action "studio:main.list")}}active{{/if}}">
+											<a href="{{view_state.editor_link}}" class="nav-link" zero-icon-class="nav-link-icon-custom-loading-indicator">
+												<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Chart Editor"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+													<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 8l-4 4l4 4" /><path d="M17 8l4 4l-4 4" /><path d="M14 4l-4 16" /></svg>
+												</span>
+												<span class="nav-link-title">
+													Editor
+												</span>
+											</a>
+										</li>
+									{{else}}
+										<li id="editorMenuLink" class="nav-item d-flex justify-content-center align-items-between {{#if (eq action "studio:main.list")}}active{{/if}}">
+											<form action="/studio/main" method="GET" zero-target="#aside,#pageContent">
+												{{#each view_state.params}}
+													{{#unless (eq key "EditorPanelView")}}
+														{{#unless (eq key "PresentationMode")}}
+															<input type="hidden" name="{{key}}" value="{{value}}">
+														{{/unless}}
+													{{/unless}}
+												{{/each}}
+												<button type="submit" class="nav-link" zero-icon-class="nav-link-icon-custom-loading-indicator">
+													<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Chart Editor"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+														<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 8l-4 4l4 4" /><path d="M17 8l4 4l-4 4" /><path d="M14 4l-4 16" /></svg>
+													</span>
+													<span class="nav-link-title">
+														Editor
+													</span>
+												</button>
+											</form>
+										</li>
+									{{/if}}
 								<!--- <li class="nav-item d-flex justify-content-center align-items-between">
 									<a class="nav-link" href="{{view_state.presentation_mode.link}}">
-										<span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+										<span class="nav-link-icon-custom d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-presentation" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 4l18 0" /><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" /><path d="M12 16l0 4" /><path d="M9 20l6 0" /><path d="M8 12l3 -3l2 2l3 -3" /></svg>
 										</span>
 										<span class="nav-link-title">
@@ -267,7 +336,7 @@
 								</li> --->
 								<li class="nav-item d-flex justify-content-center align-items-between dropdown d-none">
 									<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-base" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
-										<span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/package -->
+										<span class="nav-link-icon-custom d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/package -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-database" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0" /><path d="M4 6v6a8 3 0 0 0 16 0v-6" /><path d="M4 12v6a8 3 0 0 0 16 0v-6" /></svg>
 										</span>
 										<span class="nav-link-title">
@@ -451,7 +520,7 @@
 								</li>
 								<!--- <li class="nav-item d-flex justify-content-center align-items-between">
 									<a class="nav-link" href="./form-elements.html" >
-										<span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/checkbox -->
+										<span class="nav-link-icon-custom d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/checkbox -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 11l3 3l8 -8" /><path d="M20 12v6a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h9" /></svg>
 										</span>
 										<span class="nav-link-title">
@@ -460,7 +529,7 @@
 									</a>
 								</li> --->
 								<li class="nav-item d-flex justify-content-center align-items-between dropdown">
-									<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-extra" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
+									<a id="packages-menu-item" class="nav-link dropdown-toggle {{#if data.GlobalChartSQLStudio.IsPackagesDropdownOpened}}show{{/if}} {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-extra" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
 										<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Switch Charts Package"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
 										</span>
@@ -468,14 +537,19 @@
 											Packages
 										</span>
 									</a>
-									<div class="dropdown-menu">
+									<div class="dropdown-menu {{#if data.GlobalChartSQLStudio.IsPackagesDropdownOpened}}show{{/if}}">
 										<div class="dropdown-menu-columns">
 											<div class="dropdown-menu-column">
 												{{#each data.GlobalChartSQLStudio.Packages}}
-													<a class="dropdown-item" href="{{OpenPackageLink}}">
-														<!--- {{this}} --->
-														{{FriendlyName}}
-													</a>
+													<form action="/studio/main" method="GET" zero-target="#aside,#pageContent">
+														{{#each OpenPackageParams}}
+															<input type="hidden" name="{{key}}" value="{{value}}">
+														{{/each}}
+														<button type="submit" class="dropdown-item w-100">
+															<!--- {{this}} --->
+															{{FriendlyName}}
+														</button>
+													</form>
 													<!--- <div class="dropend">
 														<a class="dropdown-item dropdown-toggle" href="{{OpenPackageLink}}" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
 															{{FriendlyName}}
@@ -514,7 +588,7 @@
 								</li>
 								<li class="nav-item d-flex justify-content-center align-items-between dropdown d-none">
 									<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
-										<span class="nav-link-icon d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
+										<span class="nav-link-icon-custom d-md-none d-lg-inline-block"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-layout-dashboard" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 4h6v8h-6z" /><path d="M4 16h6v4h-6z" /><path d="M14 12h6v8h-6z" /><path d="M14 4h6v4h-6z" /></svg>
 										</span>
 										<span class="nav-link-title">
@@ -535,15 +609,15 @@
 									{{#if (neq Location 'bottom')}}
 										{{#if HasChildren}}
 											<li class="nav-item d-flex justify-content-center align-items-between dropdown">
-												<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
-													<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
+												<a id="{{Name}}-menu-item" class="nav-link dropdown-toggle {{#if IsOpen}}show{{/if}} {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
+													<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
 														<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
 													</span>
 													<span class="nav-link-title">
 														{{Name}}
 													</span>
 												</a>
-												<div class="dropdown-menu">
+												<div class="dropdown-menu {{#if IsOpen}}show{{/if}}">
 													{{#each Children}}
 														<a class="dropdown-item" href="{{Link}}">
 															{{#if IconClass}}<i class="{{IconClass}}"></i>&nbsp;{{/if}}{{Name}}
@@ -554,7 +628,7 @@
 										{{else}}
 											<li class="nav-item d-flex justify-content-center align-items-between {{#if IsActive}}active{{/if}}">
 												<a class="nav-link" href="{{Link}}" {{#if OpenNewTab}}target="_blank"{{/if}}>
-													<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+													<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 														<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
 													</span>
 													<span class="nav-link-title">
@@ -570,15 +644,15 @@
 										{{#if (eq Location 'bottom')}}
 											{{#if HasChildren}}
 												<li class="nav-item d-flex justify-content-center align-items-between dropdown">
-													<a class="nav-link dropdown-toggle {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
-														<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
+													<a id="{{Name}}-menu-item" class="nav-link dropdown-toggle {{#if IsOpen}}show{{/if}} {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-help" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false" >
+														<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/lifebuoy -->
 															<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
 														</span>
 														<span class="nav-link-title">
 															{{Name}}
 														</span>
 													</a>
-													<div class="dropdown-menu">
+													<div class="dropdown-menu {{#if IsOpen}}show{{/if}}">
 														{{#each Children}}
 															<a class="dropdown-item" href="{{Link}}">
 																{{#if IconClass}}<i class="{{IconClass}}"></i>&nbsp;{{/if}}{{Name}}
@@ -589,7 +663,7 @@
 											{{else}}
 												<li class="nav-item d-flex justify-content-center align-items-between {{#if IsActive}}active{{/if}}">
 													<a class="nav-link" href="{{Link}}" {{#if OpenNewTab}}target="_blank"{{/if}}>
-														<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+														<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="{{Tooltip}}"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
 															<i class="{{IconClass}}" style="font-size:1.2rem; font-weight:100;"></i>
 														</span>
 														<span class="nav-link-title">
@@ -606,34 +680,98 @@
 							</ul>
 						</div>
 					</div>
+					<script>
+						var openedDropdownMenuItems = "{{view_state.opened_dropdown_menu_items}}";
+							$( document ).ready(function() {
+								// Add event click to every 'dropdown-toggle'
+								$('.dropdown-toggle').click(function () {
+									var elementId = this.id;
+									if (openedDropdownMenuItems == "") {
+										openedDropdownMenuItems = [];
+									} else if (typeof openedDropdownMenuItems === 'string') {
+										openedDropdownMenuItems = openedDropdownMenuItems.split(',');
+									}
+			
+									if (!this.classList.contains('show')) {
+										openedDropdownMenuItems = openedDropdownMenuItems.filter(item => item !== elementId);
+									} else {
+										if (!openedDropdownMenuItems.includes(elementId)) {
+											openedDropdownMenuItems.push(elementId);
+										}
+									}
+									ZeroClient.set('opened_dropdown_menu_items', openedDropdownMenuItems.join(','));
+			
+									if (this.classList.contains('leftcollapsed')) {
+										if (!this.classList.contains('show')) {
+											$(this).dropdown('toggle')
+										}
+										toggleNavbar();
+									}
+								});
+							});
+					</script>
 				</aside>
-				<style>
-					.bottom-menu-items {
-						position:absolute;
-						bottom: 10px;
-						width:100%;
-					}
-
-					.nav-tabs .nav-link {
-						border-radius:0;
-						border-top:none;
-					}
-
-					.nav-tabs:first-child {
-						border-left:none;
-					}
-					.nav-item {
-						border-radius:0;
-					}
-
-					.card {
-						box-shadow:none;
-					}
-				</style>
 				<div id="pageContent" class="page-wrapper {{#if client_state.navbar_collapsed}}left-collapsed{{/if}}" style="height:100vh; overflow:hidden;">
 					<cfoutput>#body#</cfoutput>
 				</div>
 			</div>
+			<div class="modal" id="globalSearchModal" tabindex="-1">
+			  <div class="modal-dialog modal-dialog-scrollable" role="document">
+				<div class="modal-content">
+				  <div class="modal-header">
+					<h5 class="modal-title w-100 h1">
+						<form class="w-100" id="globalSearchForm" method="GET" action="/studio/main" zero-target="#globalSearchResults">
+							{{#each view_state.params}}
+								{{#unless (eq key "globalSearchQuery")}}
+									<input type="hidden" name="{{key}}" value="{{value}}">
+								{{/unless}}
+							{{/each}}
+						  <div class="input-group flex-1 w-100">
+							  <input class="form-control w-100" form="globalSearchForm" id="globalSearchQueryInput" name="globalSearchQuery" onfocus="this.select();" autocomplete="off" oninput="document.getElementById('globalSearchSubmitButton').click();" value="{{#if view_state.globalSearchQuery}}{{view_state.globalSearchQuery}}{{/if}}" type="text" placeholder="Search..." aria-label="Search...">
+							  <button id="globalSearchSubmitButton" type="submit" class="d-none"></button>
+							  <!--- <button type="button" class="btn btn-link text-decoration-none" onclick="document.getElementById('globalSearchQueryInput').value = ''; document.getElementById('globalSearchSubmitButton').click();">
+								<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-x"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
+							  </button> --->
+						  </div>
+					  </form>
+					</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				  </div>
+				  <div class="modal-body" style="height: 50vh;">
+					<div class="d-flex flex-row justify-content-center">
+						<span class="text-muted text-center">Find packages, datasources, files and settings very quickly</span>
+					</div>
+					  <div id="globalSearchResults">
+						{{#each data.globalSearchResults}}
+							<div class="d-flex align-items-center mt-3 h5">
+								{{#if (eq entityType 'package')}}
+									<i class="ti ti-box me-2"></i>
+								{{/if}}
+								{{#if (eq entityType 'datasource')}}
+									<i class="ti ti-database me-2"></i>
+								{{/if}}
+								{{#if (eq entityType 'sqlfile')}}
+									<i class="ti ti-file me-2"></i>
+								{{/if}}
+								{{#if (eq entityType 'setting')}}
+									<i class="ti ti-gear me-2"></i>
+								{{/if}}
+								<a href="{{openLink}}" class="text-decoration-none">{{name}}</a>
+							</div>
+						{{/each}}
+						{{#unless data.globalSearchResults.[1]}}
+							<div class="text-center text-muted w-100 my-3">
+								No results
+							</div>
+						{{/unless}}
+					</div>
+				  </div>
+				</div>
+			  </div>
+			</div>
+			<style>
+
+			</style>
 			<!-- Libs JS -->
 			<script src="/assets/vendor/tabler/dist/libs/apexcharts/dist/apexcharts.min.js?1684106062" defer></script>
 			<script src="/assets/vendor/tabler/dist/libs/jsvectormap/dist/js/jsvectormap.min.js?1684106062" defer></script>
@@ -643,8 +781,50 @@
 			<script src="/assets/vendor/tabler/dist/js/tabler.min.js?1684106062" defer></script>
 			<script src="/assets/vendor/tabler/dist/js/demo.min.js?1684106062" defer></script>
 			<script>
+				// Open globalSearchModal when presing Cmd + P or Ctrl + P
+				// and prevent default browser print dialog
+				document.addEventListener('keydown', function(event) {	
+					if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
+						event.preventDefault();
+						let modal = $('#globalSearchModal');
+
+						if (modal.hasClass('show')) {
+							modal.modal('hide');
+							// Clear input
+							document.getElementById('globalSearchQueryInput').value = '';
+							// And click on form submit button
+							document.getElementById('globalSearchSubmitButton').click();
+						} else {
+							modal.modal('show');
+							$('#globalSearchQueryInput').focus();
+						}
+					}
+				});
+
+				// If modal closes, clear input
+				$('#globalSearchModal').on('hidden.bs.modal', function (e) {
+					document.getElementById('globalSearchQueryInput').value = '';
+					document.getElementById('globalSearchSubmitButton').click();
+				});
+			</script>
+			<script>
 				ZERO_JS_ICON_CLASS = "spinner-border spinner-border-sm me-2";
 				ZERO_JS_LOG_LEVEL = "debug";
+				ZERO_TARGET_CALLBACK = function(target) {
+					// Remove all tooltips and popovers to prevent stuck tooltips
+					$('.tooltip').remove();
+					$('.popover').remove();
+
+					var tooltipTriggerList = [].slice.call(target[0].querySelectorAll('[data-bs-toggle="tooltip"]'))
+					var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+						return new bootstrap.Tooltip(tooltipTriggerEl)
+					});
+
+					var popoverTriggerList = [].slice.call(target[0].querySelectorAll('[data-bs-toggle="popover"]'))
+					var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+						return new bootstrap.Popover(popoverTriggerEl)
+					});
+				}
 			</script>
 			<!--- <style>
 				.spinner-border-sm {
@@ -666,18 +846,5 @@
 			</div>
 
 		</body>
-		<script>
-				$( document ).ready(function() {
-					// Add event click to every 'dropdown-toggle'
-					$('.dropdown-toggle').click(function () {
-						if (this.classList.contains('leftcollapsed')) {
-							if (!this.classList.contains('show')) {
-								$(this).dropdown('toggle')
-							}
-							toggleNavbar();
-						}
-					});
-				});
-		</script>
 	</html>
 </cf_handlebars>

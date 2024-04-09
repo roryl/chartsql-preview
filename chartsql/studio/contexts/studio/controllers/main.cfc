@@ -68,7 +68,11 @@ component accessors="true" {
 
 		var EditorSession = variables.fw.getEditorSession();
 
-
+		// Setup our empty output struct
+		var out = {
+			"success":true,
+			"data":{}
+		}
 
 		// Read our open files and put them into an array, create
 		// an ordered struct and save them so that we can use them by
@@ -80,13 +84,13 @@ component accessors="true" {
 		}
 
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+
 		// We are going to dynamically create a query string object for the users state
 		var qs = ChartSQLStudio.getEditorQueryString();
 
 		// We delete it because we only want links that open files to set this value, rather than all links
 		// within the application so that it does not infinitely loop
 		qs.delete("RenderOnLoad");
-
 
 		// Select our current StudioDatasource that we are working with
 		if(arguments.keyExists("StudioDatasource")){
@@ -98,48 +102,29 @@ component accessors="true" {
 		}
 
 		if(arguments.keyExists("PackageName")){
+
 			var CurrentPackage = ChartSQLStudio.findPackageByFullName(arguments.PackageName).elseThrow("Could not locate that Package: #arguments.PackageName#");
 			CurrentPackage.loadSqlFiles();
+			out.data.HasOpenedPackage = true;
+
 		} else {
 
-			var ExamplesPackageOptional = ChartSQLStudio.findPackageByFriendlyName("Examples");
-
-			if(ExamplesPackageOptional.exists()){
-				var ExamplesPackage = ExamplesPackageOptional.get();
-				ExamplesPackage.loadSqlFiles();
-				qs.setValue("PackageName", ExamplesPackage.getFullName());
-				qs.setValue("StudioDatasource", ExamplesPackage.getDefaultStudioDatasource().get().getName());
-				variables.fw.doLocation(qs.get());
-			} else {
-				// If there is not a package set, then we are going to load the first
-				// package that we find and redirect to that
-				var CurrentPackage = ChartSQLStudio.getPackages()[1];
-				CurrentPackage.loadSqlFiles();
-				qs.setValue("PackageName", CurrentPackage.getFullName());
-				variables.fw.doLocation(qs.get());
-			}
-		}
-
-		if(!args.keyExists("ActiveFile")){
-			if(!args.keyExists("OpenFiles") or args.OpenFiles == ""){
-				//Check if we have a scratch file, and if we do, we are going to force this open
-				var fileName = CurrentPackage.getFullName() & ".scratch.sql";
-				var scratchSqlFileOptional = ChartSQLStudio.findSqlFileByFullName(fileName);
-				if(scratchSqlFileOptional.exists()){
-					var scratchSqlFile = scratchSqlFileOptional.get();
-					args.ActiveFile = scratchSqlFile.getFullName();
-					args.OpenFiles = args.OpenFiles & "," & scratchSqlFile.getFullName();
-					openFileKeys[scratchSqlFile.getFullName()] = true;
-					qs.setValue("ActiveFile", scratchSqlFile.getFullName());
-					qs.setValue("OpenFiles", openFiles);
+			if (isDefined("server.ShouldLoadDefaultPackage") && server.ShouldLoadDefaultPackage == true) {
+				// Redirect to the url with the default package if there is a default package and the
+				// app is starting for the first time
+				var DefaultPackageName = ChartSQLStudio.getDefaultPackage();
+				if (!isNull(ChartSQLStudio.getDefaultPackage())) {
+					server.ShouldLoadDefaultPackage = false;
+					var qs = ChartSQLStudio.getEditorQueryString();
+					var DefaultPackageName = ChartSQLStudio.getDefaultPackage().getFullName();
+					qs.setValue("PackageName", DefaultPackageName);
+					server.ShouldLoadDefaultPackage = false;
+					variables.fw.doLocation(qs.get());
+					return out;
 				}
 			}
-		}
 
-		// Setup our empty output struct
-		var out = {
-			"success":true,
-			"data":{}
+			out.data.HasOpenedPackage = false;
 		}
 
 		var endTick = getTickCount();
@@ -378,6 +363,10 @@ component accessors="true" {
 				},
 				OpenUrlParams: function(SqlFiles){
 					var keys = duplicate(openFileKeys);
+					if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
+						keys[ActiveFile] = true;
+					}
+					keys[SqlFiles.getFullName()] = true;
 					keys[SqlFiles.getFullName()] = true;
 					var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).getFields();
 					return out;
@@ -579,6 +568,7 @@ component accessors="true" {
 			Packages:{
 				FullName:{},
 				FriendlyName:{},
+				IsReadOnly:{},
 				SqlFiles:{
 					Content:{},
 					IsMissingFile: {},
@@ -587,6 +577,20 @@ component accessors="true" {
 							ValueRaw:{}
 						}
 					}
+				},
+				OpenPackageParams: function(Package){
+					var qs = qs.clone();
+					qs.setValue("PackageName", Package.getFullName())
+					.delete("SchemaFilter")
+					.delete("Filter");
+
+					var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
+					if(StudioDatasourceOptional.exists()){
+						var StudioDatasource = StudioDatasourceOptional.get();
+						qs.setValue("StudioDatasource", StudioDatasource.getName());
+					}
+
+					return qs.getFields();
 				},
 				OpenPackageLink: function(Package){
 					var qs = qs.clone();
@@ -623,10 +627,49 @@ component accessors="true" {
 				IsDirty:{},
 				IsMissingFile:{},
 				NamedDirectives:{
+					Title: {
+						ValueRaw:{},
+						IsValid:{}
+					},
 					Chart:{
 						ValueRaw:{},
 						IsValid:{}
 					}
+				},
+				IsRenamingFile: function(SqlFiles){
+					if(
+						args.keyExists("ChangeActiveFileName")
+						and args.ChangeActiveFileName
+						and args.keyExists("ActiveFile")
+						and args.ActiveFile == SqlFiles.getFullName()
+					){
+						return true;
+					} else {
+						return false;
+					}
+				},
+				CloseAllOtherFilesLink: function(SqlFiles){
+					var out = qs.clone()
+						.setValue("OpenFiles", SqlFiles.getFullName())
+						.setValue("ActiveFile", SqlFiles.getFullName())
+						.delete("ChangeActiveFileName")
+						.get();
+					return out;
+				},
+				RenameFileLink: function(SqlFiles){
+					var keys = duplicate(openFileKeys);
+					keys[SqlFiles.getFullName()] = true;
+					var out = qs.clone()
+						.setValue("OpenFiles", keys.keyList())
+						.setValue("ActiveFile", SqlFiles.getFullName())
+						.setValue("ChangeActiveFileName", "true")
+						.get();
+					return out;
+				},
+				CloseLinkOpenFilesParam: function(SqlFiles){
+					var keys = duplicate(openFileKeys);
+					keys.delete(SqlFiles.getFullName());
+					return keys.keyList();
 				},
 				OpenLinkOpenFilesParam: function(SqlFiles){
 					var keys = duplicate(openFileKeys);
@@ -640,6 +683,9 @@ component accessors="true" {
 				},
 				OpenUrlParams: function(SqlFiles){
 					var keys = duplicate(openFileKeys);
+					if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
+						keys[ActiveFile] = true;
+					}
 					keys[SqlFiles.getFullName()] = true;
 					var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).getFields();
 					return out;
@@ -725,6 +771,7 @@ component accessors="true" {
 			out.data.CurrentPackage = variables.fw.serializeFast(CurrentPackage, {
 				FullName:{},
 				FriendlyName:{},
+				IsReadOnly: {},
 				SqlFiles:{
 					Id:{},
 					Content:{},
@@ -816,6 +863,9 @@ component accessors="true" {
 					},
 					OpenUrlParams: function(SqlFiles){
 						var keys = duplicate(openFileKeys);
+						if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
+							keys[ActiveFile] = true;
+						}
 						keys[SqlFiles.getFullName()] = true;
 						var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).getFields();
 						return out;
@@ -968,7 +1018,6 @@ component accessors="true" {
 			}
 		}
 
-
 		// --------------------------------------
 		// VIEW STATE
 		// --------------------------------------
@@ -1021,17 +1070,17 @@ component accessors="true" {
 		// 	out.view_state.browser_panel[view].link = qs.clone().setValue("FileBrowserView", view).get();
 		// }
 
+		out.view_state.opened_dropdown_menu_items = request.context.client_state?.opened_dropdown_menu_items?:"";
 
 		// Here we load the widths and heights of the panels from the client state (cookies)
 		// and if they are not set we use the defaults. The client state values are going to
 		// be set by the javascript in the view in the Split.js onDragEnd event.
-		out.view_state.top_panel_height = request.context.client_state?.top_panel_height?:"60";
-		out.view_state.bottom_panel_height = request.context.client_state?.bottom_panel_height?:"40";
-		out.view_state.editor_width = request.context.client_state?.editor_width?:"50";
-		out.view_state.renderer_width = request.context.client_state?.renderer_width?:"50";
-		out.view_state.file_list_width = request.context.client_state?.file_list_width?:"20";
-		out.view_state.main_container_width = request.context.client_state?.main_container_width?:"80";
-
+		out.view_state.top_panel_height = toString(round(toNumeric(request.context.client_state?.top_panel_height?:"60"),2));
+		out.view_state.bottom_panel_height = toString(round(toNumeric(request.context.client_state?.bottom_panel_height?:"40"),2));
+		out.view_state.editor_width = toString(round(toNumeric(request.context.client_state?.editor_width?:"50"),2));
+		out.view_state.renderer_width = toString(round(toNumeric(request.context.client_state?.renderer_width?:"50"),2));
+		out.view_state.file_list_width = toString(round(toNumeric(request.context.client_state?.file_list_width?:"20"),2));
+		out.view_state.main_container_width = toString(round(toNumeric(request.context.client_state?.main_container_width?:"80"),2));
 
 		// Rendering panel can be maximized in which case we will force the heights
 		// and widths of the panels to account.
@@ -1041,8 +1090,6 @@ component accessors="true" {
 				out.view_state.bottom_panel_height = "0";
 				out.view_state.editor_width = "0";
 				out.view_state.renderer_width = "100";
-				out.view_state.file_list_width = "20";
-				out.view_state.main_container_width = "80";
 				out.view_state.renderer_is_maximized = true;
 			} else {
 				out.view_state.renderer_is_maximized = false;
@@ -1053,8 +1100,6 @@ component accessors="true" {
 				out.view_state.bottom_panel_height = "0";
 				out.view_state.editor_width = "100";
 				out.view_state.renderer_width = "0";
-				out.view_state.file_list_width = "20";
-				out.view_state.main_container_width = "80";
 				out.view_state.editor_is_maximized = true;
 			} else {
 				out.view_state.editor_is_maximized = false;
@@ -1078,10 +1123,10 @@ component accessors="true" {
 		out.view_state.maximizeEditorLink = qs.clone().setValue('maximizePanel', 'editor').get();
 		out.view_state.minimizeLink = qs.clone().delete('maximizePanel').get();
 
-		// out.view_state.presentation_mode = {
-		// 	is_active: arguments.PresentationMode,
-		// 	link: qs.clone().setValue("PresentationMode", "true").get()
-		// }
+		out.view_state.presentation_mode = {
+			is_active: arguments.PresentationMode,
+			link: qs.clone().setValue("PresentationMode", "true").get()
+		}
 
 		// // The editor link should remove the PresentationMode variable from the URL
 		// // to get back to the same file as we were in preview mode
@@ -1109,7 +1154,7 @@ component accessors="true" {
 		out.view_state.save_or_update_file_redirect = qs.clone().setValue("OpenFiles", newOpenKeys.keyList()).get();
 
 		// The main target objects that we want to replace within the view on form posts
-		out.view_state.main_zero_targets = "##renderer-card-header,##renderContainer,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders";
+		out.view_state.main_zero_targets = "##renderer-card-header,##renderContainer,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders,##header";
 		out.view_state.directives_editor_targets = "##editorTabs,##openFilesList,##sqlSourceCode,##editorBody,##saveButton,##rendererPanel,##editorProgressContainer,##fileList,.directiveErrorAlert,.directiveEditorTitle";
 
 		// This was taking about 100ms to run and so we are not going to run it on every
@@ -1125,7 +1170,7 @@ component accessors="true" {
 		var endTick = getTickCount();
 		request.timerData.ViewState = endTick - startTick;
 
-		// writeDump(out.view_state);
+		// writeDump(out);
 		// abort;
 
 		// writeDump(out.data.CurrentSqlFile.NamedDirectives["mongodb-query"]);
