@@ -68,22 +68,22 @@
 			</form>
 		{{#if IsOpen}}{{#unless IsScratch}}
 			<div id="{{Id}}-file-rightclick-dropdown" class="file-right-click-dropdown" style="display: none; z-index: 9999;">
-				<ul class="dropdown-menu show" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px;"> 
-					<a class="dropdown-item" href="{{view_state.close_all_link}}"> 
+				<ul class="dropdown-menu show" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px;">
+					<a class="dropdown-item" href="{{view_state.close_all_link}}">
 						<svg xmlns="http://www.w3.org/2000/svg" style="z-index:10;" class="icon icon-tabler icon-tabler-square-rounded-x me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 						<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10l4 4m0 -4l-4 4"></path><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
-						</svg> <span class="me-2">Close All Open Files</span> 
+						</svg> <span class="me-2">Close All Open Files</span>
 					</a>
-					<a class="dropdown-item" href="{{CloseAllOtherFilesLink}}"> 
+					<a class="dropdown-item" href="{{CloseAllOtherFilesLink}}">
 						<svg xmlns="http://www.w3.org/2000/svg" style="z-index:10;" class="icon icon-tabler icon-tabler-square-rounded-x me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 						<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10l4 4m0 -4l-4 4"></path><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
-						</svg> <span class="me-2">Close Other Files</span> 
-					</a> 
-				   <form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item"> 
+						</svg> <span class="me-2">Close Other Files</span>
+					</a>
+				   <form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
 					 <svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 					  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
-					 </svg> <span class="me-2">Rename File</span> </button> 
-				   </form> 
+					 </svg> <span class="me-2">Rename File</span> </button>
+				   </form>
 				</ul>
 			</div>
 			{{#if IsMissingFile}}
@@ -408,22 +408,22 @@
 						{{else}}
 							<li data-sqlfile-id="{{Id}}" class="file-item nav-item border-info" role="presentation" style="{{#if IsActive}}border-bottom:2px solid; text-decoration:none; color:white{{/if}}">
 								<div id="{{Id}}-file-rightclick-dropdown" class="file-right-click-dropdown" style="display: none; z-index: 9999;">
-									<ul class="dropdown-menu show" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px;"> 
-										<a class="dropdown-item" href="{{view_state.close_all_link}}"> 
+									<ul class="dropdown-menu show" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px;">
+										<a class="dropdown-item" href="{{view_state.close_all_link}}">
 											<svg xmlns="http://www.w3.org/2000/svg" style="z-index:10;" class="icon icon-tabler icon-tabler-square-rounded-x me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 											<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10l4 4m0 -4l-4 4"></path><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
-											</svg> <span class="me-2">Close All Open Files</span> 
+											</svg> <span class="me-2">Close All Open Files</span>
 										</a>
-										<a class="dropdown-item" href="{{CloseAllOtherFilesLink}}"> 
+										<a class="dropdown-item" href="{{CloseAllOtherFilesLink}}">
 											<svg xmlns="http://www.w3.org/2000/svg" style="z-index:10;" class="icon icon-tabler icon-tabler-square-rounded-x me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 											<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10l4 4m0 -4l-4 4"></path><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
-											</svg> <span class="me-2">Close Other Files</span> 
-										</a> 
-									   <form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item"> 
+											</svg> <span class="me-2">Close Other Files</span>
+										</a>
+									   <form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
 										 <svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 										  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
-										 </svg> <span class="me-2">Rename File</span> </button> 
-									   </form> 
+										 </svg> <span class="me-2">Rename File</span> </button>
+									   </form>
 									</ul>
 								</div>
 
@@ -525,9 +525,9 @@
 						<button form="createFileForm" class="btn btn-sm" type="submit">Create</button>
 					</div>
 				</form>
-				<div class="btn-group " style="position:relative;">
+				<div class="btn-group " style="position:relative;" {{#if data.CurrentPackage.IsReadOnly}}data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{data.CurrentPackage.FriendlyName}} Package is Read Only"{{/if}}>
 					<!--- <button class="btn btn-ghost-primary btn-sm" type="button" onclick="document.getElementById('createFileContainer').remove('d-none'); document.getElementById('createFileInput').focus();"> --->
-						
+
 							<button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} id="new-file-button" class="btn btn-ghost-primary" style="border-radius: 0; padding: var(--tblr-nav-link-padding-y) var(--tblr-nav-link-padding-x);" type="button" onclick="document.getElementById('createFileContainer').classList.remove('d-none'); this.classList.add('d-none'); document.getElementById('createFileInput').focus();">
 								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-type-sql" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M5 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75" /><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" /><path d="M18 15v6h2" /><path d="M13 15a2 2 0 0 1 2 2v2a2 2 0 1 1 -4 0v-2a2 2 0 0 1 2 -2z" /><path d="M14 20l1.5 1.5" /></svg>
 								New
@@ -559,12 +559,12 @@
 		<script>
 			$(document).keydown(function(e) {
 				if (e.key === "Escape") {
-					// Unfocus all inputs 
+					// Unfocus all inputs
 					$('input').blur();
 
 					// Hide all 'file-right-click-dropdown' class
 					$('.file-right-click-dropdown').css('display', 'none');
-					
+
 					// Submit to 'stopChangeFileNameForm'
 					let stopChangeFileNameFormElement = $('#stopChangeFileNameForm');
 					if (stopChangeFileNameFormElement.length > 0) {
@@ -598,5 +598,5 @@
 				});
 				return false; //blocks default Webbrowser right click menu
 			});
-		
+
 		</script>

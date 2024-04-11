@@ -361,7 +361,7 @@ component accessors="true" {
 	 */
 	public function getMascotBinary(){
 		if(isNull(variables.MascotBinary)){
-			var image = fileReadBinary(expandPath("/com/chartsql/studio/wwwroot/assets/img/mascot.fw.png"));
+			var image = fileReadBinary(expandPath("/com/chartsql/studio/wwwroot/assets/img/mascot1.fw.png"));
 		} else {
 			var image = variables.MascotBinary;
 		}
@@ -552,43 +552,86 @@ component accessors="true" {
 	 */
 	public function globalSearch(string search) {
 		var out = [];
+		var resultsByType = {
+			"packages": [],
+			"datasources": [],
+			"sqlfiles": []
+		};
 
 		if (isNull(arguments.search) || isEmpty(arguments.search)) {
 			return out;
 		};
+
+		// We are going to dynamically create a query string object for the users state
+		var qs = this.getEditorQueryString();
 		
 		for(var Package in variables.Packages){
-			if(Package.getFriendlyName().findNoCase(arguments.search) > 0){
+			if(customFind(arguments.search, Package.getFriendlyName())){
 				if (Package.getDefaultStudioDatasource().exists()) {
 					var PackageStudioDatasource = Package.getDefaultStudioDatasource().get();
 					link = "/studio/main?PackageName=#Package.getFullName()#&StudioDatasource=#PackageStudioDatasource.getName()#";
 				} else {
 					link = "/studio/main?PackageName=#Package.getFullName()#";
 				}
-				arrayAppend(out, {
+				result = {
 					"name": Package.getFriendlyName(),
 					"entityType": "package",
 					"openLink": link,
-					"priority": 1
-				});
+					"priority": 1,
+					"metadata": new zero.serializerFast(Package, {
+						FullName:{},
+						OpenPackageLink: function(Package){
+							var qs = qs.clone();
+							qs.setValue("PackageName", Package.getFullName())
+							.delete("SchemaFilter")
+							.delete("Filter");
+		
+							var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
+							if(StudioDatasourceOptional.exists()){
+								var StudioDatasource = StudioDatasourceOptional.get();
+								qs.setValue("StudioDatasource", StudioDatasource.getName());
+							}
+		
+							return qs.get();
+						}
+					})
+				};
+				arrayAppend(out, result);
+				resultsByType.packages.append(result);
 			}
 		}
 
 		for(var StudioDatasource in variables.StudioDatasources){
 
 
-			if(StudioDatasource.getName().findNoCase(arguments.search) > 0){
-				arrayAppend(out, {
+			if(customFind(arguments.search, StudioDatasource.getName())){
+				result = {
 					"name": StudioDatasource.getName(),
 					"entityType": "datasource",
 					"openLink": "/studio/settings/datasources?EditStudioDatasource=#StudioDatasource.getName()#",
-					"priority": 2
-				});
+					"priority": 2,
+					"metadata": new zero.serializerFast(StudioDatasource, {
+						Name:{},
+						SelectLink: function(StudioDatasource){
+							return qs.clone().setValue("StudioDatasource", StudioDatasource.getName()).get();
+						}
+					})
+				};
+				arrayAppend(out, result);
+
+				resultsByType.datasources.append(result);
 			}
 		}
 
 		for(var SqlFile in variables.SqlFiles){
-			if(SqlFile.getName().findNoCase(arguments.search) > 0){
+			SqlFileNamedDirectives = SqlFile.getNamedDirectives();
+			if(customFind(arguments.search, SqlFile.getName()) || (
+				SqlFileNamedDirectives.keyExists("Title")
+				&& !isNull(SqlFileNamedDirectives.Title)
+				&& !isNull(SqlFileNamedDirectives.Title.getValueRaw())
+				&& !isEmpty(SqlFileNamedDirectives.Title.getValueRaw())
+				&& customFind(arguments.search, SqlFileNamedDirectives.Title.getValueRaw())
+			)){
 				var Package = SqlFile.getPackage();
 				var link = "";
 				if (Package.getDefaultStudioDatasource().exists()) {
@@ -597,15 +640,47 @@ component accessors="true" {
 				} else {
 					link = "/studio/main?PackageName=#Package.getFullName()#&OpenFiles=#SqlFile.getFullName()#&ActiveFile=#SqlFile.getFullName()#";
 				}
-				arrayAppend(out, {
-					"name": "#SqlFile.getName()# (#Package.getFriendlyName()#)", 
+
+				if (SqlFileNamedDirectives.keyExists("Title")
+					&& !isNull(SqlFileNamedDirectives.Title)
+					&& !isNull(SqlFileNamedDirectives.Title.getValueRaw())
+					&& !isEmpty(SqlFileNamedDirectives.Title.getValueRaw())
+				) {
+					var name = SqlFileNamedDirectives.Title.getValueRaw();
+				} else {
+					var name = SqlFile.getName();
+				}
+				result = {
+					"name": "#name# (#Package.getFriendlyName()#)",
 					"entityType": "sqlfile",
 					"openLink": link,
-					"priority": 3
-				});
+					"priority": 3,
+					"metadata": new zero.serializerFast(SqlFile, {
+						OpenLink: function(SqlFiles){
+							if (!isDefined("request.context.OpenFiles") || isNull(request.context.OpenFiles)) {
+								request.context.OpenFiles = "";
+							}
+							var openFileNames = listToArray(request.context.OpenFiles);
+							var openFileKeys = structNew("ordered");
+							for(var name in openFileNames){
+								openFileKeys[name] = true;
+							}
+							var keys = duplicate(openFileKeys);
+							keys[SqlFiles.getFullName()] = true;
+							return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
+						},
+					})
+				};
+
+				arrayAppend(out, result);
+				resultsByType.sqlfiles.append(result);
 			}
 		}
-		return out;
+
+		return {
+			results: out,
+			resultsByType: resultsByType
+		};
 	}
 
 	public function getCurrentQueryString(){
@@ -616,5 +691,27 @@ component accessors="true" {
 		var qs = this.getCurrentQueryString();
 		qs.setBasePath("/studio/main");
 		return qs;
+	}
+
+	private function customFind(needle, haystack) {
+		// Remove all spaces from needle and haystack
+		needle = lcase(reReplace(arguments.needle, "\s", "", "all"));
+		haystack = lcase(reReplace(arguments.haystack, "\s", "", "all"));
+
+		// If the needle is empty, return true
+		if (len(needle) == 0) {
+			return false;
+		}
+
+		// If the needle is longer than the haystack, return false
+		if (len(needle) > len(haystack)) {
+			return false;
+		}
+
+		if (haystack.findNoCase(needle) > 0 || findOneOf(needle, haystack) > 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

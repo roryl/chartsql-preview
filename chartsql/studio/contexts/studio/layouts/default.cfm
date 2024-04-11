@@ -242,53 +242,29 @@
 						<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
 							<span class="navbar-toggler-icon"></span>
 						</button>
-						<h1 class="navbar-brand navbar-brand-autodark mt-2" style="margin-bottom: 0px;">
-							<span href="" style="display:flex; flex-flow:row; align-items:center;">
-								<!--- <img src="/studio/main/logo" width="175" alt="Tabler" class="me-3" style="margin-top:-2px; cursor: pointer;"  onclick="toggleNavbar();"> --->
-								<img src="/assets/img/logo-white.png" width="175" alt="Tabler" class="me-3" style="margin-top:-2px; cursor: pointer;"  onclick="toggleNavbar();">
-								<!--- <img src="/assets/img/mascot.fw.png" width="50" alt="Tabler" class="me-3"> --->
-								<!--- <div style="margin-top:2px;">ChartSQL<br /><i class="text-uppercase text-info" style="">Studio</i></div> --->
-								<a class="" onclick="toggleNavbar();" style="margin-top:0px; margin-left:0px;">
+						<h1 class="navbar-brand navbar-brand-autodark" style="">
+
+							<div class="d-flex align-items-center">
+
+								<img src="/studio/main/logo" height="25" alt="Tabler" class="me-3" style="cursor: pointer;"  onclick="toggleNavbar();">
+
+								<a class="" onclick="toggleNavbar();" style="">
 									<span class="" type="button" style="">
 										<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-menu-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg>
 									</span>
 								</a>
-							</span>
+
+							</div>
+						</h1>
+						<h1 class="navbar-brand navbar-brand-autodark navbar-collapsed-restore" style="">
+							<a class="nav-link d-flex align-items-center justify-content-center" onclick="toggleNavbar();" style="">
+								<span class="" type="button" style="">
+									<img src="/studio/main/mascot" height="25" alt="ChartSQL Studio" class="">
+								</span>
+							</a>
 						</h1>
 						<div class="collapse navbar-collapse" id="sidebar-menu">
-							<ul id="applicationMenu" class="navbar-nav  h-100">
-								<li class="nav-item navbar-collapsed-restore pt-lg-3" style="padding-bottom: 7px;">
-									<a class="nav-link" onclick="toggleNavbar();" style="width:70px; margin-left:-5px; margin-top:-10px; margin-bottom:10px;">
-										<span class="nav-link-icon-custom d-md-none d-lg-inline-block" type="button" style="width:70px;">
-											<img src="/assets/img/mark-white.png" width="70" alt="Tabler" class="me-3" style="">
-											<!--- <img src="/studio/main/mascot" width="70" alt="ChartSQL Studio" class="me-3" style=""> --->
-											<!--- <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-menu-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 6l16 0" /><path d="M4 12l16 0" /><path d="M4 18l16 0" /></svg> --->
-										</span>
-									</a>
-								</li>
-
-								<!--- <div id="storyMenu" style="display:none;">
-									<li id="" class="nav-item">
-										<a class="nav-link" href="{{view_state.editor_link}}">
-											<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="From beginning"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
-												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-slideshow" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 6l.01 0" /><path d="M3 3m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z" /><path d="M3 13l4 -4a3 5 0 0 1 3 0l4 4" /><path d="M13 12l2 -2a3 5 0 0 1 3 0l3 3" /><path d="M8 21l.01 0" /><path d="M12 21l.01 0" /><path d="M16 21l.01 0" /></svg>
-											</span>
-											<span class="nav-link-title">
-												From Beginning
-											</span>
-										</a>
-									</li>
-									<li id="" class="nav-item">
-										<a class="nav-link" href="{{view_state.editor_link}}">
-											<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Exit Presenation"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
-												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-stop" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 5m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z" /></svg>
-											</span>
-											<span class="nav-link-title">
-												Exit
-											</span>
-										</a>
-									</li>
-								</div> --->
+							<ul id="applicationMenu" class="navbar-nav h-100">
 
 								<div id="main-menu-nav-items" class="h-100">
 									<!--- If we are in settings menu --->
@@ -691,7 +667,7 @@
 									} else if (typeof openedDropdownMenuItems === 'string') {
 										openedDropdownMenuItems = openedDropdownMenuItems.split(',');
 									}
-			
+
 									if (!this.classList.contains('show')) {
 										openedDropdownMenuItems = openedDropdownMenuItems.filter(item => item !== elementId);
 									} else {
@@ -700,7 +676,7 @@
 										}
 									}
 									ZeroClient.set('opened_dropdown_menu_items', openedDropdownMenuItems.join(','));
-			
+
 									if (this.classList.contains('leftcollapsed')) {
 										if (!this.classList.contains('show')) {
 											$(this).dropdown('toggle')
@@ -718,16 +694,16 @@
 			<div class="modal" id="globalSearchModal" tabindex="-1">
 			  <div class="modal-dialog modal-dialog-scrollable" role="document">
 				<div class="modal-content">
-				  <div class="modal-header">
-					<h5 class="modal-title w-100 h1">
+				  <div class="modal-header px-0 mx-0">
+					<h5 class="modal-title w-100 h1 px-0 mx-0">
 						<form class="w-100" id="globalSearchForm" method="GET" action="/studio/main" zero-target="#globalSearchResults">
 							{{#each view_state.params}}
 								{{#unless (eq key "globalSearchQuery")}}
 									<input type="hidden" name="{{key}}" value="{{value}}">
 								{{/unless}}
 							{{/each}}
-						  <div class="input-group flex-1 w-100">
-							  <input class="form-control w-100" form="globalSearchForm" id="globalSearchQueryInput" name="globalSearchQuery" onfocus="this.select();" autocomplete="off" oninput="document.getElementById('globalSearchSubmitButton').click();" value="{{#if view_state.globalSearchQuery}}{{view_state.globalSearchQuery}}{{/if}}" type="text" placeholder="Search..." aria-label="Search...">
+						  <div class="input-group flex-1 w-100 ps-2" style="padding-right: 56px;">
+							  <input class="form-control w-100 mx-0" form="globalSearchForm" id="globalSearchQueryInput" name="globalSearchQuery" onfocus="this.select();" autocomplete="off" oninput="document.getElementById('globalSearchSubmitButton').click();" value="{{#if view_state.globalSearchQuery}}{{view_state.globalSearchQuery}}{{/if}}" type="text" placeholder="Search..." aria-label="Search...">
 							  <button id="globalSearchSubmitButton" type="submit" class="d-none"></button>
 							  <!--- <button type="button" class="btn btn-link text-decoration-none" onclick="document.getElementById('globalSearchQueryInput').value = ''; document.getElementById('globalSearchSubmitButton').click();">
 								<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-x"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
@@ -737,12 +713,39 @@
 					</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				  </div>
-				  <div class="modal-body" style="height: 50vh;">
+				  <div class="modal-body" style="height: 75vh;">
 					<div class="d-flex flex-row justify-content-center">
 						<span class="text-muted text-center">Find packages, datasources, files and settings very quickly</span>
 					</div>
 					  <div id="globalSearchResults">
-						{{#each data.globalSearchResults}}
+						{{#each data.globalSearchResults.resultsByType.packages}}
+							<div class="d-flex align-items-center mt-3 h5 arrow-selectable">
+								<i class="ti ti-box me-2"></i>
+								<a href="{{metadata.OpenPackageLink}}" class="text-decoration-none">{{name}}</a>
+								<a href="/studio/settings/packages?EditPackage={{metadata.fullname}}" class="badge badge-outline text-azure ms-2" style="cursor: pointer;">configure</a>
+							</div>
+						{{/each}}
+						{{#if data.globalSearchResults.resultsByType.packages.[0]}}
+							<div class="mb-1" style="background-color: grey; width: 100%; height: 0.5px;"></div>
+						{{/if}}
+						{{#each data.globalSearchResults.resultsByType.datasources}}
+							<div class="d-flex align-items-center mt-3 h5 arrow-selectable">
+								<i class="ti ti-database me-2"></i>
+								<a href="{{metadata.SelectLink}}" class="text-decoration-none">{{name}}</a>
+								<a href="/studio/settings/datasources?EditStudioDatasource={{metadata.name}}" class="badge badge-outline text-azure ms-2" style="cursor: pointer;">configure</a>
+							</div>
+						{{/each}}
+						{{#if data.globalSearchResults.resultsByType.datasources.[0]}}
+							<div class="mt-3" style="background-color: grey; width: 100%; height: 0.5px;"></div>
+						{{/if}}
+						{{#each data.globalSearchResults.resultsByType.sqlfiles}}
+							<div class="d-flex align-items-center mt-3 h5 arrow-selectable">
+								<i class="ti ti-file me-2"></i>
+								<a href="{{metadata.OpenLink}}" class="text-decoration-none">{{name}}</a>
+							</div>
+						{{/each}}
+						
+						<!--- {{#each data.globalSearchResults.results}}
 							<div class="d-flex align-items-center mt-3 h5">
 								{{#if (eq entityType 'package')}}
 									<i class="ti ti-box me-2"></i>
@@ -756,10 +759,15 @@
 								{{#if (eq entityType 'setting')}}
 									<i class="ti ti-gear me-2"></i>
 								{{/if}}
-								<a href="{{openLink}}" class="text-decoration-none">{{name}}</a>
+									<a href="{{openLink}}" class="text-decoration-none">{{name}}</a>
+								{{#if (eq entityType 'package')}}
+									<a href="/studio/settings/packages?EditPackage={{metadata.fullname}}" class="badge badge-outline text-azure ms-2" style="cursor: pointer;">configure</a>
+								{{else if (eq entityType 'datasource')}}
+									<a href="/studio/settings/datasources?EditStudioDatasource={{metadata.name}}" class="badge badge-outline text-azure ms-2" style="cursor: pointer;">configure</a>
+								{{/if}}
 							</div>
-						{{/each}}
-						{{#unless data.globalSearchResults.[1]}}
+						{{/each}} --->
+						{{#unless data.globalSearchResults.results.[1]}}
 							<div class="text-center text-muted w-100 my-3">
 								No results
 							</div>
@@ -770,7 +778,13 @@
 			  </div>
 			</div>
 			<style>
-
+				.arrow-selected {
+					border-left: 3px solid #007bff;
+					border-right: 0.5px solid #676767;
+					border-top: 0.5px solid #676767;
+					border-bottom: 0.5px solid #676767;
+					padding-left: 10px;
+				}
 			</style>
 			<!-- Libs JS -->
 			<script src="/assets/vendor/tabler/dist/libs/apexcharts/dist/apexcharts.min.js?1684106062" defer></script>
@@ -781,9 +795,74 @@
 			<script src="/assets/vendor/tabler/dist/js/tabler.min.js?1684106062" defer></script>
 			<script src="/assets/vendor/tabler/dist/js/demo.min.js?1684106062" defer></script>
 			<script>
+
+				// Add event listener to every arrow keys up and down
+				document.addEventListener('keydown', function(event) {
+					// Every item with class "arrow-selectable" is going to be able to be selected with the arrow keys
+					// if it is selected then we will add the class "arrow-selected" to it
+					
+					// Get all arrow-selectable items
+					var arrowSelectableItems = document.querySelectorAll('.arrow-selectable');
+
+					if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+						// Get the index of the selected item
+						var selectedIndex = -1;
+						for (var i = 0; i < arrowSelectableItems.length; i++) {
+							if (arrowSelectableItems[i].classList.contains('arrow-selected')) {
+								selectedIndex = i;
+								break;
+							}
+						}
+
+						// Remove the arrow-selected class from all items
+						arrowSelectableItems.forEach(function(item) {
+							item.classList.remove('arrow-selected');
+						});
+
+						let selectedItem;
+
+						// If no item is selected, select the first one
+						if (selectedIndex === -1) {
+							selectedItem = arrowSelectableItems[0];
+							selectedItem.classList.add('arrow-selected');
+						} else {
+							// If the arrow key is down, select the next item
+							if (event.key === 'ArrowDown') {
+								if (selectedIndex + 1 < arrowSelectableItems.length) {
+									selectedItem = arrowSelectableItems[selectedIndex + 1];
+									selectedItem.classList.add('arrow-selected');
+								} else {
+									selectedItem = arrowSelectableItems[0];
+									selectedItem.classList.add('arrow-selected');
+								}
+							} else {
+								// If the arrow key is up, select the previous item
+								if (selectedIndex - 1 >= 0) {
+									selectedItem = arrowSelectableItems[selectedIndex - 1];
+									selectedItem.classList.add('arrow-selected');
+								} else {
+									selectedItem = arrowSelectableItems[arrowSelectableItems.length - 1];
+									selectedItem.classList.add('arrow-selected');
+								}
+							}
+						}
+
+						selectedItem.scrollIntoView({behavior: "auto", block: "end"});
+						// Add an event that if we pressed Enter it will click on the first link of the selected item
+						document.addEventListener('keydown', function(event) {
+							if (event.key === 'Enter') {
+								let selectedItem = document.querySelector('.arrow-selected');
+								selectedItem.querySelector('a').click();
+							}
+						});
+					}
+				});
+				
+			</script>
+			<script>
 				// Open globalSearchModal when presing Cmd + P or Ctrl + P
 				// and prevent default browser print dialog
-				document.addEventListener('keydown', function(event) {	
+				document.addEventListener('keydown', function(event) {
 					if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
 						event.preventDefault();
 						let modal = $('#globalSearchModal');
@@ -795,6 +874,8 @@
 							// And click on form submit button
 							document.getElementById('globalSearchSubmitButton').click();
 						} else {
+							document.getElementById('globalSearchQueryInput').value = '';
+							document.getElementById('globalSearchSubmitButton').click();
 							modal.modal('show');
 							$('#globalSearchQueryInput').focus();
 						}

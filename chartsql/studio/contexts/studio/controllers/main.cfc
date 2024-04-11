@@ -1154,7 +1154,7 @@ component accessors="true" {
 		out.view_state.save_or_update_file_redirect = qs.clone().setValue("OpenFiles", newOpenKeys.keyList()).get();
 
 		// The main target objects that we want to replace within the view on form posts
-		out.view_state.main_zero_targets = "##renderer-card-header,##renderContainer,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders,##header";
+		out.view_state.main_zero_targets = "##renderer-card-header,##renderContainer,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders,##header,##globalSearchModal,";
 		out.view_state.directives_editor_targets = "##editorTabs,##openFilesList,##sqlSourceCode,##editorBody,##saveButton,##rendererPanel,##editorProgressContainer,##fileList,.directiveErrorAlert,.directiveEditorTitle";
 
 		// This was taking about 100ms to run and so we are not going to run it on every

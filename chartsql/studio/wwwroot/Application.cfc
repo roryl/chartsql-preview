@@ -183,7 +183,7 @@ component extends="zero.zero" {
 
 		controllerResult.data.isGlobalSearching = false;
 		controllerResult.view_state.globalSearchQuery = nullValue();
-		
+
 		// Get param globalSearchQuery from request
 		if (isDefined("request.context.globalSearchQuery")) {
 			controllerResult.data.isGlobalSearching = true;
@@ -302,8 +302,10 @@ component extends="zero.zero" {
 				abort;
 			} else {
 				//Include the default error handler template
-				include template="500.cfm";
+				writeDump(error);
 				abort;
+				// include template="500.cfm";
+				// abort;
 			}
 		}
 	}
@@ -414,16 +416,19 @@ component extends="zero.zero" {
 				)
 			}
 
+
 			// We setup the Examples package for every installatgion
 			var ExamplesPackageOptional = application.ChartSQLStudio.findPackageByFriendlyName("Examples");
 			if(!ExamplesPackageOptional.exists()){
-				var Package = application.ChartSQLStudio.createPackageFromFile(expandPath("/com/chartsql/studio/extensions/chartsql/examples/sql"));
-				Package.setFriendlyName("Examples");
+				var ExamplesPackage = application.ChartSQLStudio.createPackageFromFile(expandPath("/com/chartsql/studio/extensions/chartsql/examples/sql"));
+				ExamplesPackage.setFriendlyName("Examples");
 			} else {
-				var Package = ExamplesPackageOptional.get();
+				var ExamplesPackage = ExamplesPackageOptional.get();
 				var StudioDatasource = application.ChartSQLStudio.findStudioDatasourceByName("Examples").get();
-				Package.setDefaultStudioDatasource(StudioDatasource);
+				ExamplesPackage.setDefaultStudioDatasource(StudioDatasource);
 			}
+
+			ExamplesPackage.setIsReadOnly(true);
 
 		}
 
