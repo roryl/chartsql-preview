@@ -163,62 +163,16 @@
 							<div class="card border-0" style="display:flex; flex-flow:column; height:100%; width:100%;">
 								<div class="card-header" style="flex:0;">
 									<ul class="nav nav-tabs card-header-tabs p-0" role="tablist">
-										<li class="nav-item" role="presentation">
-											<form action="{{view_state.info_panel.resultset.link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" aria-selected="true" role="tab">
-												<button class="nav-link {{#if (eq view_state.info_panel.active_view "resultset")}}active{{/if}}">
-												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-table me-2" style="--tblr-icon-size: 1rem; " width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 5a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-14z" /><path d="M3 10h18" /><path d="M10 3v18" /></svg>
-												<!--- <span class="badge bg-azure-lt me-2" style="{{#unless (eq view_state.info_panel.active_view "resultset")}}opacity:.5;{{/unless}}">{{data.CurrentSqlFile.Name}}</span>  --->
-												Data
-												<!--- <span class="badge ms-2">{{#if data.CurrentSqlFile.ResultSet}}{{length data.CurrentSqlFile.ResultSet.Data}}{{else}}-{{/if}}</span> --->
-												</button>
-											</form>
-										</li>
-										<li class="nav-item" role="presentation">
-											<form action="{{view_state.info_panel.executions.link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" class="" aria-selected="false" role="tab" tabindex="-1">
-												<button class="nav-link {{#if (eq view_state.info_panel.active_view "executions")}}active{{/if}}">
-												<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-sql me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 8a2 2 0 0 1 2 2v4a2 2 0 1 1 -4 0v-4a2 2 0 0 1 2 -2z" /><path d="M17 8v8h4" /><path d="M13 15l1 1" /><path d="M3 15a1 1 0 0 0 1 1h2a1 1 0 0 0 1 -1v-2a1 1 0 0 0 -1 -1h-2a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1h2a1 1 0 0 1 1 1" /></svg>
-												Executions
-												<!--- {{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
-													<span class="ms-2 status-dot status-green" style="{{#unless (eq view_state.info_panel.active_view "executions")}}opacity:.5;{{/unless}}"></span>
-													{{else}}
-													<span class="ms-2 status-dot status-orange"></span>
-													{{/if}} --->
-												</button>
-											</form>
-										</li>
-										<li class="nav-item" role="presentation">
-											<form action="{{view_state.info_panel.server.link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" aria-selected="false" role="tab" tabindex="-1">
-												<button class="nav-link {{#if (eq view_state.info_panel.active_view "server")}}active{{/if}}">
-													<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-bolt me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M13 3l0 7l6 0l-8 11l0 -7l-6 0l8 -11" /></svg>
-													Editor Perf
-													<!--- {{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
-														<span class="ms-2 status-dot status-green" style="{{#unless (eq view_state.info_panel.active_view "executions")}}opacity:.5;{{/unless}}"></span>
-														{{else}}
-														<span class="ms-2 status-dot status-orange"></span>
-														{{/if}} --->
-												</button>
-											</form>
-										</li>
-											<!--- <li class="nav-item dropdown">
-												<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-												<div class="dropdown-menu" style="">
-													<a class="dropdown-item" href="#">
-														Action
-													</a>
-													<a class="dropdown-item" href="#">
-														Another action
-													</a>
-												</div>
-											</li> --->
-										<li class="nav-item ms-auto me-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Clear your editor session">
-											{{!-- <form method="post" action="/studio/main/clearEditorSession">
-												<input type="hidden" name="goto" value="{{view_state.current_url}}">
-												<input type="hidden" name="goto_fail" value="{{view_state.current_url}}">
-												<button type="submit" class="nav-link mt-0" aria-selected="false" role="tab" tabindex="-1">
-													<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-replace" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 3m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M15 15m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v4a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z" /><path d="M21 11v-3a2 2 0 0 0 -2 -2h-6l3 3m0 -6l-3 3" /><path d="M3 13v3a2 2 0 0 0 2 2h6l-3 -3m0 6l3 -3" /></svg>
-												</button>
-											</form> --}}
-										</li>
+										{{#each data.ChartSQLStudio.InfoPanelViews}}
+											<li class="nav-item" role="presentation">
+												<form action="{{link}}" method="GET" zero-target="{{view_state.main_zero_targets}}" aria-selected="{{#if IsActive}}true{{else}}false{{/if}}" role="tab">
+													<button class="nav-link {{#if IsActive}}active{{/if}}">
+														<i class="{{IconClass}} me-2" style="font-size:1rem;"></i>
+														{{Title}}
+													</button>
+												</form>
+											</li>
+										{{/each}}
 									</ul>
 								</div>
 								<!--- FLEX/POSITIONING NOTE:
@@ -226,37 +180,26 @@
 									this seems to fix the issue and allow the footer to always be present no matter how much content is in the tab-content.
 								--->
 								<div class="card-body p-0" style="flex:1; display:flex; width:100%;">
-									{{#if (eq view_state.info_panel.active_view "resultset")}}
-									<div class="tab-content" style="height:100%; width:100%; position:absolute; bottom:0; display:flex; ">
-										<div id="executionsContent" class="tab-pane active show" role="tabpanel" style="height:100%; width:100%; overflow-y:scroll; display:flex;">
-											<div class="" style="width:100%;">
-												<cfinclude template="fragments/datalist.cfm">
+
+									{{#each data.ChartSQLStudio.InfoPanelViews}}
+										{{#if IsActive}}
+											<div class="tab-content" style="height:100%; width:100%; position:absolute; bottom:0; display:flex; ">
+												<div id="{{Name}}Content" class="tab-pane active show" role="tabpanel" style="height:100%; width:100%; overflow-y:scroll; display:flex; {{#if (eq Name "executions")}}flex-direction: column-reverse;{{/if}}">
+													<div class="" style="width:100%;">
+														{{#if (eq Name "resultset")}}
+															<cfinclude template="fragments/datalist.cfm">
+														{{else if (eq Name "executions")}}
+															<cfinclude template="fragments/executions.cfm">
+														{{else if (eq Name "server")}}
+															{{{data.ServerPerformanceData.Content}}}
+														{{else}}
+															{{{Content}}}
+														{{/if}}
+													</div>
+												</div>
 											</div>
-										</div>
-									</div>
-									{{/if}}
-
-									{{#if (eq view_state.info_panel.active_view "executions")}}
-									<div class="tab-content" style="height:100%; width:100%; position:absolute; bottom:0; display:flex; ">
-										<div id="executionsContent" class="tab-pane active show" role="tabpanel" style="height:100%; overflow-y:scroll; display:flex; flex-direction: column-reverse;">
-											<cfinclude template="fragments/executions.cfm">
-										</div>
-									</div>
-									{{/if}}
-
-									{{#if (eq view_state.info_panel.active_view "server")}}
-									<div class="tab-content" style="height:100%; width:100%; position:absolute; bottom:0; display:flex; overflow:hidden; ">
-										{{{data.ServerPerformanceData.Content}}}
-									</div>
-									{{/if}}
-									<!--- <div class="tab-content">
-										<div class="tab-pane active show" role="tabpanel" style="overflow:scroll;">
-											<cfinclude template="fragments/datalist.cfm">
-										</div>
-										<div class="tab-pane" role="tabpanel">
-											<cfinclude template="fragments/console.cfm">
-										</div>
-									</div> --->
+										{{/if}}
+									{{/each}}
 								</div>
 								<!--- <div class="enterCommand" style="width:400px;">
 									<div class="input-group input-group-sm">
@@ -376,7 +319,7 @@
 			</div>
 		</div>
 	{{else}}
-		<div id="gettingStartedContainer" class="" style="width: 100%; display:flex; flex-flow:column; height:100%;">			
+		<div id="gettingStartedContainer" class="" style="width: 100%; display:flex; flex-flow:column; height:100%;">
 			<div class="card p-0 m-0" style="border-radius:0; border-top:none; border-left:none; border-bottom:none; border-right:none; flex:1; width:100%; display:flex; overflow:hidden;">
 				<div class="card-body p-0" style="display:flex; width:100%; height:100%">
 					<div class="tab-content splitVertical" style="display:flex; flex-flow:column; height:100%; width:100%;">

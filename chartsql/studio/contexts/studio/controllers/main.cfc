@@ -565,6 +565,20 @@ component accessors="true" {
 					}
 				}
 			},
+			InfoPanelViews:{
+				Name:{},
+				Title:{},
+				Content:{},
+				IconClass:{},
+				Link:{},
+				IsActive: function(Self){
+					if(args.keyExists("InfoPanelView") and args.InfoPanelView == arguments.Self.getName()){
+						return true;
+					} else {
+						return false;
+					}
+				}
+			},
 			Packages:{
 				FullName:{},
 				FriendlyName:{},
@@ -1033,19 +1047,6 @@ component accessors="true" {
 			out.view_state.editor_panel[view].link = qs.clone().setValue("EditorPanelView", view).get();
 		}
 
-
-		//Setup which info panel to show
-		var infoPanelViews = ["resultset", "executions", "console", "server"];
-		if(!arrayContains(infoPanelViews, arguments.InfoPanelView)){
-			arguments.InfoPanelView = "resultset";
-		}
-		out.view_state.info_panel.active_view = arguments.InfoPanelView;
-
-		//Setup url qs links to the other info panels
-		for(var view in infoPanelViews){
-			out.view_state.info_panel[view].link = qs.clone().setValue("InfoPanelView", view).get();
-		}
-
 		//Setup render panel views
 		var renderPanelViews = ["chart", "option"];
 		if(!arrayContains(renderPanelViews, arguments.RenderPanelView)){
@@ -1154,7 +1155,7 @@ component accessors="true" {
 		out.view_state.save_or_update_file_redirect = qs.clone().setValue("OpenFiles", newOpenKeys.keyList()).get();
 
 		// The main target objects that we want to replace within the view on form posts
-		out.view_state.main_zero_targets = "##renderer-card-header,##renderContainer,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders,##header,##globalSearchModal,";
+		out.view_state.main_zero_targets = "##renderer-card-header,##renderContainer,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders,##header,##globalSearchModal,##new-file-dropdown";
 		out.view_state.directives_editor_targets = "##editorTabs,##openFilesList,##sqlSourceCode,##editorBody,##saveButton,##rendererPanel,##editorProgressContainer,##fileList,.directiveErrorAlert,.directiveEditorTitle";
 
 		// This was taking about 100ms to run and so we are not going to run it on every
@@ -1395,6 +1396,10 @@ component accessors="true" {
 
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
 		var Package = ChartSQLStudio.findPackageByFullName(arguments.PackageName).elseThrow("Could not locate that Package: #arguments.PackageName#");
+		var PreexistingSqlFileOptional = Package.findSqlFileByName(arguments.FileName);
+		if (PreexistingSqlFileOptional.exists() ) {
+			throw("A file with the name #arguments.FileName# already exists in the package #arguments.PackageName#", "FileAlreadyExists");
+		}
 		var SqlFile = Package.createNewSqlFile(
 			name = arguments.FileName
 		);

@@ -2,6 +2,7 @@
  * An instance of the Studio Application
 */
 component accessors="true" {
+
 	processingdirective preservecase="true";
 	property name="Packages";
 	property name="SqlFiles";
@@ -18,13 +19,13 @@ component accessors="true" {
 	property name="Storys";
 	property name="CurrentQueryString" setter="false";
 	property name="FileBrowserViews";
+	property name="InfoPanelViews" type="array";
 	property name="MenuItems" setter="false";
 	property name="MascotBinary" setter="false" type="binary";
 	property name="LogoBinary" setter="false" type="binary";
 	property name="StudioModelHash" type="string" hint="Stored in Application to detect when source code has changed and needs to be reloaded";
 	property name="PublishingAppId" type="numeric";
 	property name="PublishingRequests" type="array";
-
 
 	public function init(
 		string ConfigPath
@@ -36,6 +37,7 @@ component accessors="true" {
 		variables.Storys = [];
 		variables.Extensions = [];
 		variables.FileBrowserViews = [];
+		variables.InfoPanelViews = [];
 		variables.MenuItems = [];
 		variables.StudioModelHash = "";
 		variables.DefaultPackage = nullValue();
@@ -53,7 +55,7 @@ component accessors="true" {
 			}
 		}
 
-		//Setup default FileBrowserViews
+		//Setup default FileBrowserViews. Extensions can add additional FileBrowserViews to the editor
 		var FileBrowserViews = [
 			{name: "files", iconClass: "ti ti-file-type-sql"},
 			{name: "schema", iconClass: "ti ti-database-search"},
@@ -67,6 +69,22 @@ component accessors="true" {
 			);
 		}
 
+		// Setup default InfoPanelViews. Extensions can add additional InfoPanelViews to the editor
+		var InfoPanelViews = [
+			{name: "resultset", iconClass: "ti ti-table", title: "Data"},
+			{name: "executions", iconClass: "ti ti-sql", title: "Executions"},
+			{name: "server", iconClass: "ti ti-bolt", title: "Editor Perf"},
+		]
+
+		for(var InfoPanelView in InfoPanelViews){
+			var InfoPanelView = new InfoPanelView(
+				ChartSQLStudio = this,
+				Name = InfoPanelView.name,
+				Title = InfoPanelView.title,
+				IconClass = InfoPanelView.iconClass
+			);
+		}
+
 		this.setupDefaultMenuItems();
 
 		return this;
@@ -75,6 +93,12 @@ component accessors="true" {
 	public function addFileBrowserView(FileBrowserView){
 		if(!findFileBrowserViewByName(FileBrowserView.getName()).exists()){
 			variables.FileBrowserViews.append(FileBrowserView);
+		}
+	}
+
+	public function addInfoPanelView(InfoPanelView){
+		if(!findInfoPanelViewByName(InfoPanelView.getName()).exists()){
+			variables.InfoPanelViews.append(InfoPanelView);
 		}
 	}
 
@@ -217,6 +241,17 @@ component accessors="true" {
 		for(var FileBrowserView in variables.FileBrowserViews){
 			if(FileBrowserView.getName() == arguments.name){
 				return new optional(FileBrowserView);
+			}
+		}
+		return new optional(nullValue());
+	}
+
+	public optional function findInfoPanelViewByName(
+		required string name
+	){
+		for(var InfoPanelView in variables.InfoPanelViews){
+			if(InfoPanelView.getName() == arguments.name){
+				return new optional(InfoPanelView);
 			}
 		}
 		return new optional(nullValue());
@@ -564,20 +599,14 @@ component accessors="true" {
 
 		// We are going to dynamically create a query string object for the users state
 		var qs = this.getEditorQueryString();
-		
+
 		for(var Package in variables.Packages){
 			if(customFind(arguments.search, Package.getFriendlyName())){
-				if (Package.getDefaultStudioDatasource().exists()) {
-					var PackageStudioDatasource = Package.getDefaultStudioDatasource().get();
-					link = "/studio/main?PackageName=#Package.getFullName()#&StudioDatasource=#PackageStudioDatasource.getName()#";
-				} else {
-					link = "/studio/main?PackageName=#Package.getFullName()#";
-				}
 				result = {
 					"name": Package.getFriendlyName(),
 					"entityType": "package",
-					"openLink": link,
 					"priority": 1,
+					"subpriority": 1,
 					"metadata": new zero.serializerFast(Package, {
 						FullName:{},
 						OpenPackageLink: function(Package){
@@ -585,31 +614,29 @@ component accessors="true" {
 							qs.setValue("PackageName", Package.getFullName())
 							.delete("SchemaFilter")
 							.delete("Filter");
-		
+
 							var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
 							if(StudioDatasourceOptional.exists()){
 								var StudioDatasource = StudioDatasourceOptional.get();
 								qs.setValue("StudioDatasource", StudioDatasource.getName());
 							}
-		
+
 							return qs.get();
 						}
 					})
 				};
-				arrayAppend(out, result);
+				out.append(result);
 				resultsByType.packages.append(result);
 			}
 		}
 
 		for(var StudioDatasource in variables.StudioDatasources){
-
-
 			if(customFind(arguments.search, StudioDatasource.getName())){
 				result = {
 					"name": StudioDatasource.getName(),
 					"entityType": "datasource",
-					"openLink": "/studio/settings/datasources?EditStudioDatasource=#StudioDatasource.getName()#",
 					"priority": 2,
+					"subpriority": 1,
 					"metadata": new zero.serializerFast(StudioDatasource, {
 						Name:{},
 						SelectLink: function(StudioDatasource){
@@ -617,65 +644,85 @@ component accessors="true" {
 						}
 					})
 				};
-				arrayAppend(out, result);
-
+				out.append(result);
 				resultsByType.datasources.append(result);
 			}
 		}
 
 		for(var SqlFile in variables.SqlFiles){
-			SqlFileNamedDirectives = SqlFile.getNamedDirectives();
-			if(customFind(arguments.search, SqlFile.getName()) || (
+			var SqlFileNamedDirectives = SqlFile.getNamedDirectives();
+			var matchedSearchQuery = false;
+			var subpriority = 1;
+			var hasTitle = false;
+			var SqlFileName = SqlFile.getName();
+
+			if (customFind(arguments.search, SqlFile.getName())) {
+				matchedSearchQuery = true;
+				subpriority = 1;
+			} else if (
 				SqlFileNamedDirectives.keyExists("Title")
 				&& !isNull(SqlFileNamedDirectives.Title)
 				&& !isNull(SqlFileNamedDirectives.Title.getValueRaw())
 				&& !isEmpty(SqlFileNamedDirectives.Title.getValueRaw())
 				&& customFind(arguments.search, SqlFileNamedDirectives.Title.getValueRaw())
-			)){
-				var Package = SqlFile.getPackage();
-				var link = "";
-				if (Package.getDefaultStudioDatasource().exists()) {
-					var StudioDatasource = Package.getDefaultStudioDatasource().get();
-					link = "/studio/main?PackageName=#Package.getFullName()#&StudioDatasource=#StudioDatasource.getName()#&OpenFiles=#SqlFile.getFullName()#&ActiveFile=#SqlFile.getFullName()#";
-				} else {
-					link = "/studio/main?PackageName=#Package.getFullName()#&OpenFiles=#SqlFile.getFullName()#&ActiveFile=#SqlFile.getFullName()#";
-				}
-
-				if (SqlFileNamedDirectives.keyExists("Title")
-					&& !isNull(SqlFileNamedDirectives.Title)
-					&& !isNull(SqlFileNamedDirectives.Title.getValueRaw())
-					&& !isEmpty(SqlFileNamedDirectives.Title.getValueRaw())
-				) {
-					var name = SqlFileNamedDirectives.Title.getValueRaw();
-				} else {
-					var name = SqlFile.getName();
-				}
-				result = {
-					"name": "#name# (#Package.getFriendlyName()#)",
-					"entityType": "sqlfile",
-					"openLink": link,
-					"priority": 3,
-					"metadata": new zero.serializerFast(SqlFile, {
-						OpenLink: function(SqlFiles){
-							if (!isDefined("request.context.OpenFiles") || isNull(request.context.OpenFiles)) {
-								request.context.OpenFiles = "";
-							}
-							var openFileNames = listToArray(request.context.OpenFiles);
-							var openFileKeys = structNew("ordered");
-							for(var name in openFileNames){
-								openFileKeys[name] = true;
-							}
-							var keys = duplicate(openFileKeys);
-							keys[SqlFiles.getFullName()] = true;
-							return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
-						},
-					})
-				};
-
-				arrayAppend(out, result);
-				resultsByType.sqlfiles.append(result);
+			) {
+				matchedSearchQuery = true;
+				subpriority = 2;
+				hasTitle = true;
+			} else if (
+				SqlFileNamedDirectives.keyExists("Description")
+				&& !isNull(SqlFileNamedDirectives.Description)
+				&& !isNull(SqlFileNamedDirectives.Description.getValueRaw())
+				&& !isEmpty(SqlFileNamedDirectives.Description.getValueRaw())
+				&& customFind(arguments.search, SqlFileNamedDirectives.Description.getValueRaw())
+			) {
+				matchedSearchQuery = true;
+				subpriority = 3;
+			} else if (
+				customFind(arguments.search, SqlFile.getContent())
+			) {
+				matchedSearchQuery = true;
+				subpriority = 4;
+			} else {
+				continue;
 			}
+
+			var Package = SqlFile.getPackage();
+			var name = SqlFileName;
+			if (hasTitle) {
+				name = SqlFileNamedDirectives.Title.getValueRaw();
+			}
+
+			result = {
+				"name": "#name# (#Package.getFriendlyName()#)", 
+				"entityType": "sqlfile",
+				"priority": 3,
+				"subpriority": subpriority,
+				"metadata": new zero.serializerFast(SqlFile, {
+					OpenLink: function(SqlFiles){
+						if (!isDefined("request.context.OpenFiles") || isNull(request.context.OpenFiles)) {
+							request.context.OpenFiles = "";
+						}
+						var openFileNames = listToArray(request.context.OpenFiles);
+						var openFileKeys = structNew("ordered");
+						for(var name in openFileNames){
+							openFileKeys[name] = true;
+						}
+						var keys = duplicate(openFileKeys);
+						keys[SqlFiles.getFullName()] = true;
+						return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
+					},
+				})
+			};
+
+			out.append(result);
+			resultsByType.sqlfiles.append(result);
 		}
+
+		// Sort resultsByType.sqlfiles by subpriority
+		resultsByType.sqlfiles = resultsByType.sqlfiles.sort(function(a, b){
+			return a.subpriority - b.subpriority;
+		});
 
 		return {
 			results: out,
@@ -694,6 +741,9 @@ component accessors="true" {
 	}
 
 	private function customFind(needle, haystack) {
+
+		rawNeedle = lcase(reReplace(arguments.needle, "_", " ", "all"));
+		rawHaystack = lcase(reReplace(arguments.haystack, "_", " ", "all"));
 		// Remove all spaces from needle and haystack
 		needle = lcase(reReplace(arguments.needle, "\s", "", "all"));
 		haystack = lcase(reReplace(arguments.haystack, "\s", "", "all"));
@@ -708,7 +758,22 @@ component accessors="true" {
 			return false;
 		}
 
-		if (haystack.findNoCase(needle) > 0 || findOneOf(needle, haystack) > 0) {
+		// Check if all the characters on any order on needle are in haystack
+
+		var charactersRegex = "";
+		// Loopp through needle characters
+		for (var i = 1; i <= len(needle); i++) {
+			var char = mid(needle, i, 1);
+			charactersRegex &= "^(?=.*#char#)";
+		}
+
+		regex = "^#charactersRegex#[#needle#]{#len(needle)#,}$";
+
+		if (reFind(regex, rawHaystack)) {
+			return true;
+		}
+
+		if (haystack.findNoCase(needle) > 0) {
 			return true;
 		} else {
 			return false;

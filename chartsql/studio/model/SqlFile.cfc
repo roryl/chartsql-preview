@@ -37,6 +37,13 @@ component accessors="true" {
 			variables.IsMissingFile = false;
 		}
 		variables.FullName = new values.FullyQualifiedPathName(arguments.path).toString();
+		// Check that there is not a file with the same name in the package
+		// otherwise it should error
+		var PreexistingSqlFile = arguments.Package.findSqlFileByFullName(variables.FullName);
+		if (PreexistingSqlFile.exists() ) {
+			throw("A file with the name #arguments.name# already exists in the package #arguments.Package.getName()#");
+		}
+
 		variables.Name = arguments.name;
 		variables.Package = arguments.Package;
 		variables.Package.addSqlFile(this);

@@ -717,29 +717,37 @@
 					<div class="d-flex flex-row justify-content-center">
 						<span class="text-muted text-center">Find packages, datasources, files and settings very quickly</span>
 					</div>
-					  <div id="globalSearchResults">
+					  <div id="globalSearchResults" class="mt-3">
 						{{#each data.globalSearchResults.resultsByType.packages}}
-							<div class="d-flex align-items-center mt-3 h5 arrow-selectable">
-								<i class="ti ti-box me-2"></i>
-								<a href="{{metadata.OpenPackageLink}}" class="text-decoration-none">{{name}}</a>
-								<a href="/studio/settings/packages?EditPackage={{metadata.fullname}}" class="badge badge-outline text-azure ms-2" style="cursor: pointer;">configure</a>
+							<div class="d-flex flex-row justify-content-between align-items-center m-0 h5 arrow-selectable">
+								<div>
+									<i class="ti ti-box me-2"></i>
+									<a href="{{metadata.OpenPackageLink}}" class="text-decoration-none">{{name}}</a>
+								</div>
+								<div>
+									<a href="/studio/settings/packages?EditPackage={{metadata.fullname}}" class="m-0 btn btn-ghost-secondary btn-sm" style="cursor: pointer;">configure</a>
+								</div>
 							</div>
 						{{/each}}
 						{{#if data.globalSearchResults.resultsByType.packages.[0]}}
 							<div class="mb-1" style="background-color: grey; width: 100%; height: 0.5px;"></div>
 						{{/if}}
 						{{#each data.globalSearchResults.resultsByType.datasources}}
-							<div class="d-flex align-items-center mt-3 h5 arrow-selectable">
-								<i class="ti ti-database me-2"></i>
-								<a href="{{metadata.SelectLink}}" class="text-decoration-none">{{name}}</a>
-								<a href="/studio/settings/datasources?EditStudioDatasource={{metadata.name}}" class="badge badge-outline text-azure ms-2" style="cursor: pointer;">configure</a>
+							<div class="d-flex flex-row justify-content-between align-items-center m-0 h5 arrow-selectable">
+								<div>
+									<i class="ti ti-database me-2"></i>
+									<a href="{{metadata.SelectLink}}" class="text-decoration-none">{{name}}</a>
+								</div>
+								<div>
+									<a href="/studio/settings/datasources?EditStudioDatasource={{metadata.name}}" class="m-0 btn btn-ghost-secondary btn-sm" style="cursor: pointer;">configure</a>
+								</div>
 							</div>
 						{{/each}}
 						{{#if data.globalSearchResults.resultsByType.datasources.[0]}}
-							<div class="mt-3" style="background-color: grey; width: 100%; height: 0.5px;"></div>
+							<div class="mt-1 mb-2" style="background-color: grey; width: 100%; height: 0.5px;"></div>
 						{{/if}}
 						{{#each data.globalSearchResults.resultsByType.sqlfiles}}
-							<div class="d-flex align-items-center mt-3 h5 arrow-selectable">
+							<div class="d-flex align-items-center h5 arrow-selectable m-0">
 								<i class="ti ti-file me-2"></i>
 								<a href="{{metadata.OpenLink}}" class="text-decoration-none">{{name}}</a>
 							</div>
@@ -778,12 +786,12 @@
 			  </div>
 			</div>
 			<style>
+				.arrow-selectable {
+					height: 25px;
+					margin-bottom: 5px !important;
+				}
 				.arrow-selected {
-					border-left: 3px solid #007bff;
-					border-right: 0.5px solid #676767;
-					border-top: 0.5px solid #676767;
-					border-bottom: 0.5px solid #676767;
-					padding-left: 10px;
+					background-color: #8a8a8a3a;
 				}
 			</style>
 			<!-- Libs JS -->
