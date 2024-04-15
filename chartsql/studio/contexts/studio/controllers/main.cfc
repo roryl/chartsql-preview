@@ -102,22 +102,32 @@ component accessors="true" {
 		}
 
 		if(arguments.keyExists("PackageName")){
-
-			var CurrentPackage = ChartSQLStudio.findPackageByFullName(arguments.PackageName).elseThrow("Could not locate that Package: #arguments.PackageName#");
-			CurrentPackage.loadSqlFiles();
-			out.data.HasOpenedPackage = true;
-
+			var CurrentPackageOptional = ChartSQLStudio.findPackageByFullName(arguments.PackageName);
+			if(CurrentPackageOptional.exists()){
+				var CurrentPackage = CurrentPackageOptional.get();
+				CurrentPackage.loadSqlFiles();
+				out.data.HasOpenedPackage = true;
+			} else {
+				variables.fw.doLocation("/studio/main");
+			}
 		} else {
 
 			if (isDefined("server.ShouldLoadDefaultPackage") && server.ShouldLoadDefaultPackage == true) {
 				// Redirect to the url with the default package if there is a default package and the
 				// app is starting for the first time
-				var DefaultPackageName = ChartSQLStudio.getDefaultPackage();
-				if (!isNull(ChartSQLStudio.getDefaultPackage())) {
+				var DefaultPackage = ChartSQLStudio.getDefaultPackage();
+				if (!isNull(DefaultPackage)) {
 					server.ShouldLoadDefaultPackage = false;
 					var qs = ChartSQLStudio.getEditorQueryString();
-					var DefaultPackageName = ChartSQLStudio.getDefaultPackage().getFullName();
+					var DefaultPackageName = DefaultPackage.getFullName();
 					qs.setValue("PackageName", DefaultPackageName);
+
+					var StudioDatasourceOptional = DefaultPackage.getDefaultStudioDatasource();
+					if(StudioDatasourceOptional.exists()){
+						var StudioDatasource = StudioDatasourceOptional.get();
+						qs.setValue("StudioDatasource", StudioDatasource.getName());
+					}
+
 					server.ShouldLoadDefaultPackage = false;
 					variables.fw.doLocation(qs.get());
 					return out;

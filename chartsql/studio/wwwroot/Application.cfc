@@ -347,6 +347,7 @@ component extends="zero.zero" {
 		if(url.keyExists("reloadStudio")){
 			application.delete("ChartSQLStudio");
 			session.delete("EditorSession");
+			server.ShouldLoadDefaultPackage = true;
 		}
 
 		// Check if the .hash.text file for the model code has changed and if so
@@ -357,7 +358,25 @@ component extends="zero.zero" {
 			if(studioModelHash != application.ChartSQLStudio.getStudioModelHash()){
 				application.delete("ChartSQLStudio");
 				session.delete("EditorSession");
+				server.delete("ShouldLoadDefaultPackage");
 			}
+		}
+
+		// We are going to create a name that uniquely identifies where this ChartSQL
+		// installation is located so that we can have multiple installations. This
+		// can be used for testing or where the user wants to run multiple versions.
+		var installLocation = getDirectoryFromPath(getCurrentTemplatePath())
+			.replace(server.separator.file, "_", "all")
+			.replace(":", "_", "all")
+			.replace(".", "_", "all")
+
+		var dirPath = homeDirectory & server.separator.file & "ChartSQL" & server.separator.file & installLocation;
+
+		if(!directoryExists(dirPath)){
+			directoryCreate(dirPath, true);
+			application.delete("ChartSQLStudio");
+			session.delete("EditorSession");
+			server.delete("ShouldLoadDefaultPackage");
 		}
 
 		var startTick = getTickCount();
@@ -369,26 +388,22 @@ component extends="zero.zero" {
 				homeDirectory = server.system.environment.appdata;
 			}
 
-			// We are going to create a name that uniquely identifies where this ChartSQL
-			// installation is located so that we can have multiple installations. This
-			// can be used for testing or where the user wants to run multiple versions.
-			var installLocation = getDirectoryFromPath(getCurrentTemplatePath())
-				.replace(server.separator.file, "_", "all")
-				.replace(":", "_", "all")
-				.replace(".", "_", "all")
-
-			var dirPath = homeDirectory & server.separator.file & "ChartSQL" & server.separator.file & installLocation;
-
-
 			var configPath = dirPath & server.separator.file & "ChartSQLStudio.config.json";
 			var dbBasePath = dirPath & server.separator.file & "db";
-
-			if(!directoryExists(dirPath)){
-				directoryCreate(dirPath, true);
-			}
+			var defaultScriptsPath = dirPath & server.separator.file & "sql_scripts";
 
 			if(!directoryExists(dbBasePath)){
 				directoryCreate(dbBasePath, true);
+			}
+
+			if(!directoryExists(defaultScriptsPath)){
+				directoryCreate(defaultScriptsPath, true);
+			}
+
+			var gettingStartedPath = defaultScriptsPath & server.separator.file & "getting_started.sql";
+
+			if(!fileExists(gettingStartedPath)){
+				fileWrite(gettingStartedPath, fileRead("getting_started.sql"));
 			}
 
 			application.ChartSQLStudio = new studio.model.ChartSQLStudio(configPath);
@@ -404,7 +419,7 @@ component extends="zero.zero" {
 			}
 
 			if(!application.ChartSQLStudio.findStudioDatasourceByName("Examples").exists()){
-				var Datasource = application.ChartSQLStudio.createStudioDatasource(
+				var StudioDatasource = application.ChartSQLStudio.createStudioDatasource(
 					Name = "Examples",
 					type = "HSQLDB",
 					config = {
@@ -415,7 +430,6 @@ component extends="zero.zero" {
 					}
 				)
 			}
-
 
 			// We setup the Examples package for every installatgion
 			var ExamplesPackageOptional = application.ChartSQLStudio.findPackageByFriendlyName("Examples");
@@ -429,6 +443,23 @@ component extends="zero.zero" {
 			}
 
 			ExamplesPackage.setIsReadOnly(true);
+
+			//Setup a default package to the user's home directory sql_scripts folder
+			var DefaultPackageOptional = application.ChartSQLStudio.findPackageByFriendlyName("Scratchpad");
+			if(!DefaultPackageOptional.exists()){
+				var DefaultPackage = application.ChartSQLStudio.createPackageFromFile(defaultScriptsPath);
+				DefaultPackage.setFriendlyName("Scratchpad");
+			} else {
+				var DefaultPackage = DefaultPackageOptional.get();
+			}
+
+			var StudioDatasource = application.ChartSQLStudio.findStudioDatasourceByName("Examples").get();
+			DefaultPackage.setDefaultStudioDatasource(StudioDatasource);
+
+			//If there is no default package set then we set it to the scratchpad
+			if(isNull(application.ChartSQLStudio.getDefaultPackage())){
+				application.ChartSQLStudio.setDefaultPackage(DefaultPackage);
+			}
 
 		}
 
@@ -454,10 +485,12 @@ component extends="zero.zero" {
 			ChartSQLStudio = application.ChartSQLStudio
 		)
 
-		var PublishExtension = new studio.model.Extension(
-			Name = "chartsql.publish.Publish",
-			ChartSQLStudio = application.ChartSQLStudio
-		)
+		if(variables.zero.devmode > 0){
+			var PublishExtension = new studio.model.Extension(
+				Name = "chartsql.publish.Publish",
+				ChartSQLStudio = application.ChartSQLStudio
+			)
+		}
 
 		// If the samples code exists then we are in dev and we
 		// should setup the samples package if it does not exist

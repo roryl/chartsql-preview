@@ -35,5 +35,5 @@
   "DashId": "",
   "Path": "C:\\websites\\chartsql-preview\\chartsql\\studio\\extensions\\chartsql\\examples\\sql",
   "FullName": "websites.chartsql.studio.extensions.chartsql.examples.sql",
-  "IsReadOnly": false
+  "IsReadOnly": true
 }

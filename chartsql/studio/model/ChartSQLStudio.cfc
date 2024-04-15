@@ -198,7 +198,7 @@ component accessors="true" {
 	 */
 	public void function deletePackage(required Package Package){
 		var newPackages = [];
-		if (Package.getFullName() == variables.DefaultPackage.getFullName()){
+		if (!isNull(variables.DefaultPackage) and Package.getFullName() == variables.DefaultPackage.getFullName()){
 			variables.DefaultPackage = nullValue();
 		}
 		for(var Package in variables.Packages){
@@ -457,21 +457,19 @@ component accessors="true" {
 	 */
 	public function addPackage(required Package Package){
 		if(!findPackageByFullName(Package.getFullName()).exists()){
-			if (variables.Packages.len() == 0){
-				variables.DefaultPackage = Package;
-			}
 			variables.Packages.append(Package);
 		}
 		this.saveConfig();
 	}
 
 	public function setDefaultPackage(required Package Package){
-		if(findPackageByFullName(arguments.Package.getFullName()).exists()){
-			variables.DefaultPackage = arguments.Package;
-			arguments.Package.setIsDefaultPackage(true);
-		} else {
-			throw("The package '#arguments.Package.getFullName()#' does not exist");
+
+		for(var Package in variables.Packages){
+			Package.setIsDefaultPackage(false);
 		}
+
+		arguments.Package.setIsDefaultPackage(true);
+		variables.DefaultPackage = arguments.Package;
 
 		this.saveConfig();
 	}
@@ -566,12 +564,18 @@ component accessors="true" {
 		if(variables.Config.keyExists("Packages") and isArray(variables.Config.Packages)){
 			variables.Packages = [];
 			for(var Package in variables.Config.Packages){
+
 				var NewPackage = new Package(
 					path = Package.Path,
 					ChartSQLStudio = this,
 					PublisherKey = Package.PublisherKey?:nullValue()
 				);
-				if (variables.Config.keyExists("DefaultPackage") && variables.Config.DefaultPackage.FullName == Package.FullName) {
+
+				if (
+					isDefined('variables.Config.DefaultPackage.FullName')
+					and variables.Config.DefaultPackage.FullName
+					== Package.FullName
+				) {
 					this.setDefaultPackage(NewPackage);
 					NewPackage.setIsDefaultPackage(true);
 				}
@@ -694,7 +698,7 @@ component accessors="true" {
 			}
 
 			result = {
-				"name": "#name# (#Package.getFriendlyName()#)", 
+				"name": "#name# (#Package.getFriendlyName()#)",
 				"entityType": "sqlfile",
 				"priority": 3,
 				"subpriority": subpriority,

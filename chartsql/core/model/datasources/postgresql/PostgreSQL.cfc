@@ -1,6 +1,9 @@
 /**
 
 */
+import com.chartsql.core.model.TableInfo;
+import com.chartsql.core.model.FieldInfo;
+import com.chartsql.core.model.DatasourceProcess;
 component
 	extends="com.chartsql.core.model.JdbcDatasource"
 	accessors="true"
@@ -27,6 +30,82 @@ component
 			password: '#this.getPassword()#',
 			timezone:'UTC'
 		};
+		return out;
+	}
+
+	public function getTableInformationSchema(){
+		var tableNames = [];
+		var sql = "
+			SELECT *
+			FROM pg_catalog.pg_tables
+			WHERE 1 = 1
+			AND schemaname != 'pg_catalog' AND schemaname != 'information_schema';
+		";
+		var results = this.executeSql(sql);
+		return results;
+	}
+
+	public TableInfo[] function getTableInfos(){
+		var out = [];
+		var tables = this.getTableInformationSchema();
+		// writeDump(tables);
+		for (var table in tables){
+			var tableInfo = new TableInfo(
+				Name = table.tablename
+			);
+			out.append(tableInfo);
+		}
+		return out;
+	}
+
+	public FieldInfo[] function getFieldInfos(required string tableName){
+
+		var fieldInformationSchema = this.getTableFieldInformationSchema(
+			tableName = arguments.tableName
+		)
+		var out = [];
+		for (var field in fieldInformationSchema){
+			var Field = new FieldInfo(
+				Name = field.column_name,
+				Type = field.column_type?:field.data_type
+			);
+			out.append(Field);
+		}
+		return out;
+	}
+
+	public function getTableFieldInformationSchema(string tableName){
+		var tableNames = [];
+		var sql = "
+			SELECT *
+			FROM information_schema.columns
+			WHERE 1 = 1
+			AND table_schema = 'public'
+			AND table_name = '#tableName#';
+		";
+		var results = this.executeSql(sql);
+		return results;
+	}
+
+	public DatasourceProcess[] function getProcesses(){
+
+		var sql = "
+			SELECT pid, usename, datname, state, query
+			FROM pg_stat_activity
+			WHERE state = 'active';
+		";
+		var result = this.executeSql(sql);
+
+		var out = [];
+		for(var row in result){
+			out.append(
+				new DatasourceProcess(
+					Id = row.pid,
+					Sql = row.query
+				)
+			)
+		}
+
 		return out;
 	}
 }

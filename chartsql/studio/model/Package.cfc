@@ -57,22 +57,6 @@ component accessors="true" {
 		}
 	}
 
-	function getIsDefaultPackage() {
-		return variables.IsDefaultPackage;
-	}
-
-	public function setIsDefaultPackage(required boolean IsDefaultPackage){
-		variables.IsDefaultPackage = arguments.IsDefaultPackage;
-		// Make all the other Packages not default
-		if(arguments.IsDefaultPackage){
-			for(var Package in variables.ChartSQLStudio.getPackages()){
-				if(Package.getId() != this.getId()){
-					Package.setIsDefaultPackage(false);
-				}
-			}
-		}
-	}
-
 	public Story function createStory(
 		required string Name
 		string Id
@@ -294,9 +278,6 @@ component accessors="true" {
 	}
 
 	public function setFriendlyName(required string FriendlyName){
-		if (this.getIsReadOnly()) {
-			throw("Package is read only");
-		}
 		variables.FriendlyName = arguments.FriendlyName;
 		this.saveConfig();
 	}

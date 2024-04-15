@@ -224,9 +224,21 @@ abstract component accessors="true" {
 		var paramValues = [];
 
 		for(var key in data){
+
 			columns.append(key);
 			params.append("?");
-			paramValues.append(data[key]);
+
+			if(isNumeric(data[key])){
+				paramValues.append({type:"numeric", value:data[key]});
+			} else if(isBoolean(data[key])){
+				paramValues.append({type:"boolean", value:data[key]});
+			} else if(isDate(data[key])){
+				paramValues.append({type:"date", value:data[key]});
+			} else if(isSimpleValue(data[key])){
+				paramValues.append({type:"varchar", value:data[key]});
+			} else {
+				paramValues.append({type:"varcahr", value:data[key]});
+			}
 		}
 
 		var sql = "

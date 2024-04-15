@@ -14,7 +14,7 @@ See full instructions at [Installing Studio Desktop](https://itr8studios.gitbook
 Clone the repo to any location on your file system.
 
 ### Run ChartSQL Server
-Within the root directory, you will see start.bat (Windows) or start.app (Mac) which will run the ChartSQL server
+Within the root directory, you will see start.bat (Windows) or start.sh (Mac) which will run the ChartSQL server
 
 ### ChartSQL Studio will launch in your Browser
 On first run, it may take a couple minutes to start the embedded Java web server and launch the application. When it is complete, your browser will open to the ChartSQL Studio editor.

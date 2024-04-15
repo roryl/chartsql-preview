@@ -154,6 +154,7 @@ component accessors="true" {
 	public function reload() method="POST" {
 		application.delete("ChartSQLStudio");
 		session.delete("EditorSession");
+		server.delete("ShouldLoadDefaultPackage");
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
 		return {
 			success:true

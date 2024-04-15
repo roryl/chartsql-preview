@@ -70,7 +70,6 @@ component accessors="true" {
 
 		if (arguments.setAsDefaultPackage) {
 			ChartSQLStudio.setDefaultPackage(Package);
-			Package.setIsDefaultPackage(true);
 		}
 
 		if (arguments.keyExists("DashId")) {
