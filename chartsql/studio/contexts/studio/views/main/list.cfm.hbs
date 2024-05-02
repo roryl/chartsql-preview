@@ -23,7 +23,7 @@
 								{{/unless}}
 							{{/each}}
 							<div id="filterInputContainer">
-								<input id="fileSearch" type="text" name="Filter" onfocus="this.select();" autocomplete="off" oninput="document.getElementById('filterSubmit').click();" value="{{#if view_state.Filter}}{{view_state.Filter}}{{/if}}" class="form-control" placeholder="Filter Package Charts..." aria-label="Search in website" style=" height:43px; padding-left:60px; border-radius:0; border-top:none; border-left:none; border-right:none;">
+								<input id="fileSearch" type="text" name="Filter" onfocus="this.select();" autocomplete="off" oninput="document.getElementById('filterSubmit').click();" value="{{#if view_state.Filter}}{{view_state.Filter}}{{/if}}" class="form-control" placeholder="Filter Folder Charts..." aria-label="Search in website" style=" height:43px; padding-left:60px; border-radius:0; border-top:none; border-left:none; border-right:none;">
 							</div>
 							<button id="filterSubmit" type="submit" class="d-none">submit</button>
 						</form>
@@ -93,7 +93,7 @@
 				<div id="file-browswer-view-links" style="width:100%; z-index:2000;">
 					<ul class="nav nav-tabs card-header-tabs nav-fill" style="padding:0; margin:0;">
 						{{#each data.ChartSQLStudio.FileBrowserViews}}
-							<li class="nav-item">
+							<li class="nav-item" data-bs-toggle="tooltip" data-bs-placement="top" title="{{Tooltip}}">
 								<form action="/studio/main" method="GET" zero-target="#fileListContainer">
 									{{#each view_state.params}}
 										{{#unless (eq key "FileBrowserView")}}
@@ -272,8 +272,10 @@
 											<input type="hidden" name="Id" value="{{data.EditorSession.LastExecutionRequest.Id}}">
 											<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 											<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
-											<button class="btn text-warning btn-sm m-0 p-0 ms-2" style="">Cancel Execution</button>
-
+											<button class="btn btn-xs btn-outline-warning ms-2" style="display:flex; align-items: center;" zero-icon="false" onclick="$(this).find('.spinner-border').removeClass('d-none');">
+												<div class="spinner-border me-1 d-none" role="status" style="--tblr-spinner-width: .6rem; --tblr-spinner-height: .6rem;"></div>
+												Cancel Execution
+											</button>
 										</form>
 										<div id="refreshExecution">
 											<form id="checkExecution" method="GET" action="{{view_state.current_url}}" zero-push-state="false" zero-auto="1" zero-target="#rendererPanel,#editorTabs,#infoPanel,#openFilesList,#directivesEditor" style="display:none;">
@@ -304,9 +306,9 @@
 											</div>
 										</div>
 										{{else}}
-										<div>
-											<div class="progress progress-sm" style="border-radius:0;">
-												<div class="progress-bar" style="border-radius:0;"></div>
+										<div style="width:100%; padding:0; margin:0;">
+											<div class="progress progress-sm">
+												<div class="progress-bar"></div>
 											</div>
 										</div>
 										{{/if}}
@@ -339,23 +341,31 @@
 													Configure datasources...</a>
 												</div>
 												<div>
-													<a href="/studio/settings/packages"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-package"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg> Create new package...</a>
+													<a href="/studio/settings/packages"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-package"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg> Create new folder...</a>
 												</div>
 											</div>
 											<div class="h3 mt-3 text-muted">
-												Examples
+												Folders
 											</div>
 											<div>
 												<div>
-													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples"><i class="ti ti-border-all"></i> All Charts</a></div>
-													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=area"><i class="ti ti-chart-area"></i> Area Charts</a></div>
-													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=bar"><i class="ti ti-chart-bar"></i> Bar Charts</a></div>
-													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=column"><i class="ti ti-chart-arrows-vertical"></i> Column Charts</a></div>
-													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=combo"><i class="ti ti-stack-back"></i> Combo Charts</a></div>
-													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=heatmap"><i class="ti ti-chart-grid-dots-filled"></i> Heatmap Charts</a></div>
-													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=line"><i class="ti ti-chart-line"></i> Line Charts</a></div>
-													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=pie"><i class="ti ti-chart-pie"></i> Pie Charts</a></div>
-													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=scatter"><i class="ti ti-chart-scatter"></i> Scatter Charts</a></div>
+													{{#each data.GlobalChartSQLStudio.Packages}}
+														<form class="mb-2" action="/studio/main" method="GET" zero-target="#aside,#pageContent">
+															{{#each OpenPackageParams}}
+																<input type="hidden" name="{{key}}" value="{{value}}">
+															{{/each}}
+															<a href="#" onclick="this.closest('form').submit();return false;" class="w-100">
+																<svg xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-package"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
+																<span>{{FriendlyName}}</span>
+															</a>
+														</form>
+													{{/each}}
+													{{#unless data.GlobalChartSQLStudio.Packages.[0]}}
+														<div class="text-muted mb-2">
+															No folders have been created yet
+														</div>
+														 <a href="/studio/settings/packages?ShowCreate=true"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-package"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg> Create your first folder...</a>
+													{{/unless}}
 												</div>
 											</div>
 										</div>
@@ -381,6 +391,22 @@
 												<a href="https://itr8studios.gitbook.io/chartsql/QY9tx3OTrQdien8dGApA/integrations/datasources"><svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-clipboard-text"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" /><path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" /><path d="M9 12h6" /><path d="M9 16h6" /></svg> Configuring Datasources</a>
 											</div>
 										</div>
+										<div class="h3 mt-3 text-muted">
+												Examples
+											</div>
+											<div>
+												<div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples"><i class="ti ti-border-all"></i> All Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=area"><i class="ti ti-chart-area"></i> Area Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=bar"><i class="ti ti-chart-bar"></i> Bar Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=column"><i class="ti ti-chart-arrows-vertical"></i> Column Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=combo"><i class="ti ti-stack-back"></i> Combo Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=heatmap"><i class="ti ti-chart-grid-dots-filled"></i> Heatmap Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=line"><i class="ti ti-chart-line"></i> Line Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=pie"><i class="ti ti-chart-pie"></i> Pie Charts</a></div>
+													<div class="mb-2"><a href="/studio/main?PackageName=websites.chartsql.studio.extensions.chartsql.examples.sql&StudioDatasource=examples&Filter=scatter"><i class="ti ti-chart-scatter"></i> Scatter Charts</a></div>
+												</div>
+											</div>
 									</div>
 								</div>
 							</div>

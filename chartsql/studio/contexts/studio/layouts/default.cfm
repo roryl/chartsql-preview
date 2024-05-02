@@ -203,6 +203,25 @@
 					height: 36px !important;
 					padding: 8px 16px !important;
 				} */
+
+				/* Add a btn-xs which copies the size of badges */
+				.btn-xs {
+					--tblr-badge-padding-x: 0.5em;
+					--tblr-badge-padding-y: 0.25em;
+					--tblr-badge-font-size: 85.714285%;
+					--tblr-badge-font-weight: var(--tblr-font-weight-medium);
+					--tblr-badge-border-radius: var(--tblr-border-radius);
+					display: inline-block;
+					padding: var(--tblr-badge-padding-y) var(--tblr-badge-padding-x);
+					font-size: var(--tblr-badge-font-size);
+					font-weight: var(--tblr-badge-font-weight);
+					line-height: 1;
+					text-align: center;
+					white-space: nowrap;
+					vertical-align: baseline;
+					border-radius: var(--tblr-badge-border-radius);
+				}
+
 			</style>
 			<script>
 				function toggleNavbar() {
@@ -246,6 +265,7 @@
 
 							<div class="d-flex align-items-center">
 
+								<!--- <img src="/assets/img/logo-white.png" height="25" alt="Tabler" class="me-3" style="cursor: pointer;"  onclick="toggleNavbar();"> --->
 								<img src="/studio/main/logo" height="25" alt="Tabler" class="me-3" style="cursor: pointer;"  onclick="toggleNavbar();">
 
 								<a class="" onclick="toggleNavbar();" style="">
@@ -259,6 +279,7 @@
 						<h1 class="navbar-brand navbar-brand-autodark navbar-collapsed-restore" style="">
 							<a class="nav-link d-flex align-items-center justify-content-center" onclick="toggleNavbar();" style="">
 								<span class="" type="button" style="">
+									<!--- <img src="/assets/img/mark-white.png" height="25" alt="ChartSQL Studio" class=""> --->
 									<img src="/studio/main/mascot" height="25" alt="ChartSQL Studio" class="">
 								</span>
 							</a>
@@ -506,11 +527,11 @@
 								</li> --->
 								<li class="nav-item d-flex justify-content-center align-items-between dropdown">
 									<a id="packages-menu-item" class="nav-link dropdown-toggle {{#if data.GlobalChartSQLStudio.IsPackagesDropdownOpened}}show{{/if}} {{#if client_state.navbar_collapsed}}leftcollapsed{{/if}}" href="#navbar-extra" data-bs-toggle="dropdown" data-bs-auto-close="false" role="button" aria-expanded="false">
-										<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Switch Charts Package"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
+										<span class="nav-link-icon d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Switch Charts Folder"><!-- Download SVG icon from http://tabler-icons.io/i/star -->
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
 										</span>
 										<span class="nav-link-title">
-											Packages
+											Folders
 										</span>
 									</a>
 									<div class="dropdown-menu {{#if data.GlobalChartSQLStudio.IsPackagesDropdownOpened}}show{{/if}}">
@@ -702,7 +723,7 @@
 									<input type="hidden" name="{{key}}" value="{{value}}">
 								{{/unless}}
 							{{/each}}
-						  <div class="input-group flex-1 w-100 ps-2" style="padding-right: 56px;">
+						  <div class="input-group flex-1 w-100 px-2">
 							  <input class="form-control w-100 mx-0" form="globalSearchForm" id="globalSearchQueryInput" name="globalSearchQuery" onfocus="this.select();" autocomplete="off" oninput="document.getElementById('globalSearchSubmitButton').click();" value="{{#if view_state.globalSearchQuery}}{{view_state.globalSearchQuery}}{{/if}}" type="text" placeholder="Search..." aria-label="Search...">
 							  <button id="globalSearchSubmitButton" type="submit" class="d-none"></button>
 							  <!--- <button type="button" class="btn btn-link text-decoration-none" onclick="document.getElementById('globalSearchQueryInput').value = ''; document.getElementById('globalSearchSubmitButton').click();">
@@ -711,7 +732,6 @@
 						  </div>
 					  </form>
 					</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				  </div>
 				  <div class="modal-body" style="height: 75vh;">
 					<div class="d-flex flex-row justify-content-center">
@@ -747,12 +767,19 @@
 							<div class="mt-1 mb-2" style="background-color: grey; width: 100%; height: 0.5px;"></div>
 						{{/if}}
 						{{#each data.globalSearchResults.resultsByType.sqlfiles}}
-							<div class="d-flex align-items-center h5 arrow-selectable m-0">
-								<i class="ti ti-file me-2"></i>
-								<a href="{{metadata.OpenLink}}" class="text-decoration-none">{{name}}</a>
+							<div class="d-flex align-items-center justify-content-between h5 arrow-selectable m-0">
+								<div class="d-flex align-items-center">
+									<i class="ti ti-file me-2"></i>
+									<a href="{{metadata.OpenLink}}" class="text-decoration-none">{{name}}</a>
+								</div>
+								{{#if metadata.IsOpen}}
+									<div class="d-flex align-items-center">
+										<div class="text-primary ms-3">opened</div>
+									</div>
+								{{/if}}
 							</div>
 						{{/each}}
-						
+
 						<!--- {{#each data.globalSearchResults.results}}
 							<div class="d-flex align-items-center mt-3 h5">
 								{{#if (eq entityType 'package')}}
@@ -775,7 +802,7 @@
 								{{/if}}
 							</div>
 						{{/each}} --->
-						{{#unless data.globalSearchResults.results.[1]}}
+						{{#unless data.globalSearchResults.results.[0]}}
 							<div class="text-center text-muted w-100 my-3">
 								No results
 							</div>
@@ -806,11 +833,20 @@
 
 				// Add event listener to every arrow keys up and down
 				document.addEventListener('keydown', function(event) {
+					// If modal is not opening ignore the event
+					if (!document.getElementById('globalSearchModal').classList.contains('show')) {
+						return;
+					}
 					// Every item with class "arrow-selectable" is going to be able to be selected with the arrow keys
 					// if it is selected then we will add the class "arrow-selected" to it
-					
+
 					// Get all arrow-selectable items
 					var arrowSelectableItems = document.querySelectorAll('.arrow-selectable');
+
+					// If is empty ignore the event
+					if (arrowSelectableItems.length === 0) {
+						return;
+					}
 
 					if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
 						// Get the index of the selected item
@@ -858,14 +894,19 @@
 						selectedItem.scrollIntoView({behavior: "auto", block: "end"});
 						// Add an event that if we pressed Enter it will click on the first link of the selected item
 						document.addEventListener('keydown', function(event) {
+							if (!document.getElementById('globalSearchModal').classList.contains('show')) {
+								return;
+							}
 							if (event.key === 'Enter') {
 								let selectedItem = document.querySelector('.arrow-selected');
-								selectedItem.querySelector('a').click();
+								if (selectedItem) {
+									selectedItem.querySelector('a').click();
+								}
 							}
 						});
 					}
 				});
-				
+
 			</script>
 			<script>
 				// Open globalSearchModal when presing Cmd + P or Ctrl + P

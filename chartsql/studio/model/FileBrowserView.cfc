@@ -6,6 +6,7 @@ component accessors="true" {
 
 	property name="ChartSQLStudio" type="ChartSQLStudio";
 	property name="Name";
+	property name="Tooltip";
 	property name="Link" setter="false";
 	property name="IconClass";
 	property name="Content";
@@ -13,11 +14,13 @@ component accessors="true" {
 	public function init(
 		required ChartSQLStudio ChartSQLStudio,
 		required String Name,
-		required String IconClass
+		required String IconClass,
+		String Tooltip = '',
 	){
 		variables.ChartSQLStudio = arguments.ChartSQLStudio;
 		variables.Name = arguments.Name;
 		variables.IconClass = arguments.IconClass;
+		variables.Tooltip = arguments.Tooltip;
 		variables.Content = "Foo";
 		variables.ChartSQLStudio.addFileBrowserView(this);
 	}

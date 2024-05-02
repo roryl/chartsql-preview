@@ -237,7 +237,7 @@ abstract component accessors="true" {
 			} else if(isSimpleValue(data[key])){
 				paramValues.append({type:"varchar", value:data[key]});
 			} else {
-				paramValues.append({type:"varcahr", value:data[key]});
+				paramValues.append({type:"varchar", value:data[key]});
 			}
 		}
 

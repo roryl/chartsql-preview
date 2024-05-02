@@ -1,8 +1,8 @@
 -- @chart: column
--- @mongodb-query: {"collection":"sales","find":{"match":{"Status":"Lost" },"projection":{"Amount":1,"DateClosed":1,"Name":1},"sort":{},"limit":0,"skip":0}}
+-- @mongodb-query: {"collection":"sales","find":{"match":{"Status":"Lost" },"projection":{"Amount":1,"DateClosed":1,"Name":1},"sort":{},"limit":0,     "skip":0}}
 SELECT
-TRUNC(DateClosed, 'MONTH') AS DateClosed,
+strftime('%Y-%m-01', DateClosed) as MonthStart,
 sum(Amount) as Amount
 FROM sales
-GROUP BY TRUNC(DateClosed, 'MONTH')
-ORDER BY TRUNC(DateClosed, 'MONTH') asc;
+GROUP BY MonthStart
+ORDER BY MonthStart asc;

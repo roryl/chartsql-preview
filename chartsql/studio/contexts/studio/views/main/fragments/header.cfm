@@ -19,14 +19,14 @@
 				<div>
 					<!-- Page pre-title -->
 					<div class="page-pretitle">
-						Package
+						Folder
 					</div>
 					<h2 class="page-title">
 						{{data.CurrentPackage.FriendlyName}}
 					</h2>
 				</div>
 				<div class="ms-3">
-					<a href="/studio/main" class="btn btn-icon text-muted" aria-label="Button" title="Close Package" data-bs-toggle="tooltip">
+					<a href="/studio/main" class="btn btn-icon text-muted" aria-label="Button" title="Close Folder" data-bs-toggle="tooltip">
 						<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-x"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
 					</a>
 				</div>
@@ -55,7 +55,7 @@
 				<!--- <a href="#" class="btn btn-primary d-none d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#modal-report">
 					<!-- Download SVG icon from http://tabler-icons.io/i/plus -->
 					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-send" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 14l11 -11" /><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" /></svg>
-					Publish Package to Dash
+					Publish Folder to Dash
 				</a> --->
 				<a href="#" class="btn btn-primary d-sm-none btn-icon" data-bs-toggle="modal" data-bs-target="#modal-report" aria-label="Create new report">
 					<!-- Download SVG icon from http://tabler-icons.io/i/plus -->

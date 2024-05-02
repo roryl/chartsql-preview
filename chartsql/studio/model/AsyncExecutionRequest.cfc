@@ -35,7 +35,7 @@ component accessors="true" {
 
 	public function init(
 		required EditorSession EditorSession,
-		StudioDatasource StudioDatasource,
+		required StudioDatasource StudioDatasource,
 		required SqlFile SqlFile
 	){
 
@@ -58,16 +58,8 @@ component accessors="true" {
 		variables.SqlScript = ChartSQL.createSqlScript(variables.content);
 
 		variables.scriptExecutionId = variables.SqlScript.tagWithExecutionId();
-
-		var directives = variables.SqlScript.getParsedDirectives();
-		if(directives.keyExists("datasource")){
-			var StudioDatasource = variables.ChartSQLStudio.findStudioDatasourceByName(directives.datasource).elseThrow("Script specified a specific datasource '#directives.datasource#' but it was not found");
-			variables.StudioDatasource = StudioDatasource;
-			variables.Datasource = StudioDatasource.getDatasource();
-		} else {
-			variables.StudioDatasource = arguments.StudioDatasource?:throw("StudioDatasource must be provided or defined in the script");
-			variables.Datasource = variables.StudioDatasource.getDatasource();
-		}
+		variables.StudioDatasource = arguments.StudioDatasource?:throw("StudioDatasource must be provided or defined in the script");
+		variables.Datasource = variables.StudioDatasource.getDatasource();
 
 		variables.EditorSession.getExecutionRequests().append(this);
 		variables.Id = createUUID();
@@ -75,7 +67,6 @@ component accessors="true" {
 	}
 
 	public function start(){
-
 		variables.StartedAt = now();
 		variables.IsRunning = true;
 		variables.StartedTick = getTickCount();
@@ -91,6 +82,13 @@ component accessors="true" {
 			try {
 				sleep(1);
 				data = me.getDatasource().execute(me.getSqlScript());
+
+				var directives = me.getSqlScript().getParsedDirectives();
+
+				if(directives.keyExists("ddf") and directives.ddf){
+					com.chartsql.core.model.DynamicDataQuery::evaluate( data );
+				}
+
 				sleep(1);
 
 				if(!me.getIsCancelled()){
@@ -212,7 +210,11 @@ component accessors="true" {
 		var errorContent = "";
 		if(variables.IsError){
 			savecontent variable="errorContent" {
-				writeDump(variables.ErrorStruct);
+				if (variables.keyExists("ErrorStruct")) {
+					writeDump(variables.ErrorStruct);
+				} else {
+					writeDump({});
+				}
 			}
 		}
 		return errorContent;

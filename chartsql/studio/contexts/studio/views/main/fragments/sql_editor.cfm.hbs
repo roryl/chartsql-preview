@@ -143,7 +143,8 @@
 					"secondary-series",
 					"baselines",
 					"baseline-types",
-					"series-labels"
+					"series-labels",
+					"overlay-series"
 				];
 
 				if(!validFormats.includes(directive)){
@@ -164,6 +165,10 @@
 		// and whenever changes are made
 		findDirectives(sqlEditor);
 
+		// Attach the change event listener to your CodeMirror instance
+		var typingTimer; // Timer identifier
+		var doneTypingInterval = 400;  // Time in ms
+
 		// Define the function that will be called when the content changes
 		function onEditorContentChange(instance, changeObj) {
 			localStorage.setItem(`SqlFileHistory-${CurrentSqlFileId}`, JSON.stringify(sqlEditor.doc.getHistory()));
@@ -180,7 +185,15 @@
 			// Click the storeEditorContentButton which will send the editor content to the server
 			// in SqlFile (but not actually save the file) so that it can be restored if the user
 			// navigates away from the page and then comes back and it hasn't been saved
-			document.getElementById('storeEditorContentButton').click();
+			
+			// If the user is typing, clear the timer
+			clearTimeout(typingTimer);
+
+			// Set a timer to wait for the user to stop typing
+			typingTimer = setTimeout(function () {
+				document.getElementById('storeEditorContentButton').click();
+			}, doneTypingInterval);
+			
 
 			// Decorate the save button that we have changes and so we are going to
 			// remove the btn-ghost-secondary class and add the btn-primary class
@@ -191,8 +204,29 @@
 			// button.classList.add('btn-primary');
 		}
 
-		// Attach the change event listener to your CodeMirror instance
-		sqlEditor.on('change', onEditorContentChange);
+		sqlEditor.on('change', function (instance, changeObj) {
+			let saveSqlbutton = document.getElementById('saveSqlbutton');
+			if (saveSqlbutton) {
+				saveSqlbutton.classList.remove('btn-ghost-secondary');
+				saveSqlbutton.classList.add('btn-primary');
+			}
+
+			// Search for a element that has the 'status-dot' class and the 'active' class
+			// and make it 'visibility: visible;'
+			let activeFile = document.querySelector('.status-dot.active');
+			if (activeFile) {
+				activeFile.style.visibility = 'visible';
+			}
+			
+			onEditorContentChange(instance, changeObj);
+		});
+		
+		sqlEditor.on('keydown', function () {
+			if (typingTimer) {
+				// If the user is typing, clear the timer
+				clearTimeout(typingTimer);
+			}
+		});
 		{{/if}}
 		{{/unless}}
 	{{/if}}

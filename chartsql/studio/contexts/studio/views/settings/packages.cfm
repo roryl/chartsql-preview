@@ -2,12 +2,12 @@
 
 	<div class="card-title">
 		<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
-		Packages
+		Folders
 	</div>
 	<div class="ms-auto">
 		<a href="{{view_state.links.open_create}}" class="btn btn-primary btn-sm">
 			<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-folder-plus me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 19h-7a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v3.5" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
-			Add Package
+			Add Folder
 		</a>
 	</div>
 </div>
@@ -21,8 +21,8 @@
 			</div>
 		</div>
 		<div class="card-body">
-			<h3 class="card-title">Chart SQL Packages</h3>
-			<p>Packages are a folder of SQL files that share a relationship with one another against a particular type of datasource. You can add any folder from your filesystem as a package in ChartSQL. All subfolders are a part of the package.</p>
+			<h3 class="card-title">Chart SQL Folders</h3>
+			<p>Folders are a folder of SQL files that share a relationship with one another against a particular type of datasource. You can add any folder from your filesystem as a folder in ChartSQL. All subfolders are a part of the folder.</p>
 		</div>
 	</div>
 
@@ -33,7 +33,7 @@
 		<div class="card-header bg-primary">
 			<h3 class="card-title">
 				<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-folder-plus me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 19h-7a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v3.5" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
-				Add new Package
+				Add new Folder
 			</h3>
 		</div>
 		<div class="card-body">
@@ -41,7 +41,7 @@
 				<label class="form-label required">Directory Path</label>
 				<div>
 					<input type="input" name="FolderPath" class="form-control" aria-describedby="emailHelp" placeholder="directory path">
-					<small class="form-hint">Path on your file system when the package should exist. If it doesn't exist it will be created</small>
+					<small class="form-hint">Path on your file system when the folder should exist. If it doesn't exist it will be created</small>
 				</div>
 			</div>
 			<div class="mb-3">
@@ -49,7 +49,7 @@
 				<div>
 					<input type="input" class="form-control" name="FriendlyName" placeholder="Friendly Name">
 					<small class="form-hint">
-						Friendly title for your package that will be used in the UI
+						Friendly title for your folder that will be used in the UI
 					</small>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 	</form>
 	{{/if}}
 
-	<h3>Existing Packages</h3>
+	<h3>Existing Folders</h3>
 	{{#each data.ChartSQLStudio.Packages}}
 	<div class="card mb-3">
 		<div class="card-header">
@@ -83,7 +83,7 @@
 				{{#if IsDefaultPackage}}
 					<span class="d-flex flex-row align-items-center justify-content-center badge bg-cyan-lt me-2">
 						<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-pin"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 4.5l-4 4l-4 1.5l-1.5 1.5l7 7l1.5 -1.5l1.5 -4l4 -4" /><path d="M9 15l-4.5 4.5" /><path d="M14.5 4l5.5 5.5" /></svg>
-						<div class="ms-1">Default Package</div>
+						<div class="ms-1">Default Folder</div>
 					</span>
 				{{/if}}
 				<span class="badge bg-azure-lt me-2"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-database" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0" /><path d="M4 6v6a8 3 0 0 0 16 0v-6" /><path d="M4 12v6a8 3 0 0 0 16 0v-6" /></svg>
@@ -111,7 +111,7 @@
 						<label class="form-label">Directory Path</label>
 						<div>
 							<input type="input" name="FolderPath" class="form-control" aria-describedby="emailHelp" placeholder="directory path" disabled value="{{Path}}">
-							<small class="form-hint">Path on your file system when the package should exist. If it doesn't exist it will be created</small>
+							<small class="form-hint">Path on your file system when the foolder should exist. If it doesn't exist it will be created</small>
 						</div>
 					</div>
 					<div class="mb-3">
@@ -119,7 +119,7 @@
 						<div>
 							<input type="input" class="form-control" name="FriendlyName" placeholder="Friendly Name" value="{{FriendlyName}}">
 							<small class="form-hint">
-								Friendly title for your package that will be used in the UI
+								Friendly title for your folder that will be used in the UI
 							</small>
 						</div>
 					</div>
@@ -131,7 +131,7 @@
 								<option value="true" {{#if IsReadOnly}}selected{{else}}{{/if}}>Yes</option>
 							</select>
 							<small class="form-hint">
-								When a package is read-only, it cannot be modified
+								When a folder is read-only, it cannot be modified
 							</small>
 						</div>
 					</div>
@@ -145,7 +145,7 @@
 								{{/each}}
 							</select
 							<small class="form-hint">
-								The default datasource that will be selected whenever the package is opened
+								The default datasource that will be selected whenever the folder is opened
 							</small>
 						</div>
 					</div>
@@ -153,11 +153,11 @@
 					<h4 class="subheader">DashSQL Publushing</h4>
 					<div class="row mb-3">
 						<div class="mb-3 col">
-							<label class="form-label">DashSQL Package ID</label>
+							<label class="form-label">DashSQL Folder ID</label>
 							<div>
 								<input type="input" class="form-control" name="DashId" placeholder="xxxxxxxx" value="{{DashId}}">
 								<small class="form-hint">
-									The global unique identifier for this package provided by DashSQL
+									The global unique identifier for this foolder provided by DashSQL
 								</small>
 							</div>
 						</div>
@@ -166,7 +166,7 @@
 							<div>
 								<input type="input" class="form-control" name="PublisherKey" placeholder="xxxxxxxx" value="{{PublisherKey}}">
 								<small class="form-hint">
-									Do not share. API Key with publishing permissions for this package on DashSQL. This is your private password to publish to the package.
+									Do not share. API Key with publishing permissions for this foolder on DashSQL. This is your private password to publish to the foolder.
 								</small>
 							</div>
 						</div>
@@ -198,7 +198,7 @@
 						</div>
 						<div class="col text-end">
 							{{#unless IsDefaultPackage}}
-								<button form="setAsDefaultPackageForm" type="submit" class="btn btn-outline-danger me-2">Set as Default Package</button>
+								<button form="setAsDefaultPackageForm" type="submit" class="btn btn-outline-danger me-2">Set as Default Folder</button>
 							{{/unless}}
 							<a href="{{CloseEditLink}}" class="btn btn-outline-secondary me-2">Close</a>
 							<button type="submit" class="btn btn-primary">Update</button>

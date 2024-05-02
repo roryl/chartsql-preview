@@ -181,26 +181,32 @@ component extends="zero.zero" {
 			ChartSQLStudio.setLastEditorUrl(qs.clone().delete("PresentationMode").get());
 		}
 
-		controllerResult.data.isGlobalSearching = false;
-		controllerResult.view_state.globalSearchQuery = nullValue();
+		if(this.getCgiRequestMethod() == "GET"){
 
-		// Get param globalSearchQuery from request
-		if (isDefined("request.context.globalSearchQuery")) {
-			controllerResult.data.isGlobalSearching = true;
-			var globalSearchQuery = request.context.globalSearchQuery;
-			controllerResult.view_state.globalSearchQuery = globalSearchQuery;
-			if (!isNull(globalSearchQuery) && !isEmpty(globalSearchQuery)) {
-				var searchResults = ChartSQLStudio.globalSearch(globalSearchQuery);
-				controllerResult.data.globalSearchResults = searchResults;
+			controllerResult.data.isGlobalSearching = false;
+			controllerResult.view_state.globalSearchQuery = nullValue();
+
+			// Get param globalSearchQuery from request
+			if (isDefined("request.context.globalSearchQuery")) {
+				controllerResult.data.isGlobalSearching = true;
+				var globalSearchQuery = request.context.globalSearchQuery;
+				controllerResult.view_state.globalSearchQuery = globalSearchQuery;
+				if (!isNull(globalSearchQuery) && !isEmpty(globalSearchQuery)) {
+					var searchResults = ChartSQLStudio.globalSearch(globalSearchQuery);
+					controllerResult.data.globalSearchResults = searchResults;
+				} else {
+					controllerResult.data.globalSearchResults = ChartSQLStudio.globalSearch();
+				}
 			} else {
-				controllerResult.data.globalSearchResults = [];
+				controllerResult.data.globalSearchResults = ChartSQLStudio.globalSearch();
 			}
-		}
 
-		controllerResult.view_state.section = this.getSection();
-		// The editor link should remove the PresentationMode variable from the URL
-		// to get back to the same file as we were in preview mode
-		controllerResult.view_state.editor_link = ChartSQLStudio.getLastEditorUrl();
+			controllerResult.view_state.section = this.getSection();
+			// The editor link should remove the PresentationMode variable from the URL
+			// to get back to the same file as we were in preview mode
+			controllerResult.view_state.editor_link = ChartSQLStudio.getLastEditorUrl();
+
+		}
 
 		return arguments.controllerResult;
 	}

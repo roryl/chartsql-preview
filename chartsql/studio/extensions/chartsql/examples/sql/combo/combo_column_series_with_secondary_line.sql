@@ -1,5 +1,5 @@
 -- @chart: combo
--- @title: Combo - Column Chat with Secondary Line
+-- @title: Combo - Column Chart with Secondary Line
 -- @subtitle: A combo chart with a column series and a secondary line series
 -- @category: Channel
 -- @series: TotalDeals
@@ -17,4 +17,4 @@ FROM (
   FROM Sales
   WHERE Status = 'Won' or Status = 'Lost'
   GROUP BY Channel
-) as Sub
+) as Sub;

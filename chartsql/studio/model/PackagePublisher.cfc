@@ -44,7 +44,7 @@ component accessors="true" {
 		return result;
 	}
 
-	public PublishingRequest function publishDashChart(SqlFile SqlFile) {
+	public PublishingResult function publishDashChart(SqlFile SqlFile) {
 		var baseUrl = variables.ChartSQLStudio.getBasePublishingUrl(variables.key);
 		var uri = "#baseUrl#/publishDashChart.json";
 
@@ -67,40 +67,18 @@ component accessors="true" {
 
 		PublishingRequest.send();
 
-		if(!PublishingRequest.getIsHttpError()){
+		var PublishingResult = parsePublishingRequest(PublishingRequest);
 
-			var rawResult = PublishingRequest.getRawResult();
-			var content = rawResult.filecontent;
-
-			if(isJson(content)){
-
-				var json = deserializeJson(content);
-
-				PublishingRequest.setDataResult(json);
-
-				if(isDefined("json.data.Publishment.SqlChart.DashId")){
-					SqlFile.addOrUpdateDirective("dash-id", json.data.Publishment.SqlChart.DashId);
-					// SqlFile.save();
-				}
-
-				return PublishingRequest;
-
-			} else {
-
-				echo(content);
-
-				PublishingRequest.setIsError(true);
-				PublishingRequest.setErrorMessage("Invalid JSON response from server.");
-				PublishingRequest.setRawContent(content);
-
-			}
+		if(PublishingResult.getResultType() == "API_SUCCESS"){
+			var json = PublishingResult.getResultJson();
+			SqlFile.addOrUpdateDirective("dash-id", json.data.Publishment.SqlChart.DashId);
 		}
 
-		return PublishingRequest;
+		return PublishingResult;
 
 	}
 
-	public PublishingRequest function updateDashChart(SqlFile SqlFile){
+	public PublishingResult function updateDashChart(SqlFile SqlFile){
 
 		var baseUrl = variables.ChartSQLStudio.getBasePublishingUrl(variables.key);
 		var uri = "#baseUrl#/updateDashChart.json";
@@ -112,7 +90,7 @@ component accessors="true" {
 
 		var FormFields = {
 			"sql" = SqlFile.getContent(),
-			"dash-id" = SqlFile.getParsedDirectives()["dash-id"]
+			"dashId" = SqlFile.getParsedDirectives()["dash-id"]
 		};
 
 		var PublishingRequest = new PublishingRequest(
@@ -125,50 +103,17 @@ component accessors="true" {
 
 		PublishingRequest.send();
 
-		var rawResult = PublishingRequest.getRawResult();
+		var PublishingResult = parsePublishingRequest(PublishingRequest);
 
-		if(!PublishingRequest.getIsHttpError()){
+		return PublishingResult;
 
-			var content = rawResult.filecontent;
-
-			if(isJson(content)){
-
-				var json = deserializeJson(content);
-				if(json.keyExists("error")){
-					PublishingRequest.setIsError(true);
-					PublishingRequest.setErrorMessage(json.error.message);
-				} else {
-					PublishingRequest.setIsError(false);
-					PublishingRequest.setIsSuccess(true);
-				}
-
-				PublishingRequest.setDataResult(json);
-
-			} else {
-				PublishingRequest.setIsError(true);
-				PublishingRequest.setErrorMessage("Invalid JSON response from server.");
-				PublishingRequest.setRawContent(content);
-			}
-		}
-
-		return PublishingRequest;
-
-		// if(isJson(result.filecontent)){
-
-		// 	var json = deserializeJson(result.filecontent);
-		// 	return json;
-
-		// } else {
-		// 	// writeDump(result);
-		// 	throw(type="DashSQLPublishError", message="Error updating chart: #result.filecontent#")
-		// }
 	}
 
 	/**
 	 * Verifys the account is valid and has the correct permissions. If the account is not valid
 	 * an error is thrown.
 	 */
-	public PublishingRequest function verify(){
+	public PublishingResult function verify(){
 
 		var baseUrl = variables.ChartSQLStudio.getBasePublishingUrl(variables.key);
 		var uri = "#baseUrl#/stats.json";
@@ -176,6 +121,10 @@ component accessors="true" {
 		var Headers = {}
 		if(!isNull(variables.ChartSQLStudio.getPublishingAppId())){
 			Headers["x-application-id"] = variables.ChartSQLStudio.getPublishingAppId();
+		}
+
+		if(!isNull(variables.ChartSQLStudio.getPublishingDevMode())){
+			Headers["x-dev-mode"] = variables.ChartSQLStudio.getPublishingDevMode();
 		}
 
 		var PublishingRequest = new PublishingRequest(
@@ -186,32 +135,48 @@ component accessors="true" {
 		);
 
 		PublishingRequest.send();
+		var PublishingResult = parsePublishingRequest(PublishingRequest);
 
+		return PublishingResult;
+	}
 
-		if(!PublishingRequest.getIsHttpError()){
+	private PublishingResult function parsePublishingRequest(required PublishingRequest PublishingRequest){
 
-			var rawResult = PublishingRequest.getRawResult();
+		var rawResult = PublishingRequest.getRawResult();
+		var content = rawResult.filecontent;
 
-			var content = rawResult.filecontent;
+		if(isJson(content)){
 
-			if(isJson(content)){
+			var json = deserializeJson(content);
+			if(json.keyExists("error")){
 
-				var json = deserializeJson(content);
-				if(json.keyExists("error")){
-					PublishingRequest.setIsError(true);
-					PublishingRequest.setErrorMessage(json.error.message);
-				} else {
-					PublishingRequest.setIsError(false);
-					PublishingRequest.setIsSuccess(true);
-				}
+				var PublishingResult = new PublishingResult(
+					PublishingRequest = PublishingRequest,
+					ResultType = "API_ERROR",
+					ResultMessage = json.error.message,
+					ResultJson = json
+				);
 
 			} else {
-				PublishingRequest.setIsError(true);
-				PublishingRequest.setErrorMessage("Invalid JSON response from server.");
-				PublishingRequest.setRawContent(content);
+
+				var PublishingResult = new PublishingResult(
+					PublishingRequest = PublishingRequest,
+					ResultType = "API_SUCCESS",
+					ResultJson = json
+				);
+
 			}
+
+		} else {
+
+			var PublishingResult = new PublishingResult(
+				PublishingRequest = PublishingRequest,
+				ResultType = "INVALID_JSON"
+			);
+
 		}
-		return PublishingRequest;
+		return PublishingResult;
+
 	}
 
 }

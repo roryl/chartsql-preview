@@ -33,7 +33,8 @@ component accessors="true" {
 			"secondary-series": true,
 			"baselines": true,
 			"baseline-types": true,
-			"series-labels":true
+			"series-labels":true,
+			"overlay-series": true
 		}
 
 		// These are the directives that are arrays and need to be converted to arrays
@@ -46,7 +47,8 @@ component accessors="true" {
 			 "secondary-series",
 			 "baselines",
 			 "baseline-types",
-			 "series-labels"
+			 "series-labels",
+			 "overlay-series"
 		];
 
 		variables.multilineDirectives = [
@@ -341,6 +343,7 @@ component accessors="true" {
 		out.types["baselines"] = {name:{}, errors:[], isValid:true, allowEmpty: false};
 		out.types["baseline-types"] = {name:{}, errors:[], isValid:true, allowEmpty: false};
 		out.types["series-labels"] = {name:{}, errors:[], isValid:true, allowEmpty: false};
+		out.types["overlay-series"] = {name:{}, errors:[], isValid:true, allowEmpty: false};
 
 		var validChartTypes = {
 			"bar": true,
@@ -733,7 +736,8 @@ component accessors="true" {
 			"secondary-series": false,
 			"baselines": false,
 			"baseline-types": false,
-			"series-labels":false
+			"series-labels":false,
+			"overlay-series": false
 		}
 
 		var out = [];
@@ -891,18 +895,20 @@ component accessors="true" {
 		var firstDirectiveAt = 0;
 		var lastDirectiveAt = 1;
 		var directiveAlreadyExists = false;
-
+		var hasAtLeastOneDirective = false;
 		// We are going to get the line of the last directive after the first
 		// directive is found for purposes of putting the new directive at the
 		for(var ii=1; ii <= arrayLen(lines); ii++){
 			var line = lines[ii];
 
 			if(this.lineContainsMatchinDirective(line, new CleanedDirectiveName(directive))){
+				hasAtLeastOneDirective = true;
 				directiveAlreadyExists = true;
 				this.replaceDirectiveText(directive, newText);
 				return;
 			} else {
 				if(this.lineContainsAnyDirective(line)){
+					hasAtLeastOneDirective = true;
 					lastDirectiveAt = ii;
 				}
 			}
@@ -922,7 +928,11 @@ component accessors="true" {
 		}
 
 		var textToInsert = "#whitespace#-- @#directive#: #newText#";
-		arrayInsertAt(lines, lastDirectiveAt + 1, textToInsert);
+		if (hasAtLeastOneDirective) {
+			arrayInsertAt(lines, lastDirectiveAt + 1, textToInsert);
+		} else {
+			arrayInsertAt(lines, 1, textToInsert);
+		}
 		variables.sql = arrayToList(lines, server.separator.line);
 		return this;
 	}
@@ -982,7 +992,7 @@ component accessors="true" {
 	public string function tagWithExecutionId(){
 		var sql = this.getSql();
 		var executionId = replace(createUUID(), "-", "", "all");
-		var newSql = "-- Execution ID: #executionId##server.separator.line##sql#";
+		var newSql = "-- Execution ID: #executionId##chr(13)##chr(10)##sql#";
 		this.setSql(newSql);
 		return executionId;
 	}

@@ -73,6 +73,16 @@ component {
 							eval(option.tooltip.formatter);
 							option.tooltip.formatter = func;
 						}
+						
+						if(
+							typeof option.tooltip != "undefined"
+							&& typeof option.tooltip.axisPointer != "undefined"
+							&& typeof option.tooltip.axisPointer.label != "undefined"
+							&& typeof option.tooltip.axisPointer.label.formatter != "undefined"
+						){
+							eval(option.tooltip.axisPointer.label.formatter);
+							option.tooltip.axisPointer.label.formatter = func;
+						}
 
 						//Only execute if our option has a yAxis
 						if(typeof option.yAxis != "undefined"){
@@ -199,6 +209,107 @@ component {
 						backgroundColor: '##6a7985'
 					}
 				}
+			}
+
+			if (
+				isDefined("variables.directives.formats") 
+				&& !isNull(variables.directives.formats) 
+				&& isArray(variables.directives.formats)
+				&& variables.directives.formats.len() > 0
+				&& option.keyExists('series')
+			) {
+				var mainAxisDimension = "x";
+				// if (variables.directives.chart == 'bar' || variables.directives.chart == 'combo') {
+				// 	mainAxisDimension = "x";
+				// }
+
+				option.tooltip.axisPointer.label.formatter = "var func = function(params) {
+					try {
+						var formats = #serializeJSON(variables.directives.formats)#;
+						var mainAxisDimension = '#mainAxisDimension#';
+						var format = 'decimal';
+						if (formats.length > params.axisIndex) {
+							format = formats[params.axisIndex];
+						}
+
+						// If params.value is a date, then use params.value[1] as the value
+						if (Array.isArray(params.value)) {
+							params.value = params.value[1];
+						}
+
+						if (params.axisDimension == 'x' && params.seriesData != undefined && params.seriesData.length > 0 && 'componentType' in params.seriesData[params.axisIndex] && params.seriesData[params.axisIndex].componentType == 'series') {
+							return new Date(params.value).toLocaleDateString();
+						}
+
+						if (params.value != null && !isNaN(params.value)) {
+							if (format == 'currency') {
+								return `$${params.value.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+							} else if (format == 'percent') {
+								return `${Math.round(params.value)}%`;
+							} else if (format == 'integer') {
+								return `${Math.round(params.value)}`;
+							} else if (format == 'decimal') {
+								return `${params.value.toFixed(2)}`;
+							} else {
+								return params.value;	
+							}
+						} else {
+							return params.value;
+						}
+					} catch (error) {
+						console.log('Error in tooltip formatter');
+						console.log({error});
+						if (Array.isArray(params.value)) {
+							params.value = params.value[1];
+						}
+						return params.value;
+					}
+				}";
+
+				option.tooltip.formatter = "var func = function(params) {
+					try {
+						var result = '';
+						if (params.length > 0 && params[0].name != undefined && params[0].name != null && params[0].name != '') { 
+							result = params[0].name + '<br>';
+						}
+						var formats = #serializeJSON(variables.directives.formats)#;
+						var format = 'decimal';
+						for (var i = 0; i < params.length; i++) {
+							if (formats.length > i) {
+								format = formats[i];
+							}
+
+							// If params.value is a date, then do nothing
+							if (Array.isArray(params[i].value)) {
+								params[i].value = params[i].value[1];
+							}
+
+							if (params[i].axisDimension == 'x' && params[i].seriesData != undefined && params[i].seriesData.length > 0 && 'componentType' in params[i].seriesData[params[i].axisIndex] && params[i].seriesData[params[i].axisIndex].componentType == 'series') {
+								return new Date(params[i].value).toLocaleDateString();
+							}
+
+							if (format == 'currency') {
+								result += `${params[i].marker} <b>${params[i].seriesName}</b>: $${params[i].value.toLocaleString()}<br>`;
+							} else if (format == 'percent') {
+								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toLocaleString()}%<br>`;
+							} else if (format == 'integer') {
+								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${Math.round(params[i].value)}<br>`;
+							} else if (format == 'decimal') {
+								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toFixed(2)}<br>`;
+							} else {
+								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toLocaleString()}<br>`;
+							}
+					   }
+						return result;
+					} catch (error) {
+						console.log('Error in tooltip formatter');
+						console.log({error});
+						var result = params[0].name + '<br>';
+						for (var i = 0; i < params.length; i++) {
+							 result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toLocaleString()}<br>`;
+						}
+					}
+				}";
 			}
 		}
 
@@ -389,6 +500,38 @@ component {
 				}
 			}
 		}
+
+		// ---------------------------------
+		// OVERLAY SERIES
+		// ---------------------------------
+		// Overlay series are series that are adjusted to overlay one on top of the other
+		if(variables.directives.keyExists("overlay-series")){
+
+			var overlaySeries = variables.directives["overlay-series"];
+
+			for(var ii = 1; ii <= overlaySeries.len(); ii++){
+
+				var overlaySeriesName = overlaySeries[ii];
+				var allSeries = this.getAllSeriesDirectivesValues();
+				var seriesPosition = allSeries.findNoCase(overlaySeriesName);
+				option.series[seriesPosition].barWidth = "80%";
+				// option.series[seriesPosition].barGap = "0%";
+				// option.series[seriesPosition].barGap = "-100%";
+
+			}
+
+			for(var ii = 2; ii <= overlaySeries.len(); ii++){
+
+				var overlaySeriesName = overlaySeries[ii];
+				var allSeries = this.getAllSeriesDirectivesValues();
+				var seriesPosition = allSeries.findNoCase(overlaySeriesName);
+				// option.series[seriesPosition].barWidth = "80%";
+				option.series[seriesPosition].barGap = "-80%";
+				option.series[seriesPosition].barWidth = "50%";
+
+			}
+		}
+
 		return option?:nullValue();
 	}
 
@@ -792,7 +935,19 @@ component {
 				// writeDump(variables.directives["groups"]);
 
 				var atGroupBy = variables.directives["groups"];
-				var seriesValues = variables.directives.series;
+				// writeDump(variables.metaData.types.numeric.columnsArray[1].name);
+				// abort;
+				var seriesValues = [];
+				if (variables.directives.keyExists("series") && !isNull(variables.directives.series) && !isEmpty(variables.directives.series)) {
+					seriesValues = variables.directives.series;
+				} else {
+					// Assistive Mode should select the left most numeric column in this case for the series.
+					if (variables.metaData.types.numeric.columnsArray.len() > 0) {
+						seriesValues = [variables.metaData.types.numeric.columnsArray[1].name];
+					} else {
+						seriesValues = [];
+					}
+				}
 
 				if(variables.directives.keyExists("secondary-series")){
 					var secondarySeriesValues = variables.directives["secondary-series"];
@@ -876,6 +1031,7 @@ component {
 						// Increment the values count that we will used to get the
 						// type of the series if we are a combo chart
 						valuesCount++;
+						var originalAtValue = atValue;
 
 						isStacking = false;
 						isAggregating = false;
@@ -930,7 +1086,7 @@ component {
 								valuesOut.append(groupByData3[atValue][1]);
 							}
 
-							if(arrayContains(secondarySeriesValues, atValue)){
+							if(arrayContains(secondarySeriesValues, originalAtValue)){
 								var isSecondarySeries = true;
 							} else {
 								var isSecondarySeries = false;

@@ -12,8 +12,8 @@ component
 	description="MongoDB Database Connector"
 	iconClass="ti ti-brand-mongodb"
 {
-	property name="Username" description="Your MongoDB username" required="true" placeholder="user" order="1";
-	property name="Password" description="Your MongoDB password" required="true" placeholder="123456" order="2";
+	property name="Username" description="Your MongoDB username" placeholder="user" order="1";
+	property name="Password" description="Your MongoDB password" placeholder="123456" order="2";
 	property name="Host" description="Your MongoDB host" required="true" placeholder="localhost" order="3";
 	property name="Port" description="Your MongoDB port" required="true" default="27017" placeholder="27017" order="4";
 	property name="Database" description="Your MongoDB database" required="true" placeholder="mydb" order="5";
@@ -26,6 +26,14 @@ component
 		// we will use this to execute SQL queries against the collection
 		// data returned from the MongoDB query
 		var path = expandPath("/com/chartsql/userdata/db/mongodb/#variables.database#");
+
+		if (!isDefined("arguments.Password") || isNull(arguments.Password)) {
+			this.setPassword("");
+		}
+
+		// if (!isDefined("arguments.Username") || isNull(arguments.Username)) {
+		// 	this.setUsername("");
+		// }
 		// writeDump(path);
 		if(!directoryExists(path)){
 			directoryCreate(path, true);
@@ -47,7 +55,13 @@ component
 	public function getMongoClient(){
 
 		if(!variables.keyExists("mongoClient")){
-			var dbconnection = "mongodb+srv://#this.getUsername()#:#this.getPassword()#@#this.getHost()#/?retryWrites=true&w=majority";
+			var MongoDBUsername = this.getUsername();
+			if (isNull(MongoDBUsername) || isEmpty(MongoDBUsername)) {
+				var dbconnection = "mongodb://#this.getHost()#/#this.getDatabase()#?retryWrites=true&w=majority";
+			} else {
+				var dbconnection = "mongodb+srv://#this.getUsername()#:#this.getPassword()#@#this.getHost()#/#this.getDatabase()#?retryWrites=true&w=majority";
+			}
+
 			var MongoClients = createObject("java", "com.mongodb.client.MongoClients");
 			var ConnectionString = createObject("java", "com.mongodb.ConnectionString").init(dbconnection);
 			var MongoClientSettings = createObject("java", "com.mongodb.MongoClientSettings")
@@ -72,71 +86,97 @@ component
 		};
 
 		var setupTick = getTickCount();
-			var directives = SqlScript.getParsedDirectives();
+		var directives = SqlScript.getParsedDirectives();
 
-			if(!directives.keyExists("mongodb-query")){
-				throw("No @mongodb-query directive found");
+		if(!directives.keyExists("mongodb-query")){
+			throw("No @mongodb-query directive found");
+		}
+
+		if(!isJson(directives["mongodb-query"])){
+			throw("Invalid JSON in @mongodb-query directive");
+		}
+
+		// Create JAVA based JSON object that we can use to parse the JSON
+		var JSON = createObject("java", "com.mongodb.util.JSON");
+
+		// Parse the source JSON query into a CFML structure
+		var jsonData = deserializeJson(directives["mongodb-query"]);
+
+		if ((!isDefined("jsonData.find") && !isDefined("jsonData.aggregate"))) {
+			throw("A find or aggregate query must be specified", "NoQuerySpecified");
+		}
+
+		if ((isDefined("jsonData.find") && isDefined("jsonData.aggregate"))) {
+			throw("A find or aggregate query must be specified, not both", "InvalidQuerySpecified");
+		}
+
+		if (isDefined("jsonData.find")) {
+			if (!isDefined("jsonData.find.match")) {
+				jsonData.find.match = {};
 			}
-
-			if(!isJson(directives["mongodb-query"])){
-				throw("Invalid JSON in @mongodb-query directive");
+			if (!isDefined("jsonData.find.projection")) {
+				jsonData.find.projection = {};
 			}
-
-			// Create JAVA based JSON object that we can use to parse the JSON
-			var JSON = createObject("java", "com.mongodb.util.JSON");
-
-			// Parse the source JSON query into a CFML structure
-			var jsonData = deserializeJson(directives["mongodb-query"]);
+			if (!isDefined("jsonData.find.sort")) {
+				jsonData.find.sort = {};
+			}
 
 			// Get an normalize all of the values from the JSON
 			var collectionName = jsonData.collection?:throw("No collection name specified");
+
 			var findMatch = serializeJson(jsonData.find.match?:{});
 			var findSort = serializeJson(jsonData.find.sort?:{});
 			var findLimit = jsonData.find.limit?:10;
 			var findSkip = jsonData.find.skip?:0;
 			var findProjection = serializeJson(jsonData.find.projection?:{});
-		var timers.setup = getTickCount() - setupTick;
+			var timers.setup = getTickCount() - setupTick;
 
-		// Get the mongo client and database connection
-		var startTick = getTickCount();
-			var mongoClient = this.getMongoClient();
-			var databaseConnection = mongoClient.getDatabase(this.getDatabase());
-		var timers.connection = getTickCount() - startTick;
+			// Get the mongo client and database connection
+			var startTick = getTickCount();
+				var mongoClient = this.getMongoClient();
+				var databaseConnection = mongoClient.getDatabase(this.getDatabase());
+			var timers.connection = getTickCount() - startTick;
 
-		// Get the collection
-		var startTick = getTickCount();
-			var collection = databaseConnection.getCollection(collectionName);
-		var timers.collection = getTickCount() - startTick;
-
-
-		// Parse the JSON into JAVA objects that mongo collection can use
-		var startTick = getTickCount();
-			var matchObj = JSON.parse(findMatch);
-			var sortObj = JSON.parse(findSort);
-			var projectionObj = JSON.parse(findProjection);
-		var timers.parseJson = getTickCount() - startTick;
+			// Get the collection
+			var startTick = getTickCount();
+				var collection = databaseConnection.getCollection(collectionName);
+			var timers.collection = getTickCount() - startTick;
 
 
-		// Create the find iterable using our query parameters
-		var startTick = getTickCount();
+			// Parse the JSON into JAVA objects that mongo collection can use
+			var startTick = getTickCount();
+				var matchObj = JSON.parse(findMatch);
+				var sortObj = JSON.parse(findSort);
+				var projectionObj = JSON.parse(findProjection);
+			var timers.parseJson = getTickCount() - startTick;
+
+
+			// Create the find iterable using our query parameters
+			var startTick = getTickCount();
+
+			// Returns a com.mongodb.client.internal.Java8FindIterableImpl
 			var findIterable = collection.find(matchObj)
 				.sort(sortObj)
 				.skip(findSkip)
 				.limit(findLimit)
 				.projection(projectionObj);
-		var timers.findIterable = getTickCount() - startTick;
 
-		// Create an array of the projection keys we will use to construct our
-		// result table and insert records
-		var projectionArray = listToArray(jsonData.find.projection.keyList());
 
-		var startTick = getTickCount();
+			var timers.findIterable = getTickCount() - startTick;
+
+			// Create an array of the projection keys we will use to construct our
+			// result table and insert records
+			var projectionArray = listToArray(jsonData.find.projection.keyList());
+
+			var startTick = getTickCount();
 			var iterator = findIterable.iterator();
-		var timers.iterator = getTickCount() - startTick;
+			var timers.iterator = getTickCount() - startTick;
 
-		// Iterate through the find results
-		var recordCount = 0;
-		var processResultTick = getTickCount();
+			// Iterate through the find results
+			var recordCount = 0;
+			var processResultTick = getTickCount();
+			var collectionNameSQLLite = collectionName.replace(".", "_", "all");
+
 			while (iterator.hasNext()) {
 				recordCount++;
 
@@ -149,7 +189,6 @@ component
 				// and create a SQL table that can hold our results and flatten
 				// the JSON into a SQL table.
 				if(recordCount == 1){
-
 					// Get the data types for each of the columns by inspecing
 					// the first record
 					var types = []
@@ -164,7 +203,7 @@ component
 					}
 
 					var startTick = getTickCount();
-					variables.SQLite.dropTable(collectionName);
+					variables.SQLite.dropTable(collectionNameSQLLite);
 
 					// Collect the types with the column names that we will use
 					// for the table creation
@@ -178,7 +217,7 @@ component
 						)
 					}
 
-					SQLite.createTable(collectionName, SqlFields);
+					SQLite.createTable(collectionNameSQLLite, SqlFields);
 					var timers.tableCreate = getTickCount() - startTick;
 
 				}
@@ -197,16 +236,129 @@ component
 				var startTick = getTickCount();
 
 				// Inset a row into mongodb datasource
-				variables.SQLite.insertRow(collectionName, workingOut);
+				variables.SQLite.insertRow(collectionNameSQLLite, workingOut);
 				var timers.insertRow += getTickCount() - startTick;
 			}
-		var timers.processResult = getTickCount() - processResultTick;
+			var timers.processResult = getTickCount() - processResultTick;
 
-		// Now we can run the original query against the results
-		// We use stripDirectives() to remove the @mongodb-query directive and others
-		// as we got syntax errors before, even through they should be ignored because
-		// they are comments
-		var startTick = getTickCount();
+			// Now we can run the original query against the results
+			// We use stripDirectives() to remove the @mongodb-query directive and others
+			// as we got syntax errors before, even through they should be ignored because
+			// they are comments
+			var startTick = getTickCount();
+
+				var strippedSql = SqlScript.stripDirectives();
+				if(strippedSql contains "@"){
+					throw("SQL contains @ symbol");
+				}
+
+				var result = variables.SQLite.executeSql(SqlScript.stripDirectives());
+			var timers.query = getTickCount() - startTick;
+			return result;
+		} else if (isDefined("jsonData.aggregate")) {
+
+			var collectionName = jsonData.collection?:throw("No collection name specified");
+			var collectionNameSQLLite = collectionName.replace(".", "_", "all");
+
+			var pipeline = jsonData.aggregate;
+
+			// Get the mongo client and database connection
+			var startTick = getTickCount();
+			var mongoClient = this.getMongoClient();
+			var databaseConnection = mongoClient.getDatabase(this.getDatabase());
+			var timers.connection = getTickCount() - startTick;
+
+			// Get the collection
+			var startTick = getTickCount();
+			var collection = databaseConnection.getCollection(collectionName);
+			var timers.collection = getTickCount() - startTick;
+
+			// Create the aggregate iterable using our query parameters
+			var startTick = getTickCount();
+			var aggregateIterable = collection.aggregate(JSON.parse(serializeJson(pipeline)));
+			// com.mongodb.client.internal.Java8AggregateIterableImpl
+
+			var timers.aggregateIterable = getTickCount() - startTick;
+
+			// Create an array of the projection keys we will use to construct our
+			// result table and insert records
+			// var projectionArray = listToArray(jsonData.aggregate.keyList());
+			var columnsArray = [];
+
+			var startTick = getTickCount();
+			var iterator = aggregateIterable.iterator();
+			var timers.iterator = getTickCount() - startTick;
+
+			// Iterate through the find results
+			var recordCount = 0;
+			var processResultTick = getTickCount();
+			while (iterator.hasNext()) {
+				recordCount++;
+
+				var doc = iterator.next();
+				var jsonResult = deserializeJson(doc.toJson());
+
+				if(recordCount == 1){
+					columnsArray = listToArray(jsonResult.keyList());
+					var types = []
+					for(var key in columnsArray){
+						if(isDate(jsonResult[key])){
+							types.append("DATETIME");
+						} else if(isNumeric(jsonResult[key])){
+							types.append("DOUBLE");
+						} else {
+							types.append("VARCHAR(256)");
+						}
+					}
+
+					var starTick = getTickCount();
+					variables.SQLite.dropTable(collectionNameSQLLite);
+
+					// Collect the types with the column names that we will use
+					// for the table creation
+					var SqlFields = [];
+					for(var ii = 1; ii <= arrayLen(columnsArray); ii++){
+						SqlFields.append(
+							new core.model.datastores.SqlField(
+								Name = columnsArray[ii],
+								Type = types[ii]
+							)
+						)
+					}
+
+					SQLite.createTable(collectionNameSQLLite, SqlFields);
+				}
+
+				var timers.tableCreate = getTickCount() - startTick;
+				var workingOut = {};
+				for(var ii = 1; ii <= arrayLen(columnsArray); ii++){
+					if(types[ii] == "DATETIME"){
+						var DateTimeObj = ParseDateTime(jsonResult[columnsArray[ii]]);
+						var ISODateTime = DateTimeFormat(DateTimeObj, "yyyy-mm-dd HH:nn:ss");
+						workingOut[columnsArray[ii]] = ISODateTime;
+					} else {
+						// Small patch fix: Ignore if the column is a struct, which _id
+						// sometimes returns
+						if (isStruct(jsonResult[columnsArray[ii]])) {
+							continue;
+						} else {
+							workingOut[columnsArray[ii]] = jsonResult[columnsArray[ii]];
+						}
+					}
+				}
+
+				var startTick = getTickCount();
+				variables.SQLite.insertRow(collectionNameSQLLite, workingOut);
+				var timers.insertRow += getTickCount() - startTick;
+			}
+
+			var timers.processResult = getTickCount() - processResultTick;
+
+			// Now we can run the original query against the results
+			// We use stripDirectives() to remove the @mongodb-query directive and others
+			// as we got syntax errors before, even through they should be ignored because
+			// they are comments
+			var startTick = getTickCount();
 
 			var strippedSql = SqlScript.stripDirectives();
 			if(strippedSql contains "@"){
@@ -214,10 +366,9 @@ component
 			}
 
 			var result = variables.SQLite.executeSql(SqlScript.stripDirectives());
-		var timers.query = getTickCount() - startTick;
-		// writeDump(timers);
-		return result;
-
+			var timers.query = getTickCount() - startTick;
+			return result;
+		}
 	}
 
 	/**

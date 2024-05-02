@@ -251,4 +251,13 @@ component accessors="true" {
 		fileWrite(variables.path, this.getEditorContent());
 		variables.IsDirty = false;
 	}
+
+	/**
+	 * Deletes the file from the file system and removes it from the package
+	 */
+	public function delete() {
+		variables.Package.removeSqlFile(this);
+		variables.Package.getChartSqlStudio().removeSqlFile(this);
+		fileDelete(variables.path);
+	}
 }

@@ -944,8 +944,9 @@ component extends="one" {
 
 			var deleteCookies = createObject("zeroStructure").flattenDataStructureForCookies(data=cookies.preserve_response, prefix="preserve_response", ignore=[]);
 			for(var cook in deleteCookies){
-				// structDelete(cookie,cook);
+
 				header name="Set-Cookie" value="#ucase(cook)#=; path=/; Max-Age=0; Expires=Thu, 01-Jan-1970 00:00:00 GMT";
+
 				structDelete(cookie,cook);
 				structDelete(variables.zero.flashStorage, cook)
 			}

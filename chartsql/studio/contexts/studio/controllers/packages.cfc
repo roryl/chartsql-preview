@@ -109,28 +109,31 @@ component accessors="true" {
 		var Package = ChartSQLStudio.findPackageByFullName(arguments.id).elseThrow("Could not find that package");
 		var PackagePublisher = Package.getPackagePublisher();
 
-		PublishingRequest = PackagePublisher.verify();
+		PublishingResult = PackagePublisher.verify();
 
 		// writeDump(PublishingRequest);
 		// abort;
 
-		if(PublishingRequest.getIsSuccess()){
+		if(PublishingResult.getIsSuccess()){
 			var out = {
-				"success": PublishingRequest.getIsSuccess(),
+				"success": true,
 				"message": "Publisher key verified",
 			}
 		} else {
 			var out = {
-				"success": PublishingRequest.getIsSuccess(),
-				"message": PublishingRequest.getErrorMessage(),
+				"success": false,
+				"message": PublishingResult.getResultMessage()
 			}
 		}
 
-		out.data = {
-			"PublishingRequest": variables.fw.serializeFast(PublishingRequest, {
-				RawContent:{}
-			})
-		}
+		// out.data = {
+		// 	"PublishingResult": variables.fw.serializeFast(PublishingResult, {
+		// 		// ResultMessage:{}
+		// 	})
+		// }
+
+		// writeDump(out);
+		// abort;
 
 		return out;
 	}

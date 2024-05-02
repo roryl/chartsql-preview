@@ -186,6 +186,8 @@
 							{{#select data.CurrentSqlFile.NamedDirectives.chart.ValueRaw}}<option value="column">column</option>{{/select}}
 							{{#select data.CurrentSqlFile.NamedDirectives.chart.ValueRaw}}<option value="bar">bar</option>{{/select}}
 							{{#select data.CurrentSqlFile.NamedDirectives.chart.ValueRaw}}<option value="line">line</option>{{/select}}
+							{{#select data.CurrentSqlFile.NamedDirectives.chart.ValueRaw}}<option value="pie">pie</option>{{/select}}
+							{{#select data.CurrentSqlFile.NamedDirectives.chart.ValueRaw}}<option value="combo">combo</option>{{/select}}
 							<!--- {{#select data.CurrentSqlFile.NamedDirectives.chart.ValueRaw}}<option value="line">line</option>{{/select}} --->
 						</select>
 					</form>

@@ -25,6 +25,7 @@ component accessors="true" {
 	property name="LogoBinary" setter="false" type="binary";
 	property name="StudioModelHash" type="string" hint="Stored in Application to detect when source code has changed and needs to be reloaded";
 	property name="PublishingAppId" type="numeric";
+	property name="PublishingDevMode" type="numeric";
 	property name="PublishingRequests" type="array";
 
 	public function init(
@@ -57,15 +58,16 @@ component accessors="true" {
 
 		//Setup default FileBrowserViews. Extensions can add additional FileBrowserViews to the editor
 		var FileBrowserViews = [
-			{name: "files", iconClass: "ti ti-file-type-sql"},
-			{name: "schema", iconClass: "ti ti-database-search"},
+			{name: "files", iconClass: "ti ti-file-type-sql", tooltip: "Show SQL Files"},
+			{name: "schema", iconClass: "ti ti-database-search", tooltip: "Show Database Schemas"},
 			// {name: "stories", iconClass: "ti ti-slideshow"}
 		]
 		for(var FileBrowserView in FileBrowserViews){
 			var FileBrowserView = new FileBrowserView(
 				ChartSQLStudio = this,
 				Name = FileBrowserView.name,
-				IconClass = FileBrowserView.iconClass
+				IconClass = FileBrowserView.iconClass,
+				Tooltip = FileBrowserView.tooltip
 			);
 		}
 
@@ -590,19 +592,142 @@ component accessors="true" {
 	 * @search
 	 */
 	public function globalSearch(string search) {
+		// We are going to dynamically create a query string object for the users state
+		var qs = this.getEditorQueryString();
+
+		if (isNull(arguments.search) || isEmpty(arguments.search)) {
+			// Get all open files
+			var openFiles = [];
+			if (request.context.keyExists("OpenFiles"))  {
+				var openFiles = listToArray(request.context.OpenFiles, ",");
+			}
+
+			// Loop through open files
+			var results = [];
+
+			for (fileName in openFiles) {
+				var SqlFileOptional = this.findSqlFileByFullName(fileName);
+				if (!SqlFileOptional.exists()) {
+					continue;
+				}
+				
+				var SqlFile = SqlFileOptional.get();
+				if (!isNull(SqlFile)) {
+					var SqlFileNamedDirectives = SqlFile.getNamedDirectives();
+					var PackageName = SqlFile.getPackage().getFriendlyName();
+					var name = "#SqlFile.getName()# (#PackageName#)";
+
+					if (
+						SqlFileNamedDirectives.keyExists("Title")
+						&& !isNull(SqlFileNamedDirectives.Title)
+						&& !isNull(SqlFileNamedDirectives.Title.getValueRaw())
+						&& !isEmpty(SqlFileNamedDirectives.Title.getValueRaw())
+					) {
+						name = "#SqlFileNamedDirectives.Title.getValueRaw()# (#PackageName#)";
+					}
+
+					results.append({
+						"name": name,
+						"entityType": "SqlFile",
+						"priority": 3,
+						"subpriority": 1,
+						"metadata": new zero.serializerFast(SqlFile, {
+							IsOpen: function (SqlFile) {
+								return true;
+							},
+							OpenLink: function(SqlFiles){
+								if (!isDefined("request.context.OpenFiles") || isNull(request.context.OpenFiles)) {
+									request.context.OpenFiles = "";
+								}
+								var openFileNames = listToArray(request.context.OpenFiles);
+								var openFileKeys = structNew("ordered");
+								for(var name in openFileNames){
+									openFileKeys[name] = true;
+								}
+								var keys = duplicate(openFileKeys);
+								keys[SqlFiles.getFullName()] = true;
+								return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
+							},
+						})
+					});
+				}
+			}
+
+			// Get all files from the current packagee
+			var currentPackage = this.getDefaultPackage();
+
+			if (isDefined("request.context.PackageName")) {
+				currentPackageOptional = this.findPackageByFullName(request.context.PackageName);
+				if (currentPackageOptional.exists()) {
+					currentPackage = currentPackageOptional.get();
+				}
+			} else {
+				var Packages = this.getPackages();
+				if (Packages.len() > 0) {
+					currentPackage = Packages[1];
+				}
+			}
+
+			if (!isNull(currentPackage)) {
+				for (var SqlFile in currentPackage.getSqlFiles()) {
+					var SqlFileNamedDirectives = SqlFile.getNamedDirectives();
+					var PackageName = SqlFile.getPackage().getFriendlyName();
+					var name = "#SqlFile.getName()# (#PackageName#)";
+
+					if (
+						SqlFileNamedDirectives.keyExists("Title")
+						&& !isNull(SqlFileNamedDirectives.Title)
+						&& !isNull(SqlFileNamedDirectives.Title.getValueRaw())
+						&& !isEmpty(SqlFileNamedDirectives.Title.getValueRaw())
+					) {
+						name = "#SqlFileNamedDirectives.Title.getValueRaw()# (#PackageName#)";
+					}
+
+					results.append({
+						"name": name,
+						"entityType": "SqlFile",
+						"priority": 3,
+						"subpriority": 2,
+						"metadata": new zero.serializerFast(SqlFile, {
+							OpenLink: function(SqlFiles){
+								if (!isDefined("request.context.OpenFiles") || isNull(request.context.OpenFiles)) {
+									request.context.OpenFiles = "";
+								}
+								var openFileNames = listToArray(request.context.OpenFiles);
+								var openFileKeys = structNew("ordered");
+								for(var name in openFileNames){
+									openFileKeys[name] = true;
+								}
+								var keys = duplicate(openFileKeys);
+								keys[SqlFiles.getFullName()] = true;
+								return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
+							},
+						})
+					});
+				}
+			}
+
+			// Sort by subpriority
+			results = results.sort(function(a, b){
+				return a.subpriority - b.subpriority;
+			});
+
+			return {
+				results: results,
+				resultsByType: {
+					"packages": [],
+					"datasources": [],
+					"sqlfiles": results
+				}
+			};
+		}
+
 		var out = [];
 		var resultsByType = {
 			"packages": [],
 			"datasources": [],
 			"sqlfiles": []
 		};
-
-		if (isNull(arguments.search) || isEmpty(arguments.search)) {
-			return out;
-		};
-
-		// We are going to dynamically create a query string object for the users state
-		var qs = this.getEditorQueryString();
 
 		for(var Package in variables.Packages){
 			if(customFind(arguments.search, Package.getFriendlyName())){

@@ -98,7 +98,7 @@
 		</td>
 		<td class="px-3">
 			<small>
-				<span class="text-muted me-3">package</span>
+				<span class="text-muted me-3">folder</span>
 			</small>
 			 <span class="
 			 	badge

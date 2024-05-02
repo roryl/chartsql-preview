@@ -178,7 +178,7 @@ component accessors="true" {
 			}
 
 			var renderCardTabs = doc.select("##renderer-card-tabs");
-			if (len(renderCardTabs) > 1) {
+			if (len(renderCardTabs) >= 1) {
 				doc.select("##renderer-card-tabs")[1].append(addstory);
 			}
 		}

@@ -342,6 +342,35 @@ component accessors="true" {
 				FullName:{},
 				Name:{},
 				IsDirty:{},
+				IsRenamingFile: function(SqlFiles){
+					if(
+						args.keyExists("ChangeActiveFileName")
+						and args.ChangeActiveFileName
+						and args.keyExists("ActiveFile")
+						and args.ActiveFile == SqlFiles.getFullName()
+					){
+						return true;
+					} else {
+						return false;
+					}
+				},
+				CloseAllOtherFilesLink: function(SqlFiles){
+					var out = qs.clone()
+						.setValue("OpenFiles", SqlFiles.getFullName())
+						.setValue("ActiveFile", SqlFiles.getFullName())
+						.delete("ChangeActiveFileName")
+						.get();
+					return out;
+				},
+				RenameFileLink: function(SqlFiles){
+					var keys = duplicate(openFileKeys);
+					var out = qs.clone()
+						.setValue("OpenFiles", keys.keyList())
+						.setValue("ActiveFile", SqlFiles.getFullName())
+						.setValue("ChangeActiveFileName", "true")
+						.get();
+					return out;
+				},
 				IsMissingFile:{},
 				EditorContent:{},
 				DetectionMode:{},
@@ -567,6 +596,7 @@ component accessors="true" {
 				Content:{},
 				IconClass:{},
 				Link:{},
+				Tooltip:{},
 				IsActive: function(Self){
 					if(args.keyExists("FileBrowserView") and args.FileBrowserView == arguments.Self.getName()){
 						return true;
@@ -682,7 +712,6 @@ component accessors="true" {
 				},
 				RenameFileLink: function(SqlFiles){
 					var keys = duplicate(openFileKeys);
-					keys[SqlFiles.getFullName()] = true;
 					var out = qs.clone()
 						.setValue("OpenFiles", keys.keyList())
 						.setValue("ActiveFile", SqlFiles.getFullName())
@@ -1348,16 +1377,76 @@ component accessors="true" {
 	) method="POST" {
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
 		var SqlFile = ChartSQLStudio.findSqlFileByFullName(arguments.SqlFileFullName).elseThrow("Could not locate that SqlFile: #arguments.SqlFileFullName#");
+		var CurrentFullName = SqlFile.getFullName();
+		var CurrentName = SqlFile.getName();
+		var openFileNames = [];
+		var NewFullName = CurrentFullName.replace(CurrentName, arguments.fileName, "all");
+		var openFileKeys = structNew("ordered");
 
 		SqlFile.changeFileName(
 			newName = arguments.fileName
 		);
+		
+		if (isDefined("request.context.OpenFiles")) {
+			openFileNames = listToArray(request.context.OpenFiles);
+		}
+		
+		for(var name in openFileNames){
+			openFileKeys[name] = true;
+		}
+
+		if (openFileKeys.keyExists(CurrentFullName)) {
+			openFileKeys.delete(CurrentFullName);
+			openFileKeys[NewFullName] = true;
+		}
+
+		var ActiveFile = nullValue();
+		if (isDefined("request.context.ActiveFile")) {
+			ActiveFile = request.context.ActiveFile;
+		}
+
+		var qs = ChartSQLStudio.getEditorQueryString().clone();
+		var redirectTo = qs.clone()
+			.setValue("OpenFiles", openFileKeys.keyList())
+			.setValue("ActiveFile", ActiveFile)
+			.delete("ChangeActiveFileName");
+		
+		for (var field in request.newform.keyList()) {
+			if (
+				field == "CFID" 
+				|| field == "CFTOKEN" 
+				|| field == "fieldnames" 
+				|| field == "OpenFiles" 
+				|| field == "ActiveFile"
+				|| field == "SqlFileFullName" 
+				|| field == "fileName"
+				|| field == "ChangeActiveFileName"
+			) {
+				continue;
+			}
+			redirectTo.setValue(field, request.newform[field]);
+		}
+
+		var redirectTo = redirectTo.get();
+		cflocation(url = redirectTo);
 
 		var out = {
 			"success":true,
 			"data": {
 				"FullName": SqlFile.getFullName()
 			}
+		}
+		return out;
+	}
+
+	function deleteFile(
+		required string FullName
+	) method="POST" {
+		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		var SqlFile = ChartSQLStudio.findSqlFileByFullName(arguments.FullName).elseThrow("Could not locate that SqlFile: #arguments.FullName#");
+		SqlFile.delete();
+		var out = {
+			"success":true,
 		}
 		return out;
 	}

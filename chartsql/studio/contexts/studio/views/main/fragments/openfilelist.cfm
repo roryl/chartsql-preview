@@ -41,7 +41,7 @@
 					</span>
 					{{Name}}
 
-					<span class="status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
+					<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 				</button>
 				<button type="submit" form="CloseSqlFileForm-{{Id}}" class="btn btn-icon btn-ghost-primary btn-sm" zero-icon="false" style="visibility:hidden; z-index: 1;">
 					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
@@ -84,8 +84,46 @@
 					  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
 					 </svg> <span class="me-2">Rename File</span> </button>
 				   </form>
+					<button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete-sqlfile-modal-{{Id}}">
+						<svg class="icon icon-tabler me-2"  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+						<span class="me-2">Delete File</span>
+					</button>
 				</ul>
 			</div>
+			<div class="modal modal-blur fade" id="delete-sqlfile-modal-{{Id}}" tabindex="-1" role="dialog" aria-hidden="true">
+				<div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+					<form method="POST" action="/studio/main/deleteFile" zero-target={{view_state.main_zero_targets}} >
+						<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
+						<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
+						<input type="hidden" name="FullName" value="{{FullName}}">
+						<div class="modal-content">
+							<button type="button" zero-icon="false" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							<div class="modal-status bg-danger"></div>
+							<div class="modal-body text-center py-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.24 3.957l-8.422 14.06a1.989 1.989 0 0 0 1.7 2.983h16.845a1.989 1.989 0 0 0 1.7 -2.983l-8.423 -14.06a1.989 1.989 0 0 0 -3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+							<h3>Are you sure?</h3>
+							<div class="text-muted">Do you really want to remove the file <b class="h3 text-danger">{{Name}}</b>? What you've done cannot be undone.</div>
+							</div>
+							<div class="modal-footer">
+								<div class="w-100">
+									<div class="row">
+										<div class="col">
+											<button type="button" class="btn w-100" data-bs-dismiss="modal" zero-icon="false">
+												Cancel
+											</button>
+										</div>
+										<div class="col">
+											<button type="submit" class="btn btn-danger w-100" data-bs-dismiss="modal">
+												Delete file
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			  </div>
 			{{#if IsMissingFile}}
 				<li data-sqlfile-id="{{Id}}" class="file-item nav-item border-info" role="presentation" style="{{#if IsActive}}border-bottom:2px solid; text-decoration:none; color:white{{/if}}">
 					<span class="nav-link position-relative h-100 m-0 {{#if IsActive}}active{{/if}}">
@@ -138,7 +176,7 @@
 									{{Name}}
 								{{/if}}
 							</span>
-							<span class="status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
+							<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 
 						</button>
 						<button type="submit" form="CloseSqlFileForm-{{Id}}" class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0" zero-icon="false" style="z-index: 2;">
@@ -183,9 +221,14 @@
 									{{/if}}
 								</span>
 							</span>
-							<form id="{{Id}}-changeFileNameForm" method="POST" action="/studio/main/changeFileName" style="display:inline;" zero-target="{{view_state.main_zero_targets}},#filterContainer,#editorCard">
-								<input type="hidden" name="goto" value="{{view_state.rename_file_go_to}}"/>
-								<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
+							<form id="{{Id}}-changeFileNameForm" method="POST" action="/studio/main/changeFileName" style="display:inline;">
+								{{#each view_state.params}}
+									{{#if this.value}}
+											<input type="hidden" name="{{{this.key}}}" value="{{{this.value}}}">
+									{{/if}}
+								{{/each}}
+								<!--- <input type="hidden" name="goto" value="{{view_state.rename_file_go_to}}"/>
+								<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/> --->
 								<input type="hidden" name="SqlFileFullName" value="{{FullName}}"/>
 								<div id="{{Id}}-changeFileNameContainer" class="input-group">
 									<input id="{{Id}}-changeFileNameInput" type="text" name="fileName" class="form-control form-control-sm" placeholder="File name" value="{{Name}}">
@@ -211,7 +254,7 @@
 						{{Name}}
 
 
-						<span class="status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
+						<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 
 					</button> --->
 					<span class="nav-link position-relative h-100 m-0 {{#if IsActive}}active{{/if}}">
@@ -262,7 +305,7 @@
 							{{else}}
 								{{Name}}
 							{{/if}}
-							<span class="status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
+							<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 
 						</button>
 						<button type="submit" form="CloseSqlFileForm-{{Id}}" class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0" zero-icon="false" style="z-index: 2;">
@@ -342,7 +385,7 @@
 										{{/if}}
 									</i></span>
 
-									<span class="status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
+									<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 
 								</button>
 								<button form="PreviewCloseSqlFileForm" class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0" zero-icon="false" style="z-index: 2;">
@@ -388,9 +431,14 @@
 											{{/if}}
 										</span>
 									</span>
-									<form id="changeFileNameForm" method="POST" action="/studio/main/changeFileName" style="display:inline;" zero-target="{{view_state.main_zero_targets}},#filterContainer,#editorCard">
-										<input type="hidden" name="goto" value="{{view_state.rename_file_go_to}}"/>
-										<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
+									<form id="changeFileNameForm" method="POST" action="/studio/main/changeFileName" style="display:inline;">
+										{{#each view_state.params}}
+											{{#if this.value}}
+													<input type="hidden" name="{{{this.key}}}" value="{{{this.value}}}">
+											{{/if}}
+										{{/each}}
+										<!--- <input type="hidden" name="goto" value="{{view_state.rename_file_go_to}}"/>
+										<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/> --->
 										<input type="hidden" name="SqlFileFullName" value="{{FullName}}"/>
 										<!--- <input type="hidden" name="PackageName" value="{{data.CurrentPackage.FullName}}"> --->
 										<div id="changeFileNameContainer" class="input-group">
@@ -424,8 +472,46 @@
 										  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
 										 </svg> <span class="me-2">Rename File</span> </button>
 									   </form>
+									   <button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete-sqlfile-modal-{{Id}}">
+											<svg class="icon icon-tabler me-2"  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+											<span class="me-2">Delete File</span>
+										</button>
 									</ul>
 								</div>
+								<div class="modal modal-blur fade" id="delete-sqlfile-modal-{{Id}}" tabindex="-1" role="dialog" aria-hidden="true">
+									<div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+										<form method="POST" action="/studio/main/deleteFile" zero-target={{view_state.main_zero_targets}} >
+											<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
+											<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
+											<input type="hidden" name="FullName" value="{{FullName}}">
+											<div class="modal-content">
+												<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+												<div class="modal-status bg-danger"></div>
+												<div class="modal-body text-center py-4">
+												<svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.24 3.957l-8.422 14.06a1.989 1.989 0 0 0 1.7 2.983h16.845a1.989 1.989 0 0 0 1.7 -2.983l-8.423 -14.06a1.989 1.989 0 0 0 -3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+												<h3>Are you sure?</h3>
+												<div class="text-muted">Do you really want to remove the file <b class="h3 text-danger">{{Name}}</b>? What you've done cannot be undone.</div>
+												</div>
+												<div class="modal-footer">
+													<div class="w-100">
+														<div class="row">
+															<div class="col">
+																<button type="button" class="btn w-100" data-bs-dismiss="modal" zero-icon="false">
+																	Cancel
+																</button>
+															</div>
+															<div class="col">
+																<button type="submit" class="btn btn-danger w-100" data-bs-dismiss="modal">
+																	Delete file
+																</button>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+										</form>
+									</div>
+								  </div>
 
 								<!--- Commenting out the original nav link but keeping for troubleshooting purposes. We needed to be
 									able to have 2 links within the nav (one to close the file). We had to override the styles to achieve
@@ -437,7 +523,7 @@
 										{{Name}}
 
 
-										<span class="status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
+										<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 
 									</button> --->
 									<span class="nav-link position-relative h-100 m-0 {{#if IsActive}}active{{/if}}">
@@ -493,7 +579,7 @@
 												</i>
 											</span>
 
-											<span class="status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
+											<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 
 										</button>
 										<!--- TO DO: Change CloseLinks to use forms and zero-target --->
@@ -540,17 +626,55 @@
 								<svg xmlns="http://www.w3.org/2000/svg" style="z-index:10;" class="icon icon-tabler icon-tabler-square-rounded-x me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 10l4 4m0 -4l-4 4" /><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" /></svg>
 								<span class="me-2">Close All Open Scripts</span>
 							</a>
-								<form method="GET" action="{{view_state.change_file_name_link}}" zero-target="#openFilesList">
-									<button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="submit" class="dropdown-item">
-										<svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z" /></svg>
-										<span class="me-2">Rename File</span>
-									</button>
-								</form>
+							<form method="GET" action="{{view_state.change_file_name_link}}" zero-target="#openFilesList">
+								<button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="submit" class="dropdown-item">
+									<svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z" /></svg>
+									<span class="me-2">Rename File</span>
+								</button>
+							</form>
+							<button form="deleteCurrentFile" {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="submit" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete-sqlfile-modal">
+								<svg class="icon icon-tabler me-2"  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
+								<span class="me-2">Delete File</span>
+							</button>
 						</ul>
 					</div>
 				</li>
 
 			</ul>
+			<div class="modal modal-blur fade" id="delete-sqlfile-modal" tabindex="-1" role="dialog" aria-hidden="true">
+				<div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+					<form method="POST" action="/studio/main/deleteFile" zero-target={{view_state.main_zero_targets}} >
+						<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
+						<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
+						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
+						<div class="modal-content">
+							<button type="button" zero-icon="false" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+							<div class="modal-status bg-danger"></div>
+							<div class="modal-body text-center py-4">
+							<svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.24 3.957l-8.422 14.06a1.989 1.989 0 0 0 1.7 2.983h16.845a1.989 1.989 0 0 0 1.7 -2.983l-8.423 -14.06a1.989 1.989 0 0 0 -3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+							<h3>Are you sure?</h3>
+							<div class="text-muted">Do you really want to remove the file <b class="h3 text-danger">{{Name}}</b>? What you've done cannot be undone.</div>
+							</div>
+							<div class="modal-footer">
+								<div class="w-100">
+									<div class="row">
+										<div class="col">
+											<button type="button" class="btn w-100" data-bs-dismiss="modal" zero-icon="false">
+												Cancel
+											</button>
+										</div>
+										<div class="col">
+											<button type="submit" class="btn btn-danger w-100">
+												Delete file
+											</button>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			  </div>
 		</div>
 		<form id="stopChangeFileNameForm" method="GET" action="{{view_state.stop_change_file_name_link}}" style="display:inline;" zero-target="#openFilesList">
 			<input type="hidden" name="goto" value="{{view_state.stop_change_file_name_link}}"/>
