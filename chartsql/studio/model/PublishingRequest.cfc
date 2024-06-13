@@ -15,10 +15,14 @@ component accessors="true" {
 	property name="ErrorMessage" type="string";
 	property name="IsSuccess" type="boolean";
 	property name="RawContent";
+	property name="RequestType" type="string" setter="false";
+	property name="PublishingResult" type="PublishingResult";
+	property name="ChartSQLStudio" type="ChartSQLStudio" setter="false";
 
 	public function init(
 		required ChartSQLStudio ChartSQlStudio,
 		required string Uri,
+		required string RequestType,
 		struct Headers = {},
 		struct FormFields = {},
 		string Method = "POST"
@@ -32,6 +36,19 @@ component accessors="true" {
 		variables.IsSuccess = false;
 		variables.IsHttpError = false;
 		variables.ErrorMessage = "";
+
+		variables.requestTypes = {
+			"VERIFY":{},
+			"UPDATE_CHART":{},
+			"PUBLISH_CHART":{}
+		}
+
+		if (!structKeyExists(variables.requestTypes, arguments.requestType)){
+			throw(message="Invalid request type: #arguments.requestType#");
+		} else {
+			variables.RequestType = arguments.requestType;
+		}
+
 		return this;
 	}
 

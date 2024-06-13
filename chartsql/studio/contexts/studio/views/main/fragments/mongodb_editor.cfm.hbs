@@ -3,11 +3,11 @@
 	<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 	<input type="hidden" name="directive" value="mongodb-query">
 	<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
-	<textarea id="editorContentTextarea" name="Value" style="display:none;">{{{data.CurrentSqlFile.NamedDirectives.mongodb-query.prettyPrint}}}</textarea>
+	<textarea id="editorContentTextarea" name="Value" style="display:none;">{{{data.CurrentSqlFile.NamedDirectives.mongodb-query.prettyprint}}}</textarea>
 	<button id="storeMongoDirectiveButton" style="display:none;">update</button>
 </form>
 <div style="width:100%; height:100%;">
-	<textarea id="mongoTextarea" class="form-control" rows="5" style="">{{{data.CurrentSqlFile.NamedDirectives.mongodb-query.prettyPrint}}}</textarea>
+	<textarea id="mongoTextarea" class="form-control" rows="5" style="">{{{data.CurrentSqlFile.NamedDirectives.mongodb-query.prettyprint}}}</textarea>
 </div>
 {{!-- <div class="alert alert-warning bg-blue-lt" style="position:absolute; bottom:0px; width:100%;">Not valid JSON</div> --}}
 <!--- </div> --->
@@ -36,6 +36,8 @@
 			}
 		});
 
+		mongoEditor.focus();
+
 		function betterTab(cm) {
 			if (cm.somethingSelected()) {
 				cm.indentSelection("add");
@@ -45,9 +47,12 @@
 			}
 		}
 
-		sqlEditor.addKeyMap({
+		mongoEditor.addKeyMap({
 			"Tab": betterTab
 		});
+
+		var typingTimer; // Timer identifier
+		var doneTypingInterval = 400;  // Time in ms
 
 		// Define the function that will be called when the content changes
 		function onEditorContentChange(instance, changeObj) {
@@ -69,12 +74,33 @@
 			}
 
 			document.getElementById('editorContentTextarea').value = instance.getValue();
-			document.getElementById('storeMongoDirectiveButton').click();
 
+			// If the user is typing, clear the timer
+			clearTimeout(typingTimer);
+
+			// Set a timer to wait for the user to stop typing
+			typingTimer = setTimeout(function () {
+				document.getElementById('storeMongoDirectiveButton').click();
+			}, doneTypingInterval);
 		}
 
 		// Attach the change event listener to your CodeMirror instance
-		mongoEditor.on('change', onEditorContentChange);
+		mongoEditor.on('change', function (instance, changeObj) {
+			let saveSqlbutton = document.getElementById('saveSqlbutton');
+			if (saveSqlbutton) {
+				saveSqlbutton.classList.remove('btn-ghost-secondary');
+				saveSqlbutton.classList.add('btn-primary');
+			}
+
+			// Search for a element that has the 'status-dot' class and the 'active' class
+			// and make it 'visibility: visible;'
+			let activeFile = document.querySelector('.status-dot.active');
+			if (activeFile) {
+				activeFile.style.visibility = 'visible';
+			}
+
+			onEditorContentChange(instance, changeObj);
+		});
 		{{/if}}
 	{{/if}}
 </script>

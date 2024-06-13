@@ -36,12 +36,12 @@ component accessors="true" {
 		} else {
 			variables.IsMissingFile = false;
 		}
-		variables.FullName = new values.FullyQualifiedPathName(arguments.path).toString();
+		variables.FullName = arguments.Package.generateSqlFileFullName(arguments.path);
 		// Check that there is not a file with the same name in the package
 		// otherwise it should error
 		var PreexistingSqlFile = arguments.Package.findSqlFileByFullName(variables.FullName);
 		if (PreexistingSqlFile.exists() ) {
-			throw("A file with the name #arguments.name# already exists in the package #arguments.Package.getName()#");
+			throw("A file with the name #arguments.name# already exists in the package '#arguments.Package.getFriendlyName()#'");
 		}
 
 		variables.Name = arguments.name;
@@ -186,13 +186,12 @@ component accessors="true" {
 	 */
 	public function addOrUpdateDirective(required string name, required string value){
 		var ChartSql = new core.model.ChartSQL();
-		var sql = this.getContent();
 		var SqlScript = new core.model.SqlScript(ChartSql, this.getEditorContent());
 		var text = trim(arguments.value);
 		if(text == ""){
 			SqlScript.removeDirectiveLine(name);
 		} else {
-			SqlScript.addOrReplaceDirectiveText(name, value);
+			SqlScript.addOrReplaceDirectiveText(name, text);
 		}
 		this.setEditorContent(SqlScript.getSql());
 	}
@@ -209,7 +208,7 @@ component accessors="true" {
 		fileMove(variables.path, newPath);
 
 		variables.path = newPath;
-		variables.FullName = new values.FullyQualifiedPathName(newPath).toString();
+		variables.FullName = variables.Package.generateSqlFileFullName(newPath);
 		variables.Name = arguments.newName;
 		variables.Subpath = this.generateSubpath();
 	}
@@ -233,6 +232,19 @@ component accessors="true" {
 			variables.IsDirty = false;
 		}
 		this.loadDirectives();
+
+		var namedDirectives = this.getNamedDirectives();
+		
+		if (
+			namedDirectives.keyExists('mongodb-query') 
+			&& !isNull(namedDirectives['mongodb-query'].getValueRaw()) 
+			&& !isEmpty(namedDirectives['mongodb-query'].getValueRaw())
+			&& isJson(namedDirectives['mongodb-query'].getValueRaw())
+		){
+			// Make the directive a base64 encoded string
+			var DirectiveRawValue = namedDirectives['mongodb-query'].getValueRaw();
+			this.addOrUpdateDirective('mongodb-query', toBase64(DirectiveRawValue));
+		}
 	}
 
 	public function toggleDirective(required string name){

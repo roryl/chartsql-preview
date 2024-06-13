@@ -31,6 +31,17 @@ component accessors="true" {
 
 	}
 
+	public function publishAllCharts(required SqlFile[] SqlFiles){
+
+		var results = [];
+		for(var SqlFile in arguments.SqlFiles){
+			var result = publishOrUpdateDashChart(SqlFile);
+			arrayAppend(results, result);
+		}
+		return results;
+
+	}
+
 	public struct function publishOrUpdateDashChart(required SqlFile SqlFile){
 
 		var SqlFile = arguments.SqlFile;
@@ -54,12 +65,14 @@ component accessors="true" {
 		}
 
 		var FormFields = {
-			"sql" = SqlFile.getContent()
+			"sql" = SqlFile.getContent(),
+			"fileName" = SqlFile.getName()
 		};
 
 		var PublishingRequest = new PublishingRequest(
 			ChartSQLStudio = variables.ChartSQLStudio,
 			Uri = uri,
+			RequestType = "PUBLISH_CHART",
 			Method = "POST",
 			Headers = Headers,
 			FormFields = formFields
@@ -72,6 +85,7 @@ component accessors="true" {
 		if(PublishingResult.getResultType() == "API_SUCCESS"){
 			var json = PublishingResult.getResultJson();
 			SqlFile.addOrUpdateDirective("dash-id", json.data.Publishment.SqlChart.DashId);
+			SqlFile.save();
 		}
 
 		return PublishingResult;
@@ -90,12 +104,14 @@ component accessors="true" {
 
 		var FormFields = {
 			"sql" = SqlFile.getContent(),
+			"fileName" = SqlFile.getName(),
 			"dashId" = SqlFile.getParsedDirectives()["dash-id"]
 		};
 
 		var PublishingRequest = new PublishingRequest(
 			ChartSQLStudio = variables.ChartSQLStudio,
 			Uri = uri,
+			RequestType = "UPDATE_CHART",
 			Method = "POST",
 			Headers = Headers,
 			FormFields = formFields
@@ -130,6 +146,7 @@ component accessors="true" {
 		var PublishingRequest = new PublishingRequest(
 			ChartSQLStudio = variables.ChartSQLStudio,
 			Uri = uri,
+			RequestType = "VERIFY",
 			Method = "POST",
 			Headers = Headers
 		);
@@ -175,6 +192,9 @@ component accessors="true" {
 			);
 
 		}
+
+		PublishingRequest.setPublishingResult(PublishingResult);
+
 		return PublishingResult;
 
 	}

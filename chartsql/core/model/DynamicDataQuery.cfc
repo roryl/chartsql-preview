@@ -84,7 +84,13 @@ component {
 
 		// writeDump(funcCall);
 
-		fileWrite("ddfscripts/#fileUUID#.cfc", funcCall);
+		if (!directoryExists("ddfscripts")) {
+			directoryCreate("ddfscripts");
+		}
+
+		var filePath = "ddfscripts/#fileUUID#.cfc";
+
+		fileWrite(filePath, funcCall);
 
 		// include template="#fileUUID#";
 		var com = createObject("component", "com.chartsql.core.model.ddfscripts.#fileUUID#");

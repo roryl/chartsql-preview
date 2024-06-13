@@ -47,7 +47,7 @@ component accessors="true" {
 	) method="POST" {
 
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
-		var Package = ChartSQLStudio.findPackageByFullName(arguments.PackageId).elseThrow("Could not find that package");
+		var Package = ChartSQLStudio.findPackageByUniqueId(arguments.PackageId).elseThrow("Could not find that package");
 
 		// When the FullName is provided, we are going to attempt to load it to ensure that it exists
 		// in the ChartSQLStudio, otherwise we will error

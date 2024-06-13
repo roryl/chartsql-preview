@@ -1,0 +1,49 @@
+<cf_handlebars context="#context#">
+<li class="ms-auto align-items-center d-flex me-1">
+	<!--- <label class="form-check form-switch me-1 mt-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Automatically save changes to files">
+		<input class="form-check-input" type="checkbox" {{#if view_state.auto_save}}checked{{/if}}>
+		<span class="form-check-label text-muted" style=""><small>Auto Save</small></span>
+	</label> --->
+	<div class="dropdown">
+		<button type="button" class="btn  btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+			<!-- SVG icon from http://tabler-icons.io/i/calendar -->
+			<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-book-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 20h-8a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12v5" /><path d="M11 16h-5a2 2 0 0 0 -2 2" /><path d="M15 16l3 -3l3 3" /><path d="M18 13v9" /></svg>
+			Publish&nbsp;
+		</button>
+		<div class="dropdown-menu">
+			{{#if data.PublisherKey}}
+			<form action="/studio/extensions/chartsql.publish.Publish/runRemote?method=PublishChart" method="POST">
+				<input type="hidden" name="goto" value="{{view_state.current_url}}">
+				<input type="hidden" name="params.SqlFile" value="{{data.CurrentSqlFile.FullName}}">
+				<button id="publishChart" class="dropdown-item" onclick="$(this).find('span').html('publishing...')">
+					<span>This Chart</span>
+				</button>
+			</form>
+			<div class="dropdown-divider"></div>
+			<form action="/studio/extensions/chartsql.publish.Publish/runRemote?method=PublishAllCharts" method="POST">
+				<input type="hidden" name="goto" value="{{view_state.current_url}}">
+				<input type="hidden" name="params.SqlFile" value="{{data.CurrentSqlFile.FullName}}">
+				<input type="hidden" name="params.PackageFullName" value="{{data.CurrentPackage.UniqueId}}">
+				<button id="publishChart" class="dropdown-item" onclick="$(this).find('span').html('publishing...')">
+					<span>All Charts</span>
+				</button>
+			</form>
+			{{else}}
+				<a href="{{view_state.configurePublisherLink}}" class="dropdown-item" studio-form-links="false">
+					<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-settings-up"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12.501 20.93c-.866 .25 -1.914 -.166 -2.176 -1.247a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.074 .26 1.49 1.296 1.252 2.158" /><path d="M19 22v-6" /><path d="M22 19l-3 -3l-3 3" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
+					<span class="ms-2">Configure Publishing</span>
+				</a>
+			{{/if}}
+		</div>
+	</div>
+
+	{{!-- <form action="/studio/extensions/chartsql.publish.Publish/runRemote?method=PublishChart" method="POST">
+		<input type="hidden" name="goto" value="{{view_state.current_url}}">
+		<input type="hidden" name="params.SqlFile" value="{{data.CurrentSqlFile.FullName}}">
+		<button id="publishChart" class="btn btn-sm" onclick="$(this).find('span').html('publishing...')">
+			<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-book-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 20h-8a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12v5" /><path d="M11 16h-5a2 2 0 0 0 -2 2" /><path d="M15 16l3 -3l3 3" /><path d="M18 13v9" /></svg>
+			<span>Publish</span>
+		</button>
+	</form> --}}
+</li>
+</cf_handlebars>

@@ -4,7 +4,7 @@
 */
 component {
 	public function init(required string name){
-		variables.name = arguments.name;
+		variables.name = lcase(arguments.name);
 		if(left(variables.name, 1) eq "/" || left(variables.name, 1) eq "\"){
             variables.Name = right(variables.name, -1);
         }

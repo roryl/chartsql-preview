@@ -38,6 +38,27 @@
 			</form>
 		</div>
 	</div>
+	<div class="mb-3 col-12 col-sm-4">
+		<h3>Branding</h3>
+		<p class="text-muted">Change the expanded studio logo to your own brand (recommended size: 170x25).</p>
+		<img src="/studio/main/logo" height="25" class="mb-3" alt="Studio Logo">
+		{{!-- Image input --}}
+		<form method="POST" action="/studio/settings/changeExpandedLogo" enctype="multipart/form-data">
+			<input type="hidden" name="goto" value="/studio/settings">
+			<input type="hidden" name="goto_fail" value="/studio/settings?itfailed=true">
+			<input type="file" class="form-control" name="file" accept="image/*" required>
+			<button type="submit" class="btn btn-outline-primary">Save Expanded Logo</button>
+		</form>
+		<p class="text-muted mt-2">Change the small/mascot studio logo to your own brand (recommended size: 25x25).</p>
+		<img src="/studio/main/mascot" height="25" alt="ChartSQL Studio" class="mb-3" alt="Studio Logo">
+		{{!-- Image input --}}
+		<form method="POST" action="/studio/settings/changeSmallLogo" enctype="multipart/form-data">
+			<input type="hidden" name="goto" value="/studio/settings">
+			<input type="hidden" name="goto_fail" value="/studio/settings?itfailed=true">
+			<input type="file" class="form-control" name="file" accept="image/*" required>
+			<button type="submit" class="btn btn-outline-primary">Save Small Logo</button>
+		</form>
+	</div>
 </div>
 {{!-- <div class="card-footer bg-transparent mt-auto">
 	<div class="btn-list justify-content-end">

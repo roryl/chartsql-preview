@@ -70,12 +70,12 @@
 					{{#if FriendlyName}}
 					{{FriendlyName}}
 					{{else}}
-					{{FullName}}
+					{{UniqueId}}
 					{{/if}}
 				</h3>
 				{{#if FriendlyName}}
 				<p class="card-subtitle">
-					{{FullName}}
+					{{UniqueId}}
 				</p>
 				{{/if}}
 			</div>
@@ -96,7 +96,7 @@
 		</div>
 		{{#if IsEditing}}
 		<div class="card-body">
-			<form class="card mb-3" method="POST" action="/studio/packages/{{FullName}}">
+			<form class="card mb-3" method="POST" action="/studio/packages/{{UniqueId}}">
 				<input type="hidden" name="goto" value="{{EditLink}}">
 				<input type="hidden" name="goto_fail" value="{{EditLink}}">
 				<div class="card-header bg-primary">
@@ -111,7 +111,7 @@
 						<label class="form-label">Directory Path</label>
 						<div>
 							<input type="input" name="FolderPath" class="form-control" aria-describedby="emailHelp" placeholder="directory path" disabled value="{{Path}}">
-							<small class="form-hint">Path on your file system when the foolder should exist. If it doesn't exist it will be created</small>
+							<small class="form-hint">Path on your file system when the folder should exist. If it doesn't exist it will be created</small>
 						</div>
 					</div>
 					<div class="mb-3">
@@ -150,14 +150,14 @@
 						</div>
 					</div>
 					<hr/>
-					<h4 class="subheader">DashSQL Publushing</h4>
+					<h4 class="subheader">ChartSQL.com Publishing</h4>
 					<div class="row mb-3">
 						<div class="mb-3 col">
-							<label class="form-label">DashSQL Folder ID</label>
+							<label class="form-label">ChartSQL.com Folder ID</label>
 							<div>
 								<input type="input" class="form-control" name="DashId" placeholder="xxxxxxxx" value="{{DashId}}">
 								<small class="form-hint">
-									The global unique identifier for this foolder provided by DashSQL
+									The global unique identifier for this folder provided by ChartSQL.com
 								</small>
 							</div>
 						</div>
@@ -166,7 +166,7 @@
 							<div>
 								<input type="input" class="form-control" name="PublisherKey" placeholder="xxxxxxxx" value="{{PublisherKey}}">
 								<small class="form-hint">
-									Do not share. API Key with publishing permissions for this foolder on DashSQL. This is your private password to publish to the foolder.
+									Do not share. API Key with publishing permissions for this folder on ChartSQL.com. This is your private password to publish to the folder.
 								</small>
 							</div>
 						</div>
@@ -206,17 +206,17 @@
 					</div>
 				</div>
 			</form>
-			<form id="verifyPublisherKey" method="POST" action="/studio/packages/{{FullName}}/verifyPublisherKey">
+			<form id="verifyPublisherKey" method="POST" action="/studio/packages/{{UniqueId}}/verifyPublisherKey">
 				<input type="hidden" name="goto" value="{{EditLink}}">
 				<input type="hidden" name="goto_fail" value="{{EditLink}}">
 				<input type="hidden" name="preserve_response" value="view_state.verify_publisher_key">
 			</form>
-			<form id="setAsDefaultPackageForm" method="POST" action="/studio/packages/{{FullName}}">
+			<form id="setAsDefaultPackageForm" method="POST" action="/studio/packages/{{UniqueId}}">
 				<input type="hidden" name="setAsDefaultPackage" value="true">
 				<input type="hidden" name="goto" value="{{EditLink}}">
 				<input type="hidden" name="goto_fail" value="{{EditLink}}">
 			</form>
-			<form id="removeForm" method="POST" action="/studio/packages/{{FullName}}/delete">
+			<form id="removeForm" method="POST" action="/studio/packages/{{UniqueId}}/delete">
 				<input type="hidden" name="goto" value="/studio/settings/packages"/>
 				<input type="hidden" name="goto_fail" value="/studio/settings/packages"/>
 			</form>

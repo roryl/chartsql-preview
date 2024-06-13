@@ -19,8 +19,10 @@ component accessors="true" {
 		string ResultMessage
 	){
 		variables.PublishingRequest = arguments.PublishingRequest;
-
 		variables.ResultJson = arguments.ResultJson?:{};
+
+		var ChartSQLStudio = variables.PublishingRequest.getChartSQLStudio();
+		ChartSQLStudio.addPublishingResult(this);
 
 		var resultTypes = {
 			"HTTP_ERROR":{

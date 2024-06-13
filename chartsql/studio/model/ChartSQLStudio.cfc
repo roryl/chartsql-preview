@@ -8,6 +8,8 @@ component accessors="true" {
 	property name="SqlFiles";
 	property name="PackagePublishers";
 	property name="PublishingHost" type="string";
+	property name="ExpandedLogoURL" type="string";
+	property name="SmallLogoURL" type="string";
 	property name="ConfigPath";
 	property name="Config";
 	property name="LastEditorUrl";
@@ -21,12 +23,13 @@ component accessors="true" {
 	property name="FileBrowserViews";
 	property name="InfoPanelViews" type="array";
 	property name="MenuItems" setter="false";
-	property name="MascotBinary" setter="false" type="binary";
-	property name="LogoBinary" setter="false" type="binary";
+	property name="MascotBinary" type="binary";
+	property name="LogoBinary" type="binary";
 	property name="StudioModelHash" type="string" hint="Stored in Application to detect when source code has changed and needs to be reloaded";
 	property name="PublishingAppId" type="numeric";
 	property name="PublishingDevMode" type="numeric";
 	property name="PublishingRequests" type="array";
+	property name="PublishingResults" type="array";
 
 	public function init(
 		string ConfigPath
@@ -43,6 +46,9 @@ component accessors="true" {
 		variables.StudioModelHash = "";
 		variables.DefaultPackage = nullValue();
 		variables.PublishingRequests = [];
+		variables.PublishingResults = [];
+		variables.ExpandedLogoURL = "";
+		variables.SmallLogoURL = "";
 
 		variables.LastEditorUrl = "/studio/main";
 		variables.LastPresentationUrl = "/studio/main?PresentationMode=true&RenderPanelView=chart";
@@ -103,6 +109,24 @@ component accessors="true" {
 			variables.InfoPanelViews.append(InfoPanelView);
 		}
 	}
+	
+	public function getExpandedLogoURL(){
+		return variables.ExpandedLogoURL;
+	}
+
+	public function setExpandedLogoURL(required string logoURL){
+		variables.ExpandedLogoURL = arguments.logoURL;
+		this.saveConfig();
+	}
+	
+	public function getSmallLogoURL(){
+		return variables.SmallLogoURL;
+	}
+
+	public function setSmallLogoURL(required string logoURL){
+		variables.SmallLogoURL = arguments.logoURL;
+		this.saveConfig();
+	}
 
 	public function addPackagePublisher(PackagePublisher){
 		variables.PackagePublishers.append(PackagePublisher);
@@ -140,6 +164,10 @@ component accessors="true" {
 		variables.PublishingRequests.append(PublishingRequest);
 	}
 
+	public function addPublishingResult(PublishingResult){
+		variables.PublishingResults.append(PublishingResult);
+	}
+
 	public function clearExtensions(){
 		variables.Extensions = [];
 	}
@@ -163,8 +191,11 @@ component accessors="true" {
 		return Extension;
 	}
 
-	public function createPackageFromFile(path){
-		var Package = Package::fromFile(path, this);
+	public function createPackageFromFile(
+		required string path,
+		required string FriendlyName
+	){
+		var Package = Package::fromFile(directory=path, ChartSQLStudio=this, FriendlyName=arguments.FriendlyName);
 		this.saveConfig();
 		return Package;
 	}
@@ -200,11 +231,11 @@ component accessors="true" {
 	 */
 	public void function deletePackage(required Package Package){
 		var newPackages = [];
-		if (!isNull(variables.DefaultPackage) and Package.getFullName() == variables.DefaultPackage.getFullName()){
+		if (!isNull(variables.DefaultPackage) and Package.getUniqueId() == variables.DefaultPackage.getUniqueId()){
 			variables.DefaultPackage = nullValue();
 		}
 		for(var Package in variables.Packages){
-			if(Package.getFullName() != arguments.Package.getFullName()){
+			if(Package.getUniqueId() != arguments.Package.getUniqueId()){
 				arrayAppend(newPackages, Package);
 			}
 		}
@@ -281,11 +312,11 @@ component accessors="true" {
 		return new optional(nullValue());
 	}
 
-	public optional function findPackageByFullName(
-		required string name
+	public optional function findPackageByUniqueId(
+		required string UniqueId
 	) {
 		for (var Package in variables.Packages){
-			if (Package.getFullName() == name){
+			if (Package.getUniqueId() == arguments.UniqueId){
 				return new optional(Package);
 			}
 		}
@@ -458,10 +489,19 @@ component accessors="true" {
 	 * @Package
 	 */
 	public function addPackage(required Package Package){
-		if(!findPackageByFullName(Package.getFullName()).exists()){
+		if(!this.findPackageByPath(Package.getPath()).exists()){
 			variables.Packages.append(Package);
 		}
 		this.saveConfig();
+	}
+
+	public function findPackageByPath(required string path){
+		for(var Package in variables.Packages){
+			if(Package.getPath() == arguments.path){
+				return new optional(Package);
+			}
+		}
+		return new optional(nullValue());
 	}
 
 	public function setDefaultPackage(required Package Package){
@@ -501,13 +541,16 @@ component accessors="true" {
 	public function saveConfig(){
 		if(variables.keyExists("ConfigPath")){
 			var out = new zero.serializerFast(this, {
+				ExpandedLogoURL: {},
+				SmallLogoURL: {},
 				Packages:{
-					FullName:{},
+					UniqueId: {},
+					FriendlyName: {},
 					Path:{},
 					IsReadOnly:{}
 				},
 				DefaultPackage: {
-					FullName:{}
+					UniqueId:{}
 				},
 				StudioDatasources:{
 					Name:{},
@@ -549,6 +592,22 @@ component accessors="true" {
 	public function loadConfig(){
 		variables.Config = deserializeJson(fileRead(variables.ConfigPath));
 
+		if(variables.Config.keyExists("ExpandedLogoURL")){ 
+			variables.ExpandedLogoURL = variables.Config.ExpandedLogoURL;
+			if (fileExists(variables.ExpandedLogoURL)) {
+				var imageBinary = fileReadBinary(variables.ExpandedLogoURL);
+				variables.LogoBinary = imageBinary;
+			}
+		}
+
+		if(variables.Config.keyExists("SmallLogoURL")){ 
+			variables.SmallLogoURL = variables.Config.SmallLogoURL;
+			if (fileExists(variables.SmallLogoURL)) {
+				var imageBinary = fileReadBinary(variables.SmallLogoURL);
+				variables.MascotBinary = imageBinary;
+			}
+		}
+
 		//Load the StudioDatasources
 		if(variables.Config.keyExists("StudioDatasources") and isArray(variables.Config.StudioDatasources)){
 			variables.StudioDatasources = [];
@@ -570,19 +629,44 @@ component accessors="true" {
 				var NewPackage = new Package(
 					path = Package.Path,
 					ChartSQLStudio = this,
+					FriendlyName = Package.FriendlyName?:"New Package",
 					PublisherKey = Package.PublisherKey?:nullValue()
 				);
 
+
+				if (isDefined('Package.UniqueId')) {
+					NewPackage.setUniqueId(Package.UniqueId);
+				} else if (!isNull(NewPackage.getUniqueId()) && !isEmpty(NewPackage.getUniqueId())) {
+					// Do nothing, it already has an unique id
+				} else {
+					// Otherwise generate a new one
+					UniqueId = this.generateUniqueIdForPackage(
+						NewPackage.getFriendlyName()
+					);
+					NewPackage.setUniqueId(UniqueId);
+				}
+
 				if (
-					isDefined('variables.Config.DefaultPackage.FullName')
-					and variables.Config.DefaultPackage.FullName
-					== Package.FullName
+					isDefined('variables.Config.DefaultPackage.UniqueId')
+					and variables.Config.DefaultPackage.UniqueId
+					== Package.UniqueId
 				) {
 					this.setDefaultPackage(NewPackage);
 					NewPackage.setIsDefaultPackage(true);
 				}
 			}
 		}
+		this.saveConfig();
+	}
+
+	public function generateUniqueIdForPackage(required string PackageFriendlyName) {
+		var i = 1;
+		var newUniqueId = new values.PackageUniqueId(arguments.PackageFriendlyName).toString();
+		while(this.findPackageByUniqueId(newUniqueId).exists()){
+			newUniqueId = new values.PackageUniqueId(arguments.PackageFriendlyName & "_#i#").toString();
+			i++;
+		}
+		return newUniqueId;
 	}
 
 	/**
@@ -610,7 +694,7 @@ component accessors="true" {
 				if (!SqlFileOptional.exists()) {
 					continue;
 				}
-				
+
 				var SqlFile = SqlFileOptional.get();
 				if (!isNull(SqlFile)) {
 					var SqlFileNamedDirectives = SqlFile.getNamedDirectives();
@@ -657,7 +741,7 @@ component accessors="true" {
 			var currentPackage = this.getDefaultPackage();
 
 			if (isDefined("request.context.PackageName")) {
-				currentPackageOptional = this.findPackageByFullName(request.context.PackageName);
+				currentPackageOptional = this.findPackageByUniqueId(request.context.PackageName);
 				if (currentPackageOptional.exists()) {
 					currentPackage = currentPackageOptional.get();
 				}
@@ -737,10 +821,10 @@ component accessors="true" {
 					"priority": 1,
 					"subpriority": 1,
 					"metadata": new zero.serializerFast(Package, {
-						FullName:{},
+						UniqueId:{},
 						OpenPackageLink: function(Package){
 							var qs = qs.clone();
-							qs.setValue("PackageName", Package.getFullName())
+							qs.setValue("PackageName", Package.getUniqueId())
 							.delete("SchemaFilter")
 							.delete("Filter");
 
@@ -857,6 +941,10 @@ component accessors="true" {
 			results: out,
 			resultsByType: resultsByType
 		};
+	}
+
+	public function newQueryString(){
+		return new zero.plugins.zerotable.model.queryStringNew("");
 	}
 
 	public function getCurrentQueryString(){

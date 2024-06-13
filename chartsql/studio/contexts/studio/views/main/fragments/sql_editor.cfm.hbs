@@ -144,7 +144,8 @@
 					"baselines",
 					"baseline-types",
 					"series-labels",
-					"overlay-series"
+					"overlay-series",
+					"dash-id"
 				];
 
 				if(!validFormats.includes(directive)){
@@ -185,7 +186,7 @@
 			// Click the storeEditorContentButton which will send the editor content to the server
 			// in SqlFile (but not actually save the file) so that it can be restored if the user
 			// navigates away from the page and then comes back and it hasn't been saved
-			
+
 			// If the user is typing, clear the timer
 			clearTimeout(typingTimer);
 
@@ -193,7 +194,7 @@
 			typingTimer = setTimeout(function () {
 				document.getElementById('storeEditorContentButton').click();
 			}, doneTypingInterval);
-			
+
 
 			// Decorate the save button that we have changes and so we are going to
 			// remove the btn-ghost-secondary class and add the btn-primary class
@@ -217,10 +218,10 @@
 			if (activeFile) {
 				activeFile.style.visibility = 'visible';
 			}
-			
+
 			onEditorContentChange(instance, changeObj);
 		});
-		
+
 		sqlEditor.on('keydown', function () {
 			if (typingTimer) {
 				// If the user is typing, clear the timer

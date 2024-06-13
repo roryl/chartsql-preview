@@ -20,7 +20,7 @@ component accessors="true" {
 
 		if(context.keyExists("FileBrowserView") and context.FileBrowserView == "stories"){
 			if(context.keyExists("PackageName")){
-				var Package = ChartSQLStudio.findPackageByFullName(context.PackageName).elseThrow("Package not found");
+				var Package = ChartSQLStudio.findPackageByUniqueId(context.PackageName).elseThrow("Package not found");
 			}
 
 			arguments.context.data.Storys = new zero.serializerFast(Package.getStorys().reverse(), {
@@ -81,8 +81,8 @@ component accessors="true" {
 	){
 
 		if(result.method == "GET" and result.keyExists("section") and result.section == "main" && isDefined("result.data.CurrentPackage")){
-			var PackageFullName = result.data.CurrentPackage.FullName;
-			var Package = ChartSQLStudio.findPackageByFullName(PackageFullName).elseThrow("Package not found");
+			var PackageUniqueId = result.data.CurrentPackage.UniqueId;
+			var Package = ChartSQLStudio.findPackageByUniqueId(PackageUniqueId).elseThrow("Package not found");
 
 			var LatestStoryOptional = Package.getLatestStory();
 			if(LatestStoryOptional.exists()){
@@ -121,7 +121,7 @@ component accessors="true" {
 
 			if(requestContext.keyExists("PlayStory")){
 
-				var Package = ChartSQLStudio.findPackageByFullName(requestContext.PackageName).elseThrow("Package not found");
+				var Package = ChartSQLStudio.findPackageByUniqueId(requestContext.PackageName).elseThrow("Package not found");
 				var Story = Package.findStoryByName(requestContext.PlayStory).elseThrow("Story not found");
 				var Slide = Story.findSlideByFullName(requestContext.ActiveFile).elseThrow("Slide not found");
 
@@ -174,12 +174,17 @@ component accessors="true" {
 
 				doc.select('body')[1].addClass('storyMode');
 				doc.select('##main-menu-nav-items')[1].html(mainMenu);
-				doc.select('##renderingContainer')[1].prepend(slideSelector);
+
+				var renderingContainer = doc.select('##renderingContainer');
+				if(len(renderingContainer) >= 1){
+					renderingContainer[1].prepend(slideSelector);
+				}
+
 			}
 
-			var renderCardTabs = doc.select("##renderer-card-tabs");
+			var renderCardTabs = doc.select("##renderer-card-tabs > ##optionTab");
 			if (len(renderCardTabs) >= 1) {
-				doc.select("##renderer-card-tabs")[1].append(addstory);
+				renderCardTabs[1].after(addstory);
 			}
 		}
 

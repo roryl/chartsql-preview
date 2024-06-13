@@ -34,14 +34,15 @@ abstract component extends="Datasource" accessors="true" {
 			timezone:'UTC'
 		};
 
-
 		return out;
 	}
 
 	public void function verify(numeric timeout=5){
-		query name="test" datasource="#this.getConnectionInfo()#" timeout="5" {
+
+		query name="test" datasource="#this.getConnectionInfo()#" timeout="#arguments.timeout#" {
 			echo("select 1;");
 		}
+
 	}
 
 	public function getTableInformationSchema(){

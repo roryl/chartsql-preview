@@ -106,8 +106,8 @@ component accessors="true" {
 						Name:{}
 					},
 					Packages:{
+						UniqueId:{},
 						FriendlyName:{},
-						FullName:{},
 						IsReadOnly:{},
 						Path:{},
 						DefaultStudioDatasource:{
@@ -117,14 +117,14 @@ component accessors="true" {
 						DashId:{},
 						PublisherKey:{},
 						IsEditing: function(Package){
-							if (Package.getFullName() == args.EditPackage){
+							if (Package.getUniqueId() == args.EditPackage){
 								return true;
 							} else {
 								return false;
 							}
 						},
 						EditLink: function(Package){
-							return qs.clone().setValue("EditPackage", Package.getFullName()).get();
+							return qs.clone().setValue("EditPackage", Package.getUniqueId()).get();
 						},
 						CloseEditLink: function(){
 							return qs.clone().delete("EditPackage").get();
@@ -156,6 +156,56 @@ component accessors="true" {
 		session.delete("EditorSession");
 		server.delete("ShouldLoadDefaultPackage");
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		return {
+			success:true
+		};
+	}
+	
+	/**
+	 * Changes the logo. It saves a file to the homedirectory 'ChartSQL' directory,
+	 * then it sets the ExpandedLogoURL
+	 */
+	public function changeExpandedLogo(
+		required string file
+	) method="POST" {
+		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		var uuid = createUUID();
+		var fileName = 'expanded_logo.png';
+		var filePath = application.installLocation & server.separator.file & fileName;
+
+		var uploadedFile = new zeromodel.data.FileUpload(file);
+		var blob = uploadedFile.toBinary();
+		var image = imageRead(blob);
+
+		imageWrite(image=image, destination=filePath, overwrite=true);
+		ChartSQLStudio.setExpandedLogoURL(filePath);
+		ChartSQLStudio.setLogoBinary(blob);
+		return {
+			success:true
+		};
+	}
+	
+	/**
+	 * Changes the small logo. It saves a file to the homedirectory 'ChartSQL' directory,
+	 * then it sets the ExpandedLogoURL
+	 */
+	public function changeSmallLogo(
+		required string file
+	) method="POST" {
+		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		
+		var uuid = createUUID();
+		var fileName = 'small-logo.png';
+		var filePath = application.installLocation & server.separator.file & fileName;
+
+		// Save file to application.installLocation
+		var uploadedFile = new zeromodel.data.FileUpload(file);
+		var blob = uploadedFile.toBinary();
+		var image = imageRead(blob);
+
+		imageWrite(image=image, destination=filePath, overwrite=true);
+		ChartSQLStudio.setSmallLogoURL(filePath);
+		ChartSQLStudio.setMascotBinary(blob);
 		return {
 			success:true
 		};

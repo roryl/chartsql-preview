@@ -24,10 +24,7 @@ component {
 		return this;
 	}
 
-	/**
-	* Renders to the page. For testing purposes only
-	*/
-	public function render(
+	public function getRenderContent(
 		width = "100%",
 		height = "100%",
 		struct option
@@ -39,6 +36,8 @@ component {
 			var option = arguments.option;
 		}
 
+		var content = {};
+
 		var context = {
 			Width: arguments.width,
 			Height: arguments.height,
@@ -47,16 +46,19 @@ component {
 		};
 
 		```
-		<cf_handlebars context="#context#">
-			<cfoutput>
-				<div style="{{##if Width}}width:{{Width}};{{/if}} {{##if Height}}height:{{Height}};{{/if}}">
-					<div id="{{ContainerId}}" style="width:100%; height:100%;"></div>
-				</div>
-			</cfoutput>
-		</cf_handlebars>
-		<cfsavecontent variable="script">
+
+		<cfsavecontent variable="content.container">
 			<cf_handlebars context="#context#">
-				<script src="/assets/vendor/apache-echarts/echarts.min.js"></script>
+				<cfoutput>
+					<div style="{{##if Width}}width:{{Width}};{{/if}} {{##if Height}}height:{{Height}};{{/if}}">
+						<div id="{{ContainerId}}" style="width:100%; height:100%;"></div>
+					</div>
+				</cfoutput>
+			</cf_handlebars>
+		</cfsavecontent>
+
+		<cfsavecontent variable="content.script">
+			<cf_handlebars context="#context#">
 				<script id="chart-data-{{ContainerId}}" type="application/json"><cfoutput>{{{option}}}</cfoutput></script>
 				<script>
 
@@ -73,7 +75,7 @@ component {
 							eval(option.tooltip.formatter);
 							option.tooltip.formatter = func;
 						}
-						
+
 						if(
 							typeof option.tooltip != "undefined"
 							&& typeof option.tooltip.axisPointer != "undefined"
@@ -181,10 +183,46 @@ component {
 				</script>
 			</cf_handlebars>
 		</cfsavecontent>
+		```
+		return content;
+	}
+
+	/**
+	* Renders to the page. For testing purposes only
+	*/
+	public function render(
+		width = "100%",
+		height = "100%",
+		struct option,
+		struct renderContent
+	){
+
+		if(!arguments.keyExists("renderContent")){
+
+			if(!arguments.keyExists("option")){
+				var option = this.getOption();
+			} else {
+				var option = arguments.option;
+			}
+
+			var renderContent = this.getRenderContent(
+				width = arguments.width,
+				height = arguments.height,
+				option = option
+			);
+
+		} else {
+			var renderContent = arguments.renderContent;
+		}
+
+
+		```
+		<cfoutput>#renderContent.container#</cfoutput>
+
 		<cfif variables.renderInline>
-			<cfoutput>#script#</cfoutput>
+			<cfoutput>#renderContent.script#</cfoutput>
 		<cfelse>
-			<cfhtmlbody action="append"><cfoutput>#script#</cfoutput></cfhtmlbody>
+			<cfhtmlbody action="append"><cfoutput>#renderContent.script#</cfoutput></cfhtmlbody>
 		</cfif>
 		```
 	}
@@ -212,8 +250,8 @@ component {
 			}
 
 			if (
-				isDefined("variables.directives.formats") 
-				&& !isNull(variables.directives.formats) 
+				isDefined("variables.directives.formats")
+				&& !isNull(variables.directives.formats)
 				&& isArray(variables.directives.formats)
 				&& variables.directives.formats.len() > 0
 				&& option.keyExists('series')
@@ -245,13 +283,13 @@ component {
 							if (format == 'currency') {
 								return `$${params.value.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
 							} else if (format == 'percent') {
-								return `${Math.round(params.value)}%`;
+								return `${Math.round(params.value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}%`;
 							} else if (format == 'integer') {
-								return `${Math.round(params.value)}`;
+								return `${Math.round(params.value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
 							} else if (format == 'decimal') {
-								return `${params.value.toFixed(2)}`;
+								return `${params.value.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
 							} else {
-								return params.value;	
+								return params.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 							}
 						} else {
 							return params.value;
@@ -269,7 +307,7 @@ component {
 				option.tooltip.formatter = "var func = function(params) {
 					try {
 						var result = '';
-						if (params.length > 0 && params[0].name != undefined && params[0].name != null && params[0].name != '') { 
+						if (params.length > 0 && params[0].name != undefined && params[0].name != null && params[0].name != '') {
 							result = params[0].name + '<br>';
 						}
 						var formats = #serializeJSON(variables.directives.formats)#;
@@ -293,9 +331,9 @@ component {
 							} else if (format == 'percent') {
 								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toLocaleString()}%<br>`;
 							} else if (format == 'integer') {
-								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${Math.round(params[i].value)}<br>`;
+								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${Math.round(params[i].value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}<br>`;
 							} else if (format == 'decimal') {
-								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toFixed(2)}<br>`;
+								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}<br>`;
 							} else {
 								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toLocaleString()}<br>`;
 							}
@@ -436,6 +474,17 @@ component {
 					position: labelItem
 				}
 
+				// By default use integer formatter
+				option.series[ii].label.formatter = "var func = function(obj) {
+					// check if is array
+					if(Array.isArray(obj.value)){
+						var value = obj.value[1];
+					} else {
+						var value = obj.value;
+					}
+					return `${Math.round(value)}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+				}";
+
 				if(variables.directives.keyExists("formats")){
 
 					var format = this.matchOrdinalPosition(
@@ -446,7 +495,15 @@ component {
 					switch(format){
 
 						case "none":
-							// Do nothing with the formatter
+							option.series[ii].label.formatter = "var func = function(obj) {
+								// check if is array
+								if(Array.isArray(obj.value)){
+									var value = obj.value[1];
+								} else {
+									var value = obj.value;
+								}
+								return value;
+							}";
 						break;
 
 						case "currency":
@@ -481,7 +538,7 @@ component {
 								} else {
 									var value = obj.value;
 								}
-								return Math.round(value);
+								return `${Math.round(value)}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 							}";
 						break;
 
@@ -493,7 +550,7 @@ component {
 								} else {
 									var value = obj.value;
 								}
-								return value.toFixed(2);
+								return `${value.toFixed(2)}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 							}";
 						break;
 					}
@@ -613,10 +670,17 @@ component {
 				target = arguments.formats
 			);
 
+			// By default use the integer formatter
+			arguments.AxisItem.axisLabel.formatter = "var func = function(value) {
+				return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+			}";
+
 			switch(format){
 
 				case "none":
-					// Do nothing with the formatter
+					arguments.AxisItem.axisLabel.formatter = "var func = function(value) {
+						return value.toString();
+					}";
 				break;
 
 				case "currency":
@@ -633,13 +697,13 @@ component {
 
 				case "integer":
 					arguments.AxisItem.axisLabel.formatter = "var func = function(value) {
-						return Math.round(value);
+						return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 					}";
 				break;
 
 				case "decimal":
 					arguments.AxisItem.axisLabel.formatter = "var func = function(value) {
-						return value.toFixed(2);
+						return value.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 					}";
 				break;
 			}
@@ -1057,8 +1121,11 @@ component {
 
 							for(var groupBy1Name in categoryData){
 
+								var paramValue = duplicate(groupBy1Name);
+
 								var params = {
-									groupBy1Value: {type=variables.metaData.columns[groupBy1].finalType, value = groupBy1Name},
+									'groupBy1Value': {type=variables.metaData.columns[groupBy1].finalType, value = paramValue},
+									// 'groupBy1Value': {type='timestamp', value = paramValue},
 								};
 
 								// writeDump(params);
@@ -1076,7 +1143,6 @@ component {
 
 								// writeDump(sql);
 								// abort;
-
 								query name="groupByData3" dbtype="query" params=params {
 									echo(sql)
 								}
@@ -1327,6 +1393,50 @@ component {
 				}
 			]
 		};
+	}
+
+	public function getGaugeOption(
+		required struct primaryCategoryField,
+		required array categoryData,
+		required array valuesFields
+	){
+
+		var gaugeData = [];
+
+		if(arguments.valuesFields.len() == 0){
+			throw("Pie charts require at least one numeric column", "invalidChartDefinition");
+		}
+
+		// writeDump(arguments);
+
+		var valueData = valuesFields[1].data;
+
+		for(var ii = 1; ii <= arrayLen(categoryData); ii++){
+			gaugeData.append({
+				name: this.cleanName(arguments.primaryCategoryField.name),
+				value: valueData[ii]
+			});
+		}
+
+		var option = {
+			// grid: {
+			// 	// left: '3%',
+			// 	// right: '4%',
+			// 	// bottom: '3%',
+			// 	containLabel: true
+			// },
+			// tooltip: {
+			// 	formatter: "'{a} {b} : {c}%'"
+			// },
+			series: [
+				{
+					type: 'gauge',
+					max: 100,
+					data: gaugeData
+				}
+			]
+		};
+		return option;
 	}
 
 	public function getPieOption(

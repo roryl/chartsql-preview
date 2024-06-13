@@ -76,7 +76,7 @@ component accessors="true" {
 
 		if(ExamplesPackageOptional.exists()){
 			var Package = ExamplesPackageOptional.get();
-			PackageFullName = Package.getFullName();
+			PackageFullName = Package.getUniqueId();
 			
 			var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
 			if(StudioDatasourceOptional.exists()){

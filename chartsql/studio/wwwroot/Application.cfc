@@ -61,9 +61,9 @@ component extends="zero.zero" {
 
 		// Copy the request context so that we can use it later in the extensions
 		// because by default the context is replaced by the controller output in fw/1
-		request.extensionsContext = duplicate(rc);
+		request.extensionsContext = duplicate(arguments.rc);
 
-		return rc;
+		return arguments.rc;
 	}
 
 	/**
@@ -118,10 +118,13 @@ component extends="zero.zero" {
 			}
 		})
 
-		ChartSQLStudio.executeExtensions("onResult", {
-			requestContext: request.extensionsContext,
-			result: arguments.controllerResult
-		});
+		// if (isDefined("request.extensionsContext")) {
+			ChartSQLStudio.executeExtensions("onResult", {
+				requestContext: request.extensionsContext,
+				result: arguments.controllerResult
+			});
+		// }
+
 
 		request.timerData.controllerResult = getTickCount() - (request.startTick?:getTickCount());
 		request.startTick = getTickCount();
@@ -132,6 +135,8 @@ component extends="zero.zero" {
 		var qs = ChartSQLStudio.getEditorQueryString();
 
 		arguments.controllerResult.data.GlobalChartSQLStudio = this.serializeFast(ChartSQLStudio, {
+			ExpandedLogoURL: {},
+			SmallLogoURL: {},
 			isPackagesDropdownOpened: function (GlobalChartSQLStudio) {
 				if (openedDropdownMenuItems.contains("packages-menu-item")) {
 					return true;
@@ -140,12 +145,12 @@ component extends="zero.zero" {
 				}
 			},
 			Packages:{
-				FullName:{},
+				UniqueId:{},
 				FriendlyName:{},
 				IsReadOnly:{},
 				OpenPackageParams: function(Package){
 					var qs = qs.clone();
-					qs.setValue("PackageName", Package.getFullName())
+					qs.setValue("PackageName", Package.getUniqueId())
 					.delete("Filter")
 					.delete("SchemaFilter");
 
@@ -159,7 +164,7 @@ component extends="zero.zero" {
 				},
 				OpenPackageLink: function(Package){
 					var qs = qs.clone();
-					qs.setValue("PackageName", Package.getFullName())
+					qs.setValue("PackageName", Package.getUniqueId())
 					.delete("Filter")
 					.delete("SchemaFilter");
 
@@ -307,7 +312,6 @@ component extends="zero.zero" {
 				}));
 				abort;
 			} else {
-				//Include the default error handler template
 				writeDump(error);
 				abort;
 				// include template="500.cfm";
@@ -349,7 +353,6 @@ component extends="zero.zero" {
 	}
 
 	public function getChartSQLStudio(){
-
 		if(url.keyExists("reloadStudio")){
 			application.delete("ChartSQLStudio");
 			session.delete("EditorSession");
@@ -377,6 +380,8 @@ component extends="zero.zero" {
 			.replace(".", "_", "all")
 
 		var dirPath = homeDirectory & server.separator.file & "ChartSQL" & server.separator.file & installLocation;
+		
+		application.installLocation = dirPath;
 
 		if(!directoryExists(dirPath)){
 			directoryCreate(dirPath, true);
@@ -440,8 +445,10 @@ component extends="zero.zero" {
 			// We setup the Examples package for every installatgion
 			var ExamplesPackageOptional = application.ChartSQLStudio.findPackageByFriendlyName("Examples");
 			if(!ExamplesPackageOptional.exists()){
-				var ExamplesPackage = application.ChartSQLStudio.createPackageFromFile(expandPath("/com/chartsql/studio/extensions/chartsql/examples/sql"));
-				ExamplesPackage.setFriendlyName("Examples");
+				var ExamplesPackage = application.ChartSQLStudio.createPackageFromFile(
+					path=expandPath("/com/chartsql/studio/extensions/chartsql/examples/sql"),
+					FriendlyName="Examples"
+				);
 			} else {
 				var ExamplesPackage = ExamplesPackageOptional.get();
 				var StudioDatasource = application.ChartSQLStudio.findStudioDatasourceByName("Examples").get();
@@ -453,8 +460,10 @@ component extends="zero.zero" {
 			//Setup a default package to the user's home directory sql_scripts folder
 			var DefaultPackageOptional = application.ChartSQLStudio.findPackageByFriendlyName("Scratchpad");
 			if(!DefaultPackageOptional.exists()){
-				var DefaultPackage = application.ChartSQLStudio.createPackageFromFile(defaultScriptsPath);
-				DefaultPackage.setFriendlyName("Scratchpad");
+				var DefaultPackage = application.ChartSQLStudio.createPackageFromFile(
+					path=defaultScriptsPath,
+					FriendlyName="Scratchpad"
+				);
 			} else {
 				var DefaultPackage = DefaultPackageOptional.get();
 			}
@@ -504,8 +513,10 @@ component extends="zero.zero" {
 		if(directoryExists(samplesPath)){
 			var SamplesPackageOptional = application.ChartSQLStudio.findPackageByFriendlyName("Sample Charts");
 			if(!SamplesPackageOptional.exists()){
-				var Package = application.ChartSQLStudio.createPackageFromFile(expandPath("/core/sample"));
-				Package.setFriendlyName("Sample Charts");
+				var Package = application.ChartSQLStudio.createPackageFromFile(
+					path=expandPath("/core/sample"),
+					FriendlyName="Sample Charts"
+				);
 			}
 		}
 

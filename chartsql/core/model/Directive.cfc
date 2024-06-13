@@ -10,6 +10,7 @@ component accessors="true" {
 	property name="CleanedName" type="string";
 	property name="Parsed" type="any";
 	property name="HasErrors" type="boolean" default="true";
+	property name="DecodedBase64" type="string";
 	property name="ValueRaw" type="string";
 	property name="Validations";
 	property name="IsValid";
@@ -96,13 +97,17 @@ component accessors="true" {
 	// }
 
 	public function getPrettyPrint(){
+		if (!isDefined('variables.ValueRaw') || isNull(variables.ValueRaw) || isEmpty(variables.ValueRaw)){
+			return "";
+		}
+
 		if(variables.name == "mongodb-query"){
 			if(isJson(variables.ValueRaw)){
 				return formatJSON(variables.ValueRaw);
 				// var Gson = new core.model.Gson(variables.valueRaw);
 				// return Gson.toString();
 			} else {
-				return formatJSON(variables.ValueRaw);
+				return toString(toBinary(variables.ValueRaw));
 			}
 		} else {
 			return variables.ValueRaw?:"";

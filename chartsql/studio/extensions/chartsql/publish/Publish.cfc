@@ -25,7 +25,11 @@ component accessors="true" {
 
 		var context = {};
 		context.data.PublishingRequests = new zero.serializerFast(PublishingRequests, {
-			Uri:{}
+			Uri:{},
+			RequestType:{},
+			PublishingResult:{
+				IsSuccess:{},
+			}
 		})
 
 		savecontent variable="html" {
@@ -43,6 +47,30 @@ component accessors="true" {
 		required object doc
 	){
 
+		if(isDefined("result.data.CurrentPackage.UniqueId")){
+
+			var Package = variables.ChartSQLStudio.findPackageByUniqueId(result.data.CurrentPackage.UniqueId).elseThrow("Could not load that package");
+			var context = arguments.result
+			context.data.PublisherKey = Package.getPublisherKey();
+			var qs = variables.ChartSQLStudio.newQueryString();
+			qs.setBasePath("/studio/settings/packages");
+			qs.setValue("EditPackage", Package.getUniqueId());
+			context.view_state.configurePublisherLink = qs.get();
+			// writeDump(context.view_state.configurePublisherLink);
+			// abort;
+			savecontent variable="publish_button" {
+				```
+				<cfinclude template="publish_button.cfm.hbs">
+				```
+			}
+
+			var renderCardTabs = doc.select("##renderer-card-tabs");
+			if (len(renderCardTabs) >= 1) {
+				renderCardTabs[1].append(publish_button);
+			}
+
+		}
+
 	}
 
 	function getInfoPanelView(){
@@ -59,6 +87,48 @@ component accessors="true" {
 			);
 		}
 		return InfoPanelView;
+	}
+
+	remote function PublishChart(
+		required string SqlFile
+	) {
+
+		var ChartSQLStudio = variables.ChartSQLStudio;
+		var SqlFile = ChartSQLStudio.findSqlFileByFullName(SqlFile).elseThrow("Could not find that SQL file");
+		var Package = SqlFile.getPackage();
+		var PackagePublisher = Package.getPackagePublisher();
+		var PublishingResult = PackagePublisher.publishOrUpdateDashChart(SqlFile);
+
+		var out = {
+			"PublishingResult": new zero.serializerFast(PublishingResult, {
+				IsSuccess:{},
+				ResultType:{},
+				PublishingRequest:{
+					RequestType:{}
+				},
+			})
+		}
+
+		return out;
+
+	}
+
+	remote function PublishAllCharts(
+		required string PackageFullName
+	) {
+
+		var ChartSQLStudio = variables.ChartSQLStudio;
+		var Package = ChartSQLStudio.findPackageByUniqueId(PackageFullName).elseThrow("Could not find that package");
+		var SqlFiles = Package.getSqlFiles();
+		var PackagePublisher = Package.getPackagePublisher();
+		var PublishingResults = PackagePublisher.publishAllCharts(SqlFiles);
+
+		var out = {
+			"message": "Published all charts. Check publishing into panel for details",
+		}
+
+		return out;
+
 	}
 
 }

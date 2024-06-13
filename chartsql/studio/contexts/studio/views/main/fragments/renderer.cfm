@@ -21,7 +21,7 @@
 					</button>
 				</form>
 			</li>
-			<li class="nav-item" role="presentation">
+			<li id="optionTab" class="nav-item" role="presentation">
 				<form method="GET" action="{{view_state.render_panel.option.link}}" zero-target="#rendererPanel">
 					<button type="submit" class="nav-link {{#if (eq view_state.render_panel.active_view "option")}}active{{/if}}">
 						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code-dots me-2" style="--tblr-icon-size: 1rem;" width="10" height="10" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 12h.01" /><path d="M12 12h.01" /><path d="M9 12h.01" /><path d="M6 19a2 2 0 0 1 -2 -2v-4l-1 -1l1 -1v-4a2 2 0 0 1 2 -2" /><path d="M18 19a2 2 0 0 0 2 -2v-4l1 -1l-1 -1v-4a2 2 0 0 0 -2 -2" /></svg>
@@ -62,12 +62,7 @@
 					</form>
 				{{/if}}
 			</li> --->
-			<!--- <li class="ms-auto align-items-center d-flex me-4 mt-1">
-				<label class="form-check form-switch" data-bs-toggle="tooltip" data-bs-placement="top" title="Automatically re-render the visualization on change">
-					<input class="form-check-input" type="checkbox" {{#if view_state.auto_preview}}checked{{/if}}>
-					<span class="form-check-label">Render on Open</span>
-				</label>
-			</li> --->
+
 		</ul>
 	</div>
 	<div class="card-body w-100 h-100 p-0">

@@ -44,7 +44,7 @@ component accessors="true" {
 		variables.EditorSession = EditorSession;
 		variables.Name = SqlFile.getName();
 		variables.SqlFullName = SqlFile.getFullName();
-		variables.PackageFullName = SqlFile.getPackage().getFullName();
+		variables.PackageFullName = SqlFile.getPackage().getUniqueId();
 		variables.SqlFile.setLastExecutionRequest(this);
 		variables.IsRunning = false;
 		variables.IsDone = false;

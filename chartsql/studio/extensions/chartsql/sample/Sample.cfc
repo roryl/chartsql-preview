@@ -52,4 +52,8 @@ component accessors="true" {
 
 	}
 
+	remote struct function echo(){
+		return arguments;
+	}
+
 }

@@ -34,7 +34,8 @@ component accessors="true" {
 			"baselines": true,
 			"baseline-types": true,
 			"series-labels":true,
-			"overlay-series": true
+			"overlay-series": true,
+			"mongodb-query": true
 		}
 
 		// These are the directives that are arrays and need to be converted to arrays
@@ -288,6 +289,15 @@ component accessors="true" {
 			}
 		}
 
+		var base64Fields = ["mongodb-query"];
+		for(var base64Field in base64Fields){
+			if(out.keyExists(base64Field)){
+				if (!isJson(out[base64Field])) {
+					out[base64Field] = ToString(ToBinary(out[base64Field]));
+				}
+			}
+		}
+
 		return out;
 	}
 
@@ -351,12 +361,14 @@ component accessors="true" {
 			"area": true,
 			"line":true,
 			"pie":true,
-			"combo":true
+			"combo":true,
+			"gauge":true
 		}
 
 		//General validations:
 		//Validate @format directive
 		var validFormatsTypes = {
+			"none": true,
 			"currency": true,
 			"percent": true,
 			"integer": true,
@@ -737,7 +749,8 @@ component accessors="true" {
 			"baselines": false,
 			"baseline-types": false,
 			"series-labels":false,
-			"overlay-series": false
+			"overlay-series": false,
+			"mongodb-query": false
 		}
 
 		var out = [];
@@ -881,11 +894,9 @@ component accessors="true" {
 		var lines = listToArray(sql, server.separator.line);
 
 		// Replace all new lines and tabs to compact the text
-		if(variables.jsonTypes.keyExists(directive)){
-			var newText = newText.replace("#server.separator.line#", "", "all");
-			var newText = newText.replace(chr(10), "", "all");
-			var newText = newText.replace(chr(9), "", "all");
-			var newText = newText.replace("  ", " ", "all");
+
+		if(variables.jsonTypes.keyExists(directive) && isJson(newText)){
+			var newText = toBase64(newText);
 		}
 
 		// writeDump(lines);
@@ -894,8 +905,8 @@ component accessors="true" {
 		var isFirstDirectiveFound = false;
 		var firstDirectiveAt = 0;
 		var lastDirectiveAt = 1;
-		var directiveAlreadyExists = false;
 		var hasAtLeastOneDirective = false;
+
 		// We are going to get the line of the last directive after the first
 		// directive is found for purposes of putting the new directive at the
 		for(var ii=1; ii <= arrayLen(lines); ii++){
@@ -903,7 +914,6 @@ component accessors="true" {
 
 			if(this.lineContainsMatchinDirective(line, new CleanedDirectiveName(directive))){
 				hasAtLeastOneDirective = true;
-				directiveAlreadyExists = true;
 				this.replaceDirectiveText(directive, newText);
 				return;
 			} else {

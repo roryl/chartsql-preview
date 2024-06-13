@@ -20,17 +20,16 @@ component accessors="true" {
 		string FriendlyName,
 		string DefaultStudioDatasource
 	) method="POST" {
-
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		if(!arguments.keyExists("FriendlyName")){
+			throw(variables.fw.createError("Missing required field 'Friendly Name'", "FriendlyName"));
+		}
 		var Package = ChartSQLStudio.createPackageFromFile(
+			friendlyName = arguments.FriendlyName,
 			path = arguments.FolderPath
 		);
 
-		if(arguments.keyExists("FriendlyName")){
-			Package.setFriendlyName(arguments.FriendlyName);
-		}
-
-		if(arguments.keyExists("DefaultStudioDatasource")){
+		if(arguments.keyExists("DefaultStudioDatasource") && !isEmpty(arguments.DefaultStudioDatasource)){
 			var StudioDatasource = ChartSQLStudio.findStudioDatasourceByName(arguments.DefaultStudioDatasource).elseThrow("Could not find that datasource");
 			Package.setDefaultStudioDatasource(StudioDatasource);
 		}
@@ -38,7 +37,7 @@ component accessors="true" {
 		var out = {
 			"success":true,
 			"Package":variables.fw.serializeFast(Package, {
-				FullName:{}
+				UniqueId:{}
 			})
 		}
 		return out;
@@ -57,35 +56,33 @@ component accessors="true" {
 		string PublisherKey
 	) {
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
-		var Package = ChartSQLStudio.findPackageByFullName(arguments.id).elseThrow("Could not find that package");
+		var Package = ChartSQLStudio.findPackageByUniqueId(arguments.id).elseThrow("Could not find that package");
 
-		if(arguments.keyExists("FriendlyName")){
+		if(arguments.keyExists("FriendlyName") && !isEmpty(arguments.FriendlyName)){
 			Package.setFriendlyName(arguments.FriendlyName);
 		}
 
-		if(arguments.keyExists("DefaultStudioDatasource")){
+		if(arguments.keyExists("DefaultStudioDatasource") && !isEmpty(arguments.DefaultStudioDatasource)){
 			var StudioDatasource = ChartSQLStudio.findStudioDatasourceByName(arguments.DefaultStudioDatasource).elseThrow("Could not find that datasource");
 			Package.setDefaultStudioDatasource(StudioDatasource);
 		}
 
-		if (arguments.setAsDefaultPackage) {
+		if (arguments.keyExists("setAsDefaultPackage") && arguments.setAsDefaultPackage == true) {
 			ChartSQLStudio.setDefaultPackage(Package);
 		}
 
-		if (arguments.keyExists("DashId")) {
+		if (arguments.keyExists("DashId") && !isEmpty(arguments.DashId)) {
 			Package.setDashId(DashId);
 		}
 
-		if (arguments.keyExists("PublisherKey")) {
+		if (arguments.keyExists("PublisherKey") && !isEmpty(arguments.PublisherKey)) {
 			Package.setPublisherKey(PublisherKey);
 		}
-
-		Package.saveConfig();
 
 		var out = {
 			"success":true,
 			"Package":variables.fw.serializeFast(Package, {
-				FullName:{}
+				UniqueId:{}
 			})
 		}
 		return out;
@@ -94,7 +91,7 @@ component accessors="true" {
 	public struct function delete( required id ) {
 
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
-		var Package = ChartSQLStudio.findPackageByFullName(arguments.id).elseThrow("Could not find that package");
+		var Package = ChartSQLStudio.findPackageByUniqueId(arguments.id).elseThrow("Could not find that package");
 		ChartSQLStudio.deletePackage(Package);
 
 		var out = {
@@ -106,7 +103,7 @@ component accessors="true" {
 	public struct function verifyPublisherKey( required id ) method="POST" {
 
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
-		var Package = ChartSQLStudio.findPackageByFullName(arguments.id).elseThrow("Could not find that package");
+		var Package = ChartSQLStudio.findPackageByUniqueId(arguments.id).elseThrow("Could not find that package");
 		var PackagePublisher = Package.getPackagePublisher();
 
 		PublishingResult = PackagePublisher.verify();

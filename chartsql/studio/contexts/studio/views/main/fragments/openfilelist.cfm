@@ -79,11 +79,11 @@
 						<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10l4 4m0 -4l-4 4"></path><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
 						</svg> <span class="me-2">Close Other Files</span>
 					</a>
-				   <form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
-					 <svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-					  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
-					 </svg> <span class="me-2">Rename File</span> </button>
-				   </form>
+					<form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
+						<svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+						<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
+						</svg> <span class="me-2">Rename File</span> </button>
+					</form>
 					<button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete-sqlfile-modal-{{Id}}">
 						<svg class="icon icon-tabler me-2"  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
 						<span class="me-2">Delete File</span>
@@ -440,7 +440,7 @@
 										<!--- <input type="hidden" name="goto" value="{{view_state.rename_file_go_to}}"/>
 										<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/> --->
 										<input type="hidden" name="SqlFileFullName" value="{{FullName}}"/>
-										<!--- <input type="hidden" name="PackageName" value="{{data.CurrentPackage.FullName}}"> --->
+										<!--- <input type="hidden" name="PackageName" value="{{data.CurrentPackage.UniqueId}}"> --->
 										<div id="changeFileNameContainer" class="input-group">
 											<input id="changeFileNameInput" type="text" name="fileName" class="form-control form-control-sm" placeholder="File name" value="{{Name}}">
 											<button form="changeFileNameForm" class="d-none btn btn-primary btn-sm" type="submit">Save</button>
@@ -467,11 +467,19 @@
 											<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10l4 4m0 -4l-4 4"></path><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
 											</svg> <span class="me-2">Close Other Files</span>
 										</a>
-									   <form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
-										 <svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-										  <path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
-										 </svg> <span class="me-2">Rename File</span> </button>
-									   </form>
+										{{#if (eq data.ActiveFile this.FullName)}}
+											<form method="GET" action="{{view_state.change_file_name_link}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
+											<svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+											<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
+											</svg> <span class="me-2">Rename File</span> </button>
+											</form>
+										{{else}}
+											<form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
+											<svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+											<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
+											</svg> <span class="me-2">Rename File</span> </button>
+											</form>
+										{{/if}}
 									   <button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete-sqlfile-modal-{{Id}}">
 											<svg class="icon icon-tabler me-2"  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
 											<span class="me-2">Delete File</span>
@@ -605,7 +613,8 @@
 					<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 					<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
 					<input type="hidden" name="OpenFileAt" value="{{view_state.current_url}}"/>
-					<input type="hidden" name="PackageName" value="{{data.CurrentPackage.FullName}}">
+					<input type="hidden" name="PackageName" value="{{data.CurrentPackage.UniqueId}}">
+					<input type="hidden" name="preserve_response" value="view_state.response">
 					<div id="createFileContainer" class="input-group d-none">
 						<input id="createFileInput" type="text" name="FileName" class="form-control form-control-sm" placeholder="File name" value=".sql">
 						<button form="createFileForm" class="btn btn-sm" type="submit">Create</button>
@@ -676,10 +685,21 @@
 				</div>
 			  </div>
 		</div>
-		<form id="stopChangeFileNameForm" method="GET" action="{{view_state.stop_change_file_name_link}}" style="display:inline;" zero-target="#openFilesList">
-			<input type="hidden" name="goto" value="{{view_state.stop_change_file_name_link}}"/>
-			<input type="hidden" name="goto_fail" value="{{view_state.stop_change_file_name_link}}"/>
-		</form>
+		{{#if data.ChangeActiveFileName}}
+			<form method="GET" action="{{view_state.stop_change_file_name_link}}" style="display:inline;" zero-target="#openFilesList">
+				<input type="hidden" name="goto" value="{{view_state.stop_change_file_name_link}}"/>
+				<input type="hidden" name="goto_fail" value="{{view_state.stop_change_file_name_link}}"/>
+				<!--- Hidden button --->
+				<button id="stopChangeFileNameButton" type="submit" class="d-none"></button>
+			</form>
+		{{else if data.ChangingFileName}}
+			<form method="GET" action="{{view_state.stop_change_file_name_link}}" style="display:inline;" zero-target="#openFilesList">
+				<input type="hidden" name="goto" value="{{view_state.stop_change_file_name_link}}"/>
+				<input type="hidden" name="goto_fail" value="{{view_state.stop_change_file_name_link}}"/>
+				<!--- Hidden button --->
+				<button id="stopChangeFileNameButton" type="submit" class="d-none"></button>
+			</form>
+		{{/if}}
 		<script>
 			$(document).keydown(function(e) {
 				if (e.key === "Escape") {
@@ -689,10 +709,10 @@
 					// Hide all 'file-right-click-dropdown' class
 					$('.file-right-click-dropdown').css('display', 'none');
 
-					// Submit to 'stopChangeFileNameForm'
-					let stopChangeFileNameFormElement = $('#stopChangeFileNameForm');
-					if (stopChangeFileNameFormElement.length > 0) {
-						stopChangeFileNameFormElement.submit();
+					// Submit to 'stopChangeFileNameForm' if we are changing a file name
+					let stopChangeFileNameButton = $('#stopChangeFileNameButton');
+					if (stopChangeFileNameButton.length > 0) {
+						stopChangeFileNameButton.click();
 					}
 					// If 'createFileContainer' element doest have a 'd-none property'
 					if ($('#createFileContainer').hasClass('d-none') === false) {

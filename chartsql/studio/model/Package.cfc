@@ -6,8 +6,7 @@ component accessors="true" {
 	processingdirective preservecase="true";
 
 	property name="SqlFiles";
-	property name="Id";
-	property name="FullName";
+	property name="UniqueId";
 	property name="ChartSQLStudio";
 	property name="Path";
 	property name="Config";
@@ -23,17 +22,16 @@ component accessors="true" {
 	public function init(
 		required string path,
 		required ChartSQLStudio ChartSQLStudio,
+		required string FriendlyName,
 		string PublisherKey
 	){
 		variables.path = path;
 		variables.SqlFiles = [];
-		variables.Id = createUUID();
+		variables.FriendlyName = arguments.FriendlyName;
 		variables.ChartSQLStudio = arguments.ChartSQLStudio;
+		variables.UniqueId = variables.ChartSQLStudio.generateUniqueIdForPackage(arguments.FriendlyName);
 		variables.IsReadOnly = false;
 
-		//Replace all file characters which periods
-		variables.FullName = new values.FullyQualifiedPathName(variables.path).toString();
-		variables.ChartSQLStudio.addPackage(this);
 		variables.Storys = [];
 		variables.IsLoadingConfig = false;
 
@@ -42,7 +40,15 @@ component accessors="true" {
 		}
 
 		this.loadConfig();
+		variables.ChartSQLStudio.addPackage(this);
 		return this;
+	}
+
+
+	public function setIsDefaultPackage(required boolean IsDefaultPackage){
+		variables.IsDefaultPackage = arguments.IsDefaultPackage;
+
+		this.saveConfig();
 	}
 
 	public function addStory(required Story Story){
@@ -113,11 +119,11 @@ component accessors="true" {
 	/**
 	 * Constructor to load a new package from a file
 	 */
-	static function fromFile(required string directory, required ChartSQLStudio ChartSQLStudio){
+	static function fromFile(required string directory, required ChartSQLStudio ChartSQLStudio, required string FriendlyName){
 		if(!directoryExists(directory)){
 			directoryCreate(directory, true);
 		}
-		return new Package(path=directory, ChartSQLStudio=ChartSQLStudio);
+		return new Package(path=directory, ChartSQLStudio=ChartSQLStudio, FriendlyName=FriendlyName);
 	}
 
 	public function getPackagePublisher(){
@@ -145,6 +151,10 @@ component accessors="true" {
 		//Sets the value into the config
 		this.saveConfig();
 	}
+	
+	public function setUniqueId(required string UniqueId){
+		variables.UniqueID = arguments.UniqueId;
+	}
 
 	public optional function getDefaultStudioDatasource(){
 		if(variables.keyExists("DefaultStudioDatasource")){
@@ -155,10 +165,10 @@ component accessors="true" {
 	}
 
 	public function loadSqlFiles(){
-		var files = listFiles();
+		var files = this.listFiles();
 		for(var file in files){
 			var path = file.directory & server.separator.file & file.name;
-			var fullName = new values.FullyQualifiedPathName(path).toString();
+			var FullName = this.generateSqlFileFullName(path);
 			if(!this.findSqlFileByFullName(fullName).exists()){
 				new SqlFile(path=path, name=file.name, package=this);
 			}
@@ -210,7 +220,8 @@ component accessors="true" {
 	}
 
 	public function addSqlFile(SqlFile){
-		if(!this.findSqlFileByFullName(fullName).exists()){
+		var sqlFileFullname = arguments.SqlFile.getFullName();
+		if(!this.findSqlFileByFullName(sqlFileFullname).exists()){
 			arrayAppend(variables.SqlFiles, SqlFile);
 		}
 	}
@@ -268,7 +279,7 @@ component accessors="true" {
 		return new optional(nullValue());
 	}
 
-	public function findSqlFileByFullName(required string name){
+	public optional function findSqlFileByFullName(required string name){
 		for(var sqlFile in variables.SqlFiles){
 			if(sqlFile.getFullName() == arguments.name){
 				return new optional(sqlFile);
@@ -279,7 +290,15 @@ component accessors="true" {
 
 	public function setFriendlyName(required string FriendlyName){
 		variables.FriendlyName = arguments.FriendlyName;
+		variables.UniqueId = variables.ChartSQLStudio.generateUniqueIdForPackage(arguments.FriendlyName);
 		this.saveConfig();
+		variables.ChartSQLStudio.saveConfig();
+	}
+
+	public string function generateSqlFileFullName(required string path){
+		var relativePathToFile = path.replace(this.getPath(), "");
+		var FullName = new values.FullyQualifiedPathName("#this.getUniqueId()##relativePathToFile#").toString();
+		return FullName;
 	}
 
 	/**
@@ -292,9 +311,7 @@ component accessors="true" {
 		var file = basePath & server.separator.file & "package.config.json";
 		if(!fileExists(file)){
 			variables.config = structNew("ordered");
-			config.FullName = this.getFullName();
 			config.Path = this.getPath();
-			config.FriendlyName = "New Package";
 			this.saveConfig();
 		} else {
 
@@ -304,9 +321,6 @@ component accessors="true" {
 
 			var config = fileRead(file);
 			config = deserializeJSON(config);
-
-			variables.FullName = config.FullName;
-			variables.FriendlyName = config.FriendlyName?:"";
 
 			if(isDefined("config.DefaultStudioDatasource.Name")){
 				// Only if the datasource exists will we load it. Otherwise we will just ignore it and it will not be
@@ -371,9 +385,6 @@ component accessors="true" {
 		var file = basePath & server.separator.file & "package.config.json";
 
 		var out = new zero.serializerFast(this, {
-			FullName:{},
-			Path:{},
-			FriendlyName:{},
 			IsReadOnly:{},
 			DefaultStudioDatasource:{
 				Name:{}

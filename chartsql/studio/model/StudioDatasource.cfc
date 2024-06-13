@@ -23,7 +23,7 @@ component accessors="true" {
 			variables.config.keyExists("Password") && isNull(variables.config.Password)
 		)) {
 			variables.config.Password = "";
-		}		
+		}
 		variables.ChartSQLStudio = arguments.ChartSQLStudio;
 		variables.Datasource = createObject("core.model.datasources.#variables.type#.#variables.type#").init(argumentCollection=variables.config);
 		variables.ChartSQLStudio.addStudioDatasource(this);

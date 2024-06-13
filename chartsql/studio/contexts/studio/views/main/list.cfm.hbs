@@ -23,7 +23,7 @@
 								{{/unless}}
 							{{/each}}
 							<div id="filterInputContainer">
-								<input id="fileSearch" type="text" name="Filter" onfocus="this.select();" autocomplete="off" oninput="document.getElementById('filterSubmit').click();" value="{{#if view_state.Filter}}{{view_state.Filter}}{{/if}}" class="form-control" placeholder="Filter Folder Charts..." aria-label="Search in website" style=" height:43px; padding-left:60px; border-radius:0; border-top:none; border-left:none; border-right:none;">
+								<input id="fileSearch" type="text" name="Filter" onfocus="this.select();" autocomplete="off" value="{{#if view_state.Filter}}{{view_state.Filter}}{{/if}}" class="form-control" placeholder="Filter Folder Charts..." aria-label="Search in website" style=" height:43px; padding-left:60px; border-radius:0; border-top:none; border-left:none; border-right:none;">
 							</div>
 							<button id="filterSubmit" type="submit" class="d-none">submit</button>
 						</form>
@@ -53,7 +53,7 @@
 									{{/unless}}
 								{{/each}}
 								<div id="schemaFilterInputContainer">
-									<input id="schemaFilterSearch" type="text" name="SchemaFilter" onfocus="this.select();" autocomplete="off" oninput="document.getElementById('schemaFilterSubmit').click();" value="{{#if view_state.SchemaFilter}}{{view_state.SchemaFilter}}{{/if}}" class="form-control" placeholder="Filter Schema..." aria-label="Search schema" style=" height:43px; padding-left:60px; border-radius:0; border-top:none; border-left:none; border-right:none;">
+									<input id="schemaFilterSearch" type="text" name="SchemaFilter" onfocus="this.select();" autocomplete="off" value="{{#if view_state.SchemaFilter}}{{view_state.SchemaFilter}}{{/if}}" class="form-control" placeholder="Filter Schema..." aria-label="Search schema" style=" height:43px; padding-left:60px; border-radius:0; border-top:none; border-left:none; border-right:none;">
 								</div>
 								<button id="schemaFilterSubmit" type="submit" class="d-none">submit</button>
 							</form>
@@ -119,6 +119,7 @@
 					<cfinclude template="fragments/openfilelist.cfm">
 				</div>
 			</div>
+
 
 			<cql-open-file-path id="openFilePath" style="width:100%;">
 				<div class="card" style="border:none; font-size:.8rem; height:28px;">
@@ -521,4 +522,22 @@
 			},
 		});
 	}
+
+	var filterTypingTimer; // Timer identifier
+	var filterDoneTypingInterval = 300;  // Time in ms, 5 second for example
+
+	// On input change, we want to filter the list of files
+	$('#fileSearch').on('input', function() {
+		clearTimeout(filterTypingTimer);
+		filterTypingTimer = setTimeout(function() {
+			document.getElementById('filterSubmit').click();
+		}, filterDoneTypingInterval);
+	});
+
+	$('#schemaFilterSearch').on('input', function() {
+		clearTimeout(filterTypingTimer);
+		filterTypingTimer = setTimeout(function() {
+			document.getElementById('schemaFilterSubmit').click();
+		}, filterDoneTypingInterval);
+	});
 </script>

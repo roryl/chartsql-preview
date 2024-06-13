@@ -109,4 +109,23 @@ component accessors="true" {
 		var jsoup = application._zero.jsoup = application._zero.jsoup?:createObject("java", "org.jsoup.Jsoup", "formcheck/jsoup-1.13.1.jar");
 		return jsoup;
 	}
+
+	public function runRemote(
+		required string method,
+		required struct params = {}
+	){
+
+		var ExtensionImpl = getExtensionImpl();
+		if(structKeyExists(ExtensionImpl, arguments.method	)){
+
+			var result = ExtensionImpl[arguments.method](
+				argumentCollection = arguments.params
+			);
+
+			return result?:nullValue();
+		} else {
+			throw("Method #arguments.method# not found in extension #variables.Name#", "extensionRemoteMethodNotFound");
+		}
+
+	}
 }

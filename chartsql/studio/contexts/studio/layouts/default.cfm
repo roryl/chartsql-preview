@@ -50,6 +50,9 @@
 			<!--- Split JS --->
 			<script src="https://cdnjs.cloudflare.com/ajax/libs/split.js/1.6.0/split.min.js"></script>
 
+			<!--- Apache eCharts --->
+			<script src="/assets/vendor/apache-echarts/echarts.min.js"></script>
+
 			<script>
 				// Create a global variable to store the ChartSQLStudio javascript widgets
 				// that will be created throughout the application
@@ -158,10 +161,6 @@
 					min-height: 40px !important;
 				}
 
-				.dropdown-toggle.show {
-					padding-top: 10px !important;
-				}
-
 				* {
 					scrollbar-width: thin;
 				}
@@ -222,6 +221,10 @@
 					border-radius: var(--tblr-badge-border-radius);
 				}
 
+				.navbar-vertical .dropdown-toggle.show {
+					padding-top: 10px !important;
+				}
+
 			</style>
 			<script>
 				function toggleNavbar() {
@@ -266,7 +269,7 @@
 							<div class="d-flex align-items-center">
 
 								<!--- <img src="/assets/img/logo-white.png" height="25" alt="Tabler" class="me-3" style="cursor: pointer;"  onclick="toggleNavbar();"> --->
-								<img src="/studio/main/logo" height="25" alt="Tabler" class="me-3" style="cursor: pointer;"  onclick="toggleNavbar();">
+								<img src="/studio/main/logo" height="25" alt="Logo" class="me-3" style="cursor: pointer;"  onclick="toggleNavbar();">
 
 								<a class="" onclick="toggleNavbar();" style="">
 									<span class="" type="button" style="">
@@ -280,7 +283,7 @@
 							<a class="nav-link d-flex align-items-center justify-content-center" onclick="toggleNavbar();" style="">
 								<span class="" type="button" style="">
 									<!--- <img src="/assets/img/mark-white.png" height="25" alt="ChartSQL Studio" class=""> --->
-									<img src="/studio/main/mascot" height="25" alt="ChartSQL Studio" class="">
+									<img src="/studio/main/mascot" height="25" alt="Mascot Logo" class="">
 								</span>
 							</a>
 						</h1>
@@ -745,7 +748,7 @@
 									<a href="{{metadata.OpenPackageLink}}" class="text-decoration-none">{{name}}</a>
 								</div>
 								<div>
-									<a href="/studio/settings/packages?EditPackage={{metadata.fullname}}" class="m-0 btn btn-ghost-secondary btn-sm" style="cursor: pointer;">configure</a>
+									<a href="/studio/settings/packages?EditPackage={{metadata.uniqueid}}" class="m-0 btn btn-ghost-secondary btn-sm" style="cursor: pointer;">configure</a>
 								</div>
 							</div>
 						{{/each}}
@@ -796,7 +799,7 @@
 								{{/if}}
 									<a href="{{openLink}}" class="text-decoration-none">{{name}}</a>
 								{{#if (eq entityType 'package')}}
-									<a href="/studio/settings/packages?EditPackage={{metadata.fullname}}" class="badge badge-outline text-azure ms-2" style="cursor: pointer;">configure</a>
+									<a href="/studio/settings/packages?EditPackage={{metadata.uniqueid}}" class="badge badge-outline text-azure ms-2" style="cursor: pointer;">configure</a>
 								{{else if (eq entityType 'datasource')}}
 									<a href="/studio/settings/datasources?EditStudioDatasource={{metadata.name}}" class="badge badge-outline text-azure ms-2" style="cursor: pointer;">configure</a>
 								{{/if}}
@@ -811,6 +814,77 @@
 				  </div>
 				</div>
 			  </div>
+			</div>
+			<div id="modalErrorContainer">
+			{{#if view_state.response.view_state.error}}
+				<div class="modal modal-blur fade" id="error-modal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-status bg-danger"></div>
+						<div class="modal-body text-center py-4">
+						<!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+						<svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.24 3.957l-8.422 14.06a1.989 1.989 0 0 0 1.7 2.983h16.845a1.989 1.989 0 0 0 1.7 -2.983l-8.423 -14.06a1.989 1.989 0 0 0 -3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+						<h3>Something happened</h3>
+						{{#if view_state.response.view_state.error.message}}
+							<div class="text-danger">{{view_state.response.view_state.error.message}}</div>
+						{{else}}
+							<div class="text-muted">An error happened while executing</div>
+						{{/if}}
+						</div>
+						<div class="modal-footer">
+						<div class="w-100">
+							<div class="row">
+							<div class="col">
+								<a href="#" class="btn w-100" data-bs-dismiss="modal">
+									Okay
+								</a>
+								</div>
+							</div>
+						</div>
+						</div>
+					</div>
+					</div>
+				</div>
+				<script>
+					$(document).ready(function() {
+						$('#error-modal').modal('show');
+					});
+				</script>
+			{{else if view_state.error}}
+				<div class="modal modal-blur fade" id="error-modal" tabindex="-1" role="dialog" aria-hidden="true">
+					<div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+					<div class="modal-content">
+						<div class="modal-status bg-danger"></div>
+						<div class="modal-body text-center py-4">
+						<!-- Download SVG icon from http://tabler-icons.io/i/alert-triangle -->
+						<svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-danger icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.24 3.957l-8.422 14.06a1.989 1.989 0 0 0 1.7 2.983h16.845a1.989 1.989 0 0 0 1.7 -2.983l-8.423 -14.06a1.989 1.989 0 0 0 -3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+						<h3>Something happened</h3>
+						{{#if view_state.error.message}}
+							<div class="text-danger">{{{view_state.error.message}}}</div>
+						{{else}}
+							<div class="text-muted">An error happened while executing</div>
+						{{/if}}
+						</div>
+						<div class="modal-footer">
+						<div class="w-100">
+							<div class="row">
+							<div class="col">
+								<a href="#" class="btn w-100" data-bs-dismiss="modal">
+									Okay
+								</a>
+								</div>
+							</div>
+						</div>
+						</div>
+					</div>
+					</div>
+				</div>
+				<script>
+					$(document).ready(function() {
+						$('#error-modal').modal('show');
+					});
+				</script>
+			{{/if}}
 			</div>
 			<style>
 				.arrow-selectable {

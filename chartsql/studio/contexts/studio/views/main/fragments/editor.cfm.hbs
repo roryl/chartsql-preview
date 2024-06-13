@@ -18,8 +18,7 @@
 					</form>
 				</div>
 			</li>
-
-			{{#if data.CurrentSqlFile.NamedDirectives.mongodb-query}}
+			{{#if (eq data.CurrentStudioDatasource.Type "MongoDB")}}
 				<li class="nav-item" role="presentation">
 					<div class="h-100 d-flex justify-content-center align-items-center">
 						<form action="/studio/main" method="GET" zero-target="{{view_state.main_zero_targets}}">
@@ -173,16 +172,17 @@
 			<!--- #sqlSourceCode is moved out of the SQL editor panel so that it can be submitted from the directives panel
 				as well.
 			--->
-			<form id="sqlSourceCode" action="/studio/main/saveFile" method="POST" zero-target="#rendererPanel,#editorTabs,#directivesEditor,#infoPanel,#openFilesList,#fileList,#refreshExecution,#editorFooter">
+			<form id="sqlSourceCode" action="/studio/main/saveFile" method="POST" zero-target="#rendererPanel,#editorTabs,#directivesEditor,#infoPanel,#openFilesList,#fileList,#refreshExecution,#editorFooter,#modalErrorContainer">
 				<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 				<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
 				<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
+				<input type="hidden" name="preserve_response" value="view_state.response">
 				<textarea id="SqlSubmit{{Id}}" name="Sql" style="display:none;">{{{data.CurrentSqlFile.EditorContent}}}</textarea>
 			</form>
 			{{#if (eq view_state.editor_panel.active_view "sql")}}
 				<cfinclude template="sql_editor.cfm.hbs">
 			{{else if (eq view_state.editor_panel.active_view "mongodb-query")}}
-				<div id="mongodbQueryEditor">
+				<div id="mongodbQueryEditor" style="width: 100%; height: 100%">
 					<cfinclude template="mongodb_editor.cfm.hbs">
 				</div>
 			{{else if (eq view_state.editor_panel.active_view "directives")}}

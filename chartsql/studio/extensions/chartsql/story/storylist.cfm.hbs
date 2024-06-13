@@ -11,12 +11,12 @@
 				<div class="accordion-body p-0">
 					<ul class="list-group list-group-flush">
 						<li id="renameStory{{Id}}" class="list-group-item py-0 px-3 pb-2 d-none">
-							<form method="POST" action="/studio/storys/{{Id}}">
+							<form id="renameStoryForm{{Id}}" method="POST" action="/studio/storys/{{Id}}">
 								<div class="input-group mb-2">
 										<input type="hidden" name="goto" value="{{view_state.current_url}}">
-										<input type="hidden" name="goto_fail" value="{{view_state.current_url}}">
-										<input id="renameStoryInput{{Id}}" type="text" class="form-control" name="Name" placeholder="{{Name}}">
-										<button class="btn" type="button">Rename</button>
+										<input type="hidden" name="goto_fail" value="{{view_state.current_url}}&fail=true">
+										<input id="renameStoryInput{{Id}}" type="text" class="form-control" name="Name" placeholder="{{Name}}" required>
+										<button form="renameStoryForm{{Id}}" class="btn" type="submit">Rename</button>
 								</div>
 							</form>
 						</li>
