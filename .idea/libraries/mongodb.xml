@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="mongodb">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/vendor/mongodb/mongodb-driver-sync-4.11.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/vendor/mongodb/mongodb-driver-sync-4.7.2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

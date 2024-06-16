@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="plugins">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/wwwroot/zero/_vendor/handlebarslucee/osgi/plugins/Handlebars.java_for_lucee2_1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/wwwroot/zero/_vendor/handlebarslucee/osgi/plugins/Handlebars.java_for_Lucee_1.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

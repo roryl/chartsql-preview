@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="java">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/wwwroot/zero/_vendor/handlebarslucee/java/antlr4-runtime-4.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/wwwroot/zero/_vendor/handlebarslucee/java/commons-lang3-3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/wwwroot/zero/_vendor/handlebarslucee/java/antlr4-runtime-4.5.1-1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/wwwroot/zero/_vendor/handlebarslucee/java/handlebars-4.0.3.jar!/" />
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/wwwroot/zero/_vendor/handlebarslucee/java/antlr4-runtime-4.0-rc-1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/chartsql/studio/wwwroot/zero/_vendor/handlebarslucee/java/rhino-1.7R4.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

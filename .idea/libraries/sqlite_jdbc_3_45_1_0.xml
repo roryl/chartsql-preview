@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="sqlite-jdbc-3.45.1.0">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/chartsql/core/model/datasources/sqlite/sqlite-jdbc-3.45.1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
