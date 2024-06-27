@@ -2,6 +2,7 @@
 -- @title: Series Title Spacing
 -- @subtitle: Spacing on series titles is determined by underscores
 -- @formats: currency
+-- @category: month
 SELECT
 	TRUNC(date_closed, 'MONTH') as Month,
 	sum(amount) as total_sales_amount
