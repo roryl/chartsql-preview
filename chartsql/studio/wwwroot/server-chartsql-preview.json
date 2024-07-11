@@ -4,9 +4,9 @@
     },
     "JVM":{
         "heapSize":"1024",
-		"args": [
-			"--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED"
-		]
+        "args":[
+            "--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED"
+        ]
     },
     "name":"chartsql-preview",
     "web":{
@@ -14,5 +14,5 @@
             "enable":"true"
         }
     },
-	"trayIcon":"assets/img/mascot.fw.png"
+    "trayIcon":"assets/img/mascot.fw.png"
 }
