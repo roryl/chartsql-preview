@@ -169,16 +169,14 @@ component accessors="true" {
 		required string file
 	) method="POST" {
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
-		var uuid = createUUID();
 		var fileName = 'expanded_logo.png';
-		var filePath = application.installLocation & server.separator.file & fileName;
+		var filePath = server.installLocation & server.separator.file & fileName;
 
 		var uploadedFile = new zeromodel.data.FileUpload(file);
 		var blob = uploadedFile.toBinary();
 		var image = imageRead(blob);
 
 		imageWrite(image=image, destination=filePath, overwrite=true);
-		ChartSQLStudio.setExpandedLogoURL(filePath);
 		ChartSQLStudio.setLogoBinary(blob);
 		return {
 			success:true
@@ -194,17 +192,14 @@ component accessors="true" {
 	) method="POST" {
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
 		
-		var uuid = createUUID();
-		var fileName = 'small-logo.png';
-		var filePath = application.installLocation & server.separator.file & fileName;
+		x
 
-		// Save file to application.installLocation
+		// Save file to server.installLocation
 		var uploadedFile = new zeromodel.data.FileUpload(file);
 		var blob = uploadedFile.toBinary();
 		var image = imageRead(blob);
 
 		imageWrite(image=image, destination=filePath, overwrite=true);
-		ChartSQLStudio.setSmallLogoURL(filePath);
 		ChartSQLStudio.setMascotBinary(blob);
 		return {
 			success:true

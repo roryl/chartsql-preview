@@ -8,8 +8,6 @@ component accessors="true" {
 	property name="SqlFiles";
 	property name="PackagePublishers";
 	property name="PublishingHost" type="string";
-	property name="ExpandedLogoURL" type="string";
-	property name="SmallLogoURL" type="string";
 	property name="ConfigPath";
 	property name="Config";
 	property name="LastEditorUrl";
@@ -47,8 +45,6 @@ component accessors="true" {
 		variables.DefaultPackage = nullValue();
 		variables.PublishingRequests = [];
 		variables.PublishingResults = [];
-		variables.ExpandedLogoURL = "";
-		variables.SmallLogoURL = "";
 
 		variables.LastEditorUrl = "/studio/main";
 		variables.LastPresentationUrl = "/studio/main?PresentationMode=true&RenderPanelView=chart";
@@ -108,24 +104,6 @@ component accessors="true" {
 		if(!findInfoPanelViewByName(InfoPanelView.getName()).exists()){
 			variables.InfoPanelViews.append(InfoPanelView);
 		}
-	}
-	
-	public function getExpandedLogoURL(){
-		return variables.ExpandedLogoURL;
-	}
-
-	public function setExpandedLogoURL(required string logoURL){
-		variables.ExpandedLogoURL = arguments.logoURL;
-		this.saveConfig();
-	}
-	
-	public function getSmallLogoURL(){
-		return variables.SmallLogoURL;
-	}
-
-	public function setSmallLogoURL(required string logoURL){
-		variables.SmallLogoURL = arguments.logoURL;
-		this.saveConfig();
 	}
 
 	public function addPackagePublisher(PackagePublisher){
@@ -541,8 +519,6 @@ component accessors="true" {
 	public function saveConfig(){
 		if(variables.keyExists("ConfigPath")){
 			var out = new zero.serializerFast(this, {
-				ExpandedLogoURL: {},
-				SmallLogoURL: {},
 				Packages:{
 					UniqueId: {},
 					FriendlyName: {},
@@ -582,7 +558,7 @@ component accessors="true" {
 			ChartSQLStudio = this,
 			Name = "Docs",
 			IconClass = "ti ti-book",
-			Link = "https://itr8studios.gitbook.io/chartsql/QY9tx3OTrQdien8dGApA/basics/intro",
+			Link = "https://docs.chartsql.com/",
 			Tooltip = "Open Docs",
 			Location = "top",
 			OpenNewTab = true
@@ -592,20 +568,18 @@ component accessors="true" {
 	public function loadConfig(){
 		variables.Config = deserializeJson(fileRead(variables.ConfigPath));
 
-		if(variables.Config.keyExists("ExpandedLogoURL")){ 
-			variables.ExpandedLogoURL = variables.Config.ExpandedLogoURL;
-			if (fileExists(variables.ExpandedLogoURL)) {
-				var imageBinary = fileReadBinary(variables.ExpandedLogoURL);
-				variables.LogoBinary = imageBinary;
-			}
+		var fileName = 'expanded_logo.png';
+		var filePath = server.installLocation & server.separator.file & fileName;
+		if (fileExists(filePath)) {
+			var imageBinary = fileReadBinary(filePath);
+			variables.LogoBinary = imageBinary;
 		}
 
-		if(variables.Config.keyExists("SmallLogoURL")){ 
-			variables.SmallLogoURL = variables.Config.SmallLogoURL;
-			if (fileExists(variables.SmallLogoURL)) {
-				var imageBinary = fileReadBinary(variables.SmallLogoURL);
-				variables.MascotBinary = imageBinary;
-			}
+		var fileName = 'small-logo.png';
+		var filePath = server.installLocation & server.separator.file & fileName;
+		if (fileExists(filePath)) {
+			var imageBinary = fileReadBinary(filePath);
+			variables.MascotBinary = imageBinary;
 		}
 
 		//Load the StudioDatasources

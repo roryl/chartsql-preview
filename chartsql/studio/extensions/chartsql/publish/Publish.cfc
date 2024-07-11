@@ -63,7 +63,7 @@ component accessors="true" {
 				<cfinclude template="publish_button.cfm.hbs">
 				```
 			}
-
+			// abort;
 			var renderCardTabs = doc.select("##renderer-card-tabs");
 			if (len(renderCardTabs) >= 1) {
 				renderCardTabs[1].append(publish_button);

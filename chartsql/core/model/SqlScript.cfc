@@ -35,7 +35,8 @@ component accessors="true" {
 			"baseline-types": true,
 			"series-labels":true,
 			"overlay-series": true,
-			"mongodb-query": true
+			"mongodb-query": true,
+			"tags": true
 		}
 
 		// These are the directives that are arrays and need to be converted to arrays
@@ -354,6 +355,7 @@ component accessors="true" {
 		out.types["baseline-types"] = {name:{}, errors:[], isValid:true, allowEmpty: false};
 		out.types["series-labels"] = {name:{}, errors:[], isValid:true, allowEmpty: false};
 		out.types["overlay-series"] = {name:{}, errors:[], isValid:true, allowEmpty: false};
+		out.types["tags"] = {name:{}, errors:[], isValid:true, allowEmpty: false};
 
 		var validChartTypes = {
 			"bar": true,
@@ -362,7 +364,8 @@ component accessors="true" {
 			"line":true,
 			"pie":true,
 			"combo":true,
-			"gauge":true
+			"gauge":true,
+			"radar": true
 		}
 
 		//General validations:
@@ -750,7 +753,8 @@ component accessors="true" {
 			"baseline-types": false,
 			"series-labels":false,
 			"overlay-series": false,
-			"mongodb-query": false
+			"mongodb-query": false,
+			"tags": false
 		}
 
 		var out = [];

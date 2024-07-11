@@ -12,6 +12,7 @@ component accessors="true" {
 	property name="PackageFullName";
 	property name="ExecutionTime";
 	property name="Data";
+	property name="ShareableContent";
 	property name="RecordCount";
 	property name="ErrorStruct";
 	property name="ErrorContent";
@@ -52,6 +53,7 @@ component accessors="true" {
 		variables.IsError = false;
 		variables.IsSuccess = false;
 		variables.ChartSQLStudio = EditorSession.getChartSQLStudio();
+		variables.ErrorContent = "";
 
 		//Setup the SqlScript that we will later pass to the Datasource to execute
 		var ChartSQL = new ChartSQL();
@@ -100,6 +102,22 @@ component accessors="true" {
 					// We store that we were successful so that the view can display the results
 					// from the most recently successful execution.
 					me.getSqlFile().setLastSuccessfulExecutionRequest(me);
+
+					var SqlFileParsedDirectives = SqlFile.getParsedDirectives();
+					me.setShareableContent(me.generateShareableSQLFromData());
+
+					var SqlFileDirectivesContent = "";
+					for (directiveName in SqlFileParsedDirectives) {
+						if (isArray(SqlFileParsedDirectives[directiveName])) {
+							SqlFileDirectivesContent &= "-- @#directiveName#: #SqlFileParsedDirectives[directiveName].toList(',')##chr(13)##chr(10)#";
+						} else {
+							SqlFileDirectivesContent &= "-- @#directiveName#: #SqlFileParsedDirectives[directiveName].toString()##chr(13)##chr(10)#";
+						}
+					}
+
+					me.getSqlFile().setShareableContent(
+						SqlFileDirectivesContent & me.generateShareableSQLFromData()
+					);
 				}
 
 			} catch(any e) {
@@ -121,6 +139,13 @@ component accessors="true" {
 				}
 
 				me.setErrorStruct(e);
+
+				var errorContentString = "";
+				savecontent variable="errorContentString" {
+					writeDump(e);
+				}
+
+				me.setErrorContent(errorContent);
 			}
 
 			me.setExecutionTime(me.getEndedTick() - me.getStartedTick());
@@ -206,18 +231,60 @@ component accessors="true" {
 		return out;
 	}
 
-	public function getErrorContent(){
-		var errorContent = "";
-		if(variables.IsError){
-			savecontent variable="errorContent" {
-				if (variables.keyExists("ErrorStruct")) {
-					writeDump(variables.ErrorStruct);
+	public function generateShareableSQLFromData() {
+		var queryTable = variables.data;
+		// Initialize an array to store each SELECT statement
+		var selectStatements = [];
+
+		// Loop through the query table rows
+		for (var i = 1; i <= queryTable.recordCount; i++) {
+			// Start building the SELECT statement for the current row
+			var selectStatement = "SELECT ";
+
+			// Loop through the columns of the query table
+			for (var col = 1; col <= listLen(queryTable.columnList); col++) {
+				var columnName = listGetAt(list=queryTable.columnList, position=col);
+				var columnValue = queryTable[columnName][i];
+
+				// Check if the column value is a string and needs to be enclosed in quotes
+				if (isNumeric(columnValue)) {
+					selectStatement &= "#columnValue#";
 				} else {
-					writeDump({});
+					selectStatement &= "'#columnValue#'";
+				}
+
+				// Add the column name as alias if it's the first row
+				if (i == 1) {
+					selectStatement &= " AS #columnName#";
+				}
+
+				// Add a comma and space after each column value except the last one
+				if (col < listLen(queryTable.columnList)) {
+					selectStatement &= ", ";
 				}
 			}
+
+			// Add the completed SELECT statement to the array
+			arrayAppend(selectStatements, "#selectStatement##chr(13)##chr(10)#");
 		}
-		return errorContent;
+
+		// Join all SELECT statements with UNION ALL
+		var sqlString = arrayToList(selectStatements, " UNION ALL ");
+		return sqlString;
 	}
+
+	// public function getErrorContent(){
+	// 	var errorContent = "";
+	// 	if(variables.IsError){
+	// 		savecontent variable="errorContent" {
+	// 			if (variables.keyExists("ErrorStruct")) {
+	// 				writeDump(variables.ErrorStruct);
+	// 			} else {
+	// 				writeDump({});
+	// 			}
+	// 		}
+	// 	}
+	// 	return errorContent;
+	// }
 
 }

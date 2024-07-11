@@ -135,8 +135,6 @@ component extends="zero.zero" {
 		var qs = ChartSQLStudio.getEditorQueryString();
 
 		arguments.controllerResult.data.GlobalChartSQLStudio = this.serializeFast(ChartSQLStudio, {
-			ExpandedLogoURL: {},
-			SmallLogoURL: {},
 			isPackagesDropdownOpened: function (GlobalChartSQLStudio) {
 				if (openedDropdownMenuItems.contains("packages-menu-item")) {
 					return true;
@@ -380,8 +378,8 @@ component extends="zero.zero" {
 			.replace(".", "_", "all")
 
 		var dirPath = homeDirectory & server.separator.file & "ChartSQL" & server.separator.file & installLocation;
-		
-		application.installLocation = dirPath;
+
+		server.installLocation = dirPath;
 
 		if(!directoryExists(dirPath)){
 			directoryCreate(dirPath, true);

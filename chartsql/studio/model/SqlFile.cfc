@@ -7,6 +7,7 @@ component accessors="true" {
 	property name="Content";
 	property name="Name";
 	property name="FullName";
+	property name="ShareableContent";
 	property name="Directives";
 	property name="NamedDirectives";
 	property name="LastExecutionRequest";
@@ -234,10 +235,13 @@ component accessors="true" {
 		this.loadDirectives();
 
 		var namedDirectives = this.getNamedDirectives();
-		
+
+		// In case the user has some mongodb-query directive written directly on the
+		// on the main editor instead of the mongodb-query editor, then it will migrate
+		// the current value to base64.
 		if (
-			namedDirectives.keyExists('mongodb-query') 
-			&& !isNull(namedDirectives['mongodb-query'].getValueRaw()) 
+			namedDirectives.keyExists('mongodb-query')
+			&& !isNull(namedDirectives['mongodb-query'].getValueRaw())
 			&& !isEmpty(namedDirectives['mongodb-query'].getValueRaw())
 			&& isJson(namedDirectives['mongodb-query'].getValueRaw())
 		){

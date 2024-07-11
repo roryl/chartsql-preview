@@ -97,10 +97,6 @@ component accessors="true" {
 			// within the application so that it does not infinitely loop
 			qs.delete("RenderOnLoad");
 
-			if (arguments.keyExists('PackageName') && !arguments.keyExists('StudioDatasource')) {
-				throw("Package didn't have a default datasource, you must select one before opening the package. <br><a href='/studio/settings/packages?EditPackage=#arguments.PackageName#'>Go to '#arguments.PackageName#' package settings</a>", "StudioDatasourceRequired");
-			}
-
 			// Select our current StudioDatasource that we are working with
 			if(arguments.keyExists("StudioDatasource")){
 				var CurrentStudioDatasource = ChartSQLStudio.findStudioDatasourceByName(arguments.StudioDatasource).elseThrow("Could not locate that StudioDatasource: #arguments.StudioDatasource#");
@@ -347,10 +343,24 @@ component accessors="true" {
 				// active file that the user is currently viewing
 				out.data.CurrentSqlFile = variables.fw.serializeFast(SqlFile, {
 					Id:{},
+					ShareableContent:{},
 					Content:{},
 					FullName:{},
 					Name:{},
 					IsDirty:{},
+					ShouldLoadMongoDbEditor: function (SqlFiles) {
+						var NamedDirectives = SqlFiles.getNamedDirectives();
+						if (NamedDirectives.containsKey("mongodb-query")
+							&& !isNull(NamedDirectives["mongodb-query"])
+							&& !isEmpty(NamedDirectives["mongodb-query"].getValueRaw())
+						) {
+							return true;
+						}
+						if (!isNull(CurrentStudioDatasource) && CurrentStudioDatasource.getType() == "MongoDB") {
+							return true;
+						}
+						return false;
+					},
 					IsRenamingFile: function(SqlFiles){
 						if(
 							(
@@ -469,6 +479,7 @@ component accessors="true" {
 						Baselines:directiveStruct,
 						"Baseline-Types":directiveStruct,
 						"Stacking-Mode":directiveStruct,
+						"Tags":directiveStruct,
 						Formats:directiveStruct,
 						"mongodb-query":directiveStruct,
 					},
@@ -640,7 +651,6 @@ component accessors="true" {
 					FriendlyName:{},
 					IsReadOnly:{},
 					SqlFiles:{
-						Content:{},
 						IsMissingFile: {},
 						NamedDirectives:{
 							Title:{
@@ -832,7 +842,6 @@ component accessors="true" {
 					IsReadOnly: {},
 					SqlFiles:{
 						Id:{},
-						Content:{},
 						FullName:{},
 						Name:{},
 						IsMissingFile:{},
@@ -855,10 +864,13 @@ component accessors="true" {
 							},
 						},
 						// Used to rerender the package file list if it has been filtered
-						IsFiltered: function(SqlFile){
+						IsMatchingFilter: function(SqlFile){
+
+							var out = true;
+							var trace = "";
 
 							if(args.Filter == ""){
-								return false;
+								return true;
 							}
 
 							var filter = Filter.toLowerCase();
@@ -871,10 +883,18 @@ component accessors="true" {
 								var title = "";
 							}
 
-							if(name.contains(filter) or title contains filter){
-								return false;
+							if(SqlFile.getNamedDirectives().keyExists("tags")){
+								var tags = SqlFile.getNamedDirectives().tags.getValueRaw()?:"".toLowerCase();
 							} else {
+								var tags = "";
+							}
+
+							// 2024-07-09: Needed to switch from string.contains() to contains operator
+							// because .contains() is case sensitive
+							if(name contains filter or title contains filter or tags contains filter){
 								return true;
+							} else {
+								return false;
 							}
 						},
 						// Used to show an indicator if this is our active file
@@ -1214,6 +1234,15 @@ component accessors="true" {
 			out.data.ChangingFileName = arguments.ChangingFileName;
 			out.data.ActiveFile = arguments.ActiveFile;
 
+			if (arguments.keyExists('PackageName') && !arguments.keyExists('StudioDatasource')) {
+				// throw("Package didn't have a default datasource, you must select one before opening the package. <br><a href='/studio/settings/packages?EditPackage=#arguments.PackageName#'>Go to '#arguments.PackageName#' package settings</a>", "StudioDatasourceRequired");
+				if (!isDefined('out.view_state.error')) {
+					out.view_state.error = {
+						message: "Package didn't have a default datasource, you must select one to execute the query. <br /><br />You can setup a default datasource in settings <br><a href='/studio/settings/packages?EditPackage=#arguments.PackageName#'>Go to '#arguments.PackageName#' package settings</a>"
+					};
+				}
+			}
+
 
 			var endTick = getTickCount();
 			request.timerData.ViewState = endTick - startTick;
@@ -1401,27 +1430,26 @@ component accessors="true" {
 		var CurrentFullName = SqlFile.getFullName();
 		var CurrentName = SqlFile.getName();
 		var openFileNames = [];
-		var NewFullName = CurrentFullName.replace(CurrentName, arguments.fileName, "all");
-		var openFileKeys = structNew("ordered");
 
 		SqlFile.changeFileName(
 			newName = arguments.fileName
 		);
-		
+
 		if (isDefined("request.context.OpenFiles")) {
 			openFileNames = listToArray(request.context.OpenFiles);
 		}
-		
+
+		var openFileKeys = structNew("ordered");
 		for(var name in openFileNames){
 			openFileKeys[name] = true;
 		}
 
+		var NewFullName = SqlFile.getFullName();
 		if (openFileKeys.keyExists(CurrentFullName)) {
 			openFileKeys.delete(CurrentFullName);
 			openFileKeys[NewFullName] = true;
 		}
 
-		var ActiveFile = nullValue();
 		if (isDefined("request.context.ActiveFile")) {
 			if (request.context.ActiveFile == CurrentFullName) {
 				ActiveFile = NewFullName;
@@ -1430,21 +1458,24 @@ component accessors="true" {
 			}
 		}
 
-		var qs = ChartSQLStudio.getEditorQueryString().clone();
+		var qs = ChartSQLStudio.getEditorQueryString();
 		var redirectTo = qs.clone()
 			.setValue("OpenFiles", openFileKeys.keyList())
-			.setValue("ActiveFile", ActiveFile)
 			.delete("ChangeActiveFileName");
-		
+
+		if (isDefined("ActiveFile") && !isEmpty(ActiveFile)) {
+			redirectTo = redirectTo.setValue("ActiveFile", ActiveFile);
+		}
+
 		for (var field in request.newform.keyList()) {
 			if (
-				field == "ID" 
-				|| field == "CFID" 
-				|| field == "CFTOKEN" 
-				|| field == "fieldnames" 
-				|| field == "OpenFiles" 
+				field == "ID"
+				|| field == "CFID"
+				|| field == "CFTOKEN"
+				|| field == "fieldnames"
+				|| field == "OpenFiles"
 				|| field == "ActiveFile"
-				|| field == "SqlFileFullName" 
+				|| field == "SqlFileFullName"
 				|| field == "fileName"
 				|| field == "ChangeActiveFileName"
 			) {
@@ -1454,7 +1485,7 @@ component accessors="true" {
 		}
 
 		var redirectTo = redirectTo.get();
-		cflocation(url = redirectTo, addToken="false");
+		variables.fw.doLocation(redirectTo);
 
 		var out = {
 			"success":true,
@@ -1513,7 +1544,7 @@ component accessors="true" {
 		required string FullName,
 		required string Sql
 	) method="POST" {
-		try { 
+		try {
 			var ChartSQLStudio = variables.fw.getChartSQLStudio();
 			var SqlFile = ChartSQLStudio.findSqlFileByFullName(arguments.FullName).elseThrow("Could not locate that SqlFile: #arguments.FullName#");
 			SqlFile.setEditorContent(arguments.Sql);
@@ -1532,7 +1563,7 @@ component accessors="true" {
 				}
 			}
 		}
-		
+
 		return out;
 	}
 

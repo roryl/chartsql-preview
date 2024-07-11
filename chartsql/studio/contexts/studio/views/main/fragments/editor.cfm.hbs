@@ -18,7 +18,7 @@
 					</form>
 				</div>
 			</li>
-			{{#if (eq data.CurrentStudioDatasource.Type "MongoDB")}}
+			{{#if data.CurrentSqlFile.ShouldLoadMongoDbEditor}}
 				<li class="nav-item" role="presentation">
 					<div class="h-100 d-flex justify-content-center align-items-center">
 						<form action="/studio/main" method="GET" zero-target="{{view_state.main_zero_targets}}">

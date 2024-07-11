@@ -272,6 +272,37 @@
 				</span>
 			</td>
 		</tr>
+		<!--- SUBTITLE DIRECTIVE --->
+		<tr>
+			{{> directiveDisabledColumn Directive=data.CurrentSqlFile.NamedDirectives.Tags}}
+
+			{{> directiveTitleColumn Directive=data.CurrentSqlFile.NamedDirectives.Tags}}
+
+			<td class="p-0">
+				<div class="input-icon">
+					<span class="input-icon-addon"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
+						<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-tag"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M3 6v5.172a2 2 0 0 0 .586 1.414l7.71 7.71a2.41 2.41 0 0 0 3.408 0l5.592 -5.592a2.41 2.41 0 0 0 0 -3.408l-7.71 -7.71a2 2 0 0 0 -1.414 -.586h-5.172a3 3 0 0 0 -3 3z" /></svg>
+					</span>
+					<form method="POST" action="/studio/main/addOrUpdateDirective" zero-target="{{view_state.directives_editor_targets}}" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
+						<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
+						<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
+						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
+						<input type="hidden" name="Directive" value="tags">
+						<input type="submit" style="display:none;">
+						<input class="form-control" name="value" style="border:none; border-radius: 0;" placeholder="Searchable words for your chart" id="datepicker-icon-prepend" value="{{data.CurrentSqlFile.NamedDirectives.Tags.ValueRaw}}">
+					</form>
+				</div>
+				{{> directiveErrorRow
+					Directive=data.CurrentSqlFile.NamedDirectives.Tags
+				}}
+			</td>
+
+			<td class="align-middle text-center">
+				<span type="button" class="" data-bs-trigger="hover" data-bs-toggle="popover" title="@tags (string)" data-bs-content="Searchable words for your chart">
+					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-help-hexagon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.875 6.27c.7 .398 1.13 1.143 1.125 1.948v7.284c0 .809 -.443 1.555 -1.158 1.948l-6.75 4.27a2.269 2.269 0 0 1 -2.184 0l-6.75 -4.27a2.225 2.225 0 0 1 -1.158 -1.948v-7.285c0 -.809 .443 -1.554 1.158 -1.947l6.75 -3.98a2.33 2.33 0 0 1 2.25 0l6.75 3.98h-.033z" /><path d="M12 16v.01" /><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" /></svg>
+				</span>
+			</td>
+		</tr>
 		<!--- BASELINES DIRECTIVE --->
 		<tr>
 			{{> directiveDisabledColumn Directive=data.CurrentSqlFile.NamedDirectives.baselines}}

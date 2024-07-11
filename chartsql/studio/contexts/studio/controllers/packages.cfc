@@ -54,17 +54,23 @@ component accessors="true" {
 		boolean setAsDefaultPackage = false,
 		string DashId,
 		string PublisherKey
-	) {
+	) method="POST" {
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
 		var Package = ChartSQLStudio.findPackageByUniqueId(arguments.id).elseThrow("Could not find that package");
 
-		if(arguments.keyExists("FriendlyName") && !isEmpty(arguments.FriendlyName)){
+		if(arguments.keyExists("FriendlyName") && !isEmpty(arguments.FriendlyName) && arguments.FriendlyName != Package.getFriendlyName()) {
 			Package.setFriendlyName(arguments.FriendlyName);
 		}
 
-		if(arguments.keyExists("DefaultStudioDatasource") && !isEmpty(arguments.DefaultStudioDatasource)){
+		if(
+			arguments.keyExists("DefaultStudioDatasource")
+			&& !isEmpty(arguments.DefaultStudioDatasource)
+		) {
 			var StudioDatasource = ChartSQLStudio.findStudioDatasourceByName(arguments.DefaultStudioDatasource).elseThrow("Could not find that datasource");
 			Package.setDefaultStudioDatasource(StudioDatasource);
+		} else if (arguments.keyExists("DefaultStudioDatasource"))  {
+			// Empty value was supplied so we should remove the default datasource
+			Package.setDefaultStudioDatasource(StudioDatasource=nullValue());
 		}
 
 		if (arguments.keyExists("setAsDefaultPackage") && arguments.setAsDefaultPackage == true) {
@@ -88,7 +94,7 @@ component accessors="true" {
 		return out;
 	}
 
-	public struct function delete( required id ) {
+	public struct function delete( required id ) method="POST" {
 
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
 		var Package = ChartSQLStudio.findPackageByUniqueId(arguments.id).elseThrow("Could not find that package");

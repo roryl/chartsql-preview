@@ -146,7 +146,8 @@ component accessors="true" {
 		return files;
 	}
 
-	public function setDefaultStudioDatasource(required StudioDatasource StudioDatasource){
+	
+	public function setDefaultStudioDatasource(StudioDatasource StudioDatasource){
 		variables.DefaultStudioDatasource = arguments.StudioDatasource;
 		//Sets the value into the config
 		this.saveConfig();

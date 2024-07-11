@@ -235,7 +235,7 @@ component {
 		}
 
 		if(variables.directives.keyExists("formats")){
-			this.decorateAxisWithFormats(option, variables.directives.formats);
+			// this.decorateAxisWithFormats(option, variables.directives.formats);
 		}
 
 		if (!option.keyExists('tooltip')) {
@@ -250,6 +250,7 @@ component {
 			}
 
 			if (
+				false &&
 				isDefined("variables.directives.formats")
 				&& !isNull(variables.directives.formats)
 				&& isArray(variables.directives.formats)
@@ -263,6 +264,13 @@ component {
 
 				option.tooltip.axisPointer.label.formatter = "var func = function(params) {
 					try {
+						Date.prototype.isValid = function () {
+							// If the date object is invalid it
+							// will return 'NaN' on getTime()
+							// and NaN is never equal to itself
+							return this.getTime() === this.getTime();
+						};
+
 						var formats = #serializeJSON(variables.directives.formats)#;
 						var mainAxisDimension = '#mainAxisDimension#';
 						var format = 'decimal';
@@ -276,7 +284,12 @@ component {
 						}
 
 						if (params.axisDimension == 'x' && params.seriesData != undefined && params.seriesData.length > 0 && 'componentType' in params.seriesData[params.axisIndex] && params.seriesData[params.axisIndex].componentType == 'series') {
-							return new Date(params.value).toLocaleDateString();
+							resultDate = new Date(params.value);
+							if (resultDate.isValid()) {
+								return resultData.toLocaleDateString();
+							} else {
+							 	return params.value;
+							}
 						}
 
 						if (params.value != null && !isNaN(params.value)) {
@@ -304,18 +317,52 @@ component {
 					}
 				}";
 
+				var seriesWithFormatMetadata = option.series;
+				var seriesGroupByStack = structNew("ordered");
+
+				for (i = 1; i <= len(option.series); i++) {
+					if (option.series[i].stack != false) {
+						var key = option.series[i].stack.toString();
+					} else {
+						var key = option.series[i].name;
+					}
+					if (seriesGroupByStack.containsKey(key)) {
+						seriesGroupByStack[key].append(option.series[i]);
+					} else {
+						seriesGroupByStack[key] = [option.series[i]];
+					}
+				}
+
+				var i = 1;
+				seriesGroupByStack.map(function (key, series) {
+					series.map(function (serie) {
+						serie.format = this.matchOrdinalPosition(i, variables.directives.formats);
+					});
+					i++;
+					return series;
+				});
+
+				// Reduce the seriesGroupByStack to a single array
+				var seriesByNameMap = structNew("ordered");
+				seriesGroupByStack.each(function (key, stack) {
+					stack.each(function (serie) {
+						seriesByNameMap[cleanName(serie.name)] = serie;
+					});
+				});
+
 				option.tooltip.formatter = "var func = function(params) {
 					try {
 						var result = '';
 						if (params.length > 0 && params[0].name != undefined && params[0].name != null && params[0].name != '') {
 							result = params[0].name + '<br>';
 						}
+
 						var formats = #serializeJSON(variables.directives.formats)#;
+						var seriesByNameMap = #serializeJSON(seriesByNameMap)#;
 						var format = 'decimal';
+
 						for (var i = 0; i < params.length; i++) {
-							if (formats.length > i) {
-								format = formats[i];
-							}
+							let format = seriesByNameMap[params[i].seriesName].format;
 
 							// If params.value is a date, then do nothing
 							if (Array.isArray(params[i].value)) {
@@ -323,13 +370,17 @@ component {
 							}
 
 							if (params[i].axisDimension == 'x' && params[i].seriesData != undefined && params[i].seriesData.length > 0 && 'componentType' in params[i].seriesData[params[i].axisIndex] && params[i].seriesData[params[i].axisIndex].componentType == 'series') {
-								return new Date(params[i].value).toLocaleDateString();
+								try {
+									return new Date(params[i].value).toLocaleDateString();
+								} catch (e) {
+									return params[i].value;
+								}
 							}
 
 							if (format == 'currency') {
-								result += `${params[i].marker} <b>${params[i].seriesName}</b>: $${params[i].value.toLocaleString()}<br>`;
+								result += `${params[i].marker} <b>${params[i].seriesName}</b>: $${parseInt(params[i].value).toFixed(2).toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',')}<br>`;
 							} else if (format == 'percent') {
-								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toLocaleString()}%<br>`;
+								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toFixed(2).toLocaleString()}%<br>`;
 							} else if (format == 'integer') {
 								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${Math.round(params[i].value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}<br>`;
 							} else if (format == 'decimal') {
@@ -337,7 +388,7 @@ component {
 							} else {
 								result += `${params[i].marker} <b>${params[i].seriesName}</b>: ${params[i].value.toLocaleString()}<br>`;
 							}
-					   }
+						}
 						return result;
 					} catch (error) {
 						console.log('Error in tooltip formatter');
@@ -799,7 +850,7 @@ component {
 		return option;
 	}
 
-	public function getCoreOption(){
+	public function  getCoreOption(){
 
 		/**
 		 * DETECTION MODES:
@@ -2050,6 +2101,85 @@ component {
 				}
 			}]
 		};
+		return option;
+	}
+
+	public function getRadarOption(
+		required struct primaryCategoryField,
+		required array categoryData,
+		required array valuesFields
+	){
+
+
+		var radarCategories = [];
+		for(var ii=1; ii<=arrayLen(arguments.categoryData); ii++){
+			radarCategories.append({
+				name: arguments.categoryData[ii]
+			});
+		}
+
+		var radarData = [];
+		for(var ii=1; ii<=arrayLen(arguments.valuesFields); ii++){
+			radarData.append({
+				value: arguments.valuesFields[ii].data,
+				name: arguments.valuesFields[ii].name
+			});
+
+			var maxValue = arrayMax(arguments.valuesFields[ii].data)
+			for(var jj=1; jj<=radarCategories.len(); jj++){
+				radarCategories[jj].max = maxValue;
+			}
+
+		}
+
+		option = {
+			// title: {
+			// 	text: 'Basic Radar Chart'
+			// },
+			// legend: {
+			// 	data: ['Allocated Budget', 'Actual Spending']
+			// },
+			radar: {
+				// shape: 'circle',
+				indicator: radarCategories
+			},
+			// {
+			// 	// shape: 'circle',
+			// 	indicator: [
+			// 	{ name: 'Sales', max: 6500 },
+			// 	{ name: 'Administration', max: 16000 },
+			// 	{ name: 'Information Technology', max: 30000 },
+			// 	{ name: 'Customer Support', max: 38000 },
+			// 	{ name: 'Development', max: 52000 },
+			// 	{ name: 'Marketing', max: 25000 }
+			// 	]
+			// },
+			series: [
+				{
+					type: 'radar',
+					data: radarData
+				},
+			]
+			// series: [
+			// 	{
+			// 	// name: 'Budget vs spending',
+			// 	type: 'radar',
+			// 	data: [
+			// 		{
+			// 		value: [4200, 3000, 20000, 35000, 50000, 18000],
+			// 		name: 'Allocated Budget'
+			// 		},
+			// 		{
+			// 		value: [5000, 14000, 28000, 26000, 42000, 21000],
+			// 		name: 'Actual Spending'
+			// 		}
+			// 	]
+			// 	}
+			// ]
+		};
+
+		// writeDump(option);
+
 		return option;
 	}
 

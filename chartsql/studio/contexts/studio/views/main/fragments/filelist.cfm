@@ -22,7 +22,7 @@
 		<button class="open-file" id="keepFileOpenButton{{@index}}" type="submit" style="display:none;"/></button>
 	</form>
 
-	<div class="list-group-item {{#if IsActive}}active{{/if}}" onclick="if (isPressingCmdOrCtrl) {document.getElementById('keepFileOpenButton{{@index}}').click();} else { document.getElementById('openFile{{@index}}').click(); }; document.getElementById('fileOpenProgress{{Id}}').classList.remove('d-none');" style="{{#if IsFiltered}}display:none;{{/if}}cursor: pointer; {{#if IsOpen}}border-right:solid 1px #4299e1;{{/if}}">
+	<div class="list-group-item {{#if IsActive}}active{{/if}}" onclick="if (isPressingCmdOrCtrl) {document.getElementById('keepFileOpenButton{{@index}}').click();} else { document.getElementById('openFile{{@index}}').click(); }; document.getElementById('fileOpenProgress{{Id}}').classList.remove('d-none');" style="{{#unless IsMatchingFilter}}display:none;{{/unless}}cursor: pointer; {{#if IsOpen}}border-right:solid 1px #4299e1;{{/if}}">
 		<div class="row">
 			<div class="col text-truncate">
 				<span class="">

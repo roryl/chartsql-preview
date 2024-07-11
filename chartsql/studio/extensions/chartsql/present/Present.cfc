@@ -78,46 +78,6 @@ component accessors="true" {
 			```
 		}
 
-		savecontent variable="noOpenFile" {
-			```
-			<cf_handlebars context="#arguments.result#">
-				{{#if view_state.presentation_mode.is_active}}
-					<div class="empty">
-						<div class="empty-img"><img src="/assets/vendor/tabler/static/illustrations/undraw_posting_photo_v65l.svg" height="128" alt="">
-						</div>
-						<p class="empty-title">Presenting <i>{{data.CurrentPackage.FriendlyName}}</i></p>
-						<p class="empty-subtitle text-secondary">
-							Sit tight, charts are on the way!
-						</p>
-						</div>
-					{{else}}
-						<span class="btn btn-outline-info text-muted" style="pointer-events:none; opacity:.4">
-							No file open
-						</span>
-					{{/if}}
-			</cf_handlebars>
-			```
-		}
-
-		savecontent variable="dateslicerHtml" {
-			```
-			<cfinclude template="dateslicer_toolbar.cfm">
-			```
-		}
-
-		savecontent variable="canvasScript" {
-			```
-			<cfinclude template="canvas_painter.cfm">
-			```
-		}
-
-		savecontent variable="openFileName" {
-			```
-			<cf_handlebars context="#arguments.result#">
-				{{#if data.CurrentSQLFile.NamedDirectives.Title.ValueRaw}}{{data.CurrentSQLFile.NamedDirectives.Title.ValueRaw}}{{else}}{{data.CurrentSQLFile.Name}}{{/if}}
-			</cf_handlebars>
-			```
-		}
 
 		// savecontent variable="dateslicer" {
 		// 	include template="dateslicer_toolbar.cfm";
@@ -130,10 +90,54 @@ component accessors="true" {
 
 		// writeDump(context);
 		// abort;
-		var editorMenuLink = doc.select("##editorMenuLink")[1];
-		editorMenuLink.after(menuHtml);
+		var editorMenuLink = doc.select("##editorMenuLink");
+		if(editorMenuLink.size() > 0){
+			editorMenuLink[1].after(menuHtml);
+		}
 
 		if(isDefined('arguments.result.view_state.presentation_mode') and arguments.result.view_state.presentation_mode.is_active){
+
+			savecontent variable="noOpenFile" {
+				```
+				<cf_handlebars context="#arguments.result#">
+					{{#if view_state.presentation_mode.is_active}}
+						<div class="empty">
+							<div class="empty-img"><img src="/assets/vendor/tabler/static/illustrations/undraw_posting_photo_v65l.svg" height="128" alt="">
+							</div>
+							<p class="empty-title">Presenting <i>{{data.CurrentPackage.FriendlyName}}</i></p>
+							<p class="empty-subtitle text-secondary">
+								Sit tight, charts are on the way!
+							</p>
+							</div>
+						{{else}}
+							<span class="btn btn-outline-info text-muted" style="pointer-events:none; opacity:.4">
+								No file open
+							</span>
+						{{/if}}
+				</cf_handlebars>
+				```
+			}
+
+			savecontent variable="dateslicerHtml" {
+				```
+				<cfinclude template="dateslicer_toolbar.cfm">
+				```
+			}
+
+			savecontent variable="canvasScript" {
+				```
+				<cfinclude template="canvas_painter.cfm">
+				```
+			}
+
+			savecontent variable="openFileName" {
+				```
+				<cf_handlebars context="#arguments.result#">
+					{{#if data.CurrentSQLFile.NamedDirectives.Title.ValueRaw}}{{data.CurrentSQLFile.NamedDirectives.Title.ValueRaw}}{{else}}{{data.CurrentSQLFile.Name}}{{/if}}
+				</cf_handlebars>
+				```
+			}
+
 
 			editorMenuLink.removeClass('active');
 			if (doc.select("##openFilePath").size() > 0) {
@@ -151,7 +155,7 @@ component accessors="true" {
 			if (doc.select("##new-file-dropdown").size() > 0) {
 				doc.select("##new-file-dropdown")[1].addClass('d-none');
 			}
-			
+
 			doc.select(".open-file-name").html(openFileName);
 
 			doc.select("##header .page-pretitle").html('Presenting');
