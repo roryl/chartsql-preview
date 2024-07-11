@@ -23,11 +23,11 @@ GROUP BY Month
 ORDER BY Month ASC;
 
 -- -----------------------
--- PACKAGES
+-- FOLDERS
 -- -----------------------
 -- SQL files are stored in folders on your file system. Each
--- unique folder path is called a Package. We added a default package
--- 'Scratchpad' for you. You can add additional packages
+-- unique folder path is called a 'Folder'. We added a default folder
+-- 'Scratchpad' for you. You can add additional folders
 -- from your filesystem for other projects from the settings.
 
 -- -----------------------
@@ -48,4 +48,4 @@ ORDER BY Month ASC;
 -- -----------------------
 -- EXAMPLES:
 -- -----------------------
--- We have added some example SQL queries in the 'Examples' package.
+-- We have added some example SQL queries in the 'Examples' folder.
