@@ -1,11 +1,22 @@
 #!/bin/bash
 
+echo "Detecting OS Type"
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    echo "Running on Linux"    
+    url="https://downloads.ortussolutions.com/ortussolutions/commandbox/6.0.0/commandbox-jre-linux64-6.0.0.zip"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "Running on macOS"
+    url="https://downloads.ortussolutions.com/ortussolutions/commandbox/6.0.0/commandbox-jre-darwin64-6.0.0.zip"
+else
+    echo "error: unsupported operating system '$OSTYPE'"
+    exit 1
+fi
+
 echo "Downloading zip file..."
 
 # Setting download path
 downloadPath="./box.zip"
-# Setting URL
-url="https://downloads.ortussolutions.com/ortussolutions/commandbox/6.0.0/commandbox-jre-darwin64-6.0.0.zip"
 
 # Check if the file already exists
 if [ -f "$downloadPath" ]; then
