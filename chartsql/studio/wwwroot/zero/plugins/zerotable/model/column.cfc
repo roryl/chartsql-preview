@@ -9,6 +9,7 @@ component accessors="true"{
 	property name="friendlyName";
 	property name="hidden";
 	property name="hasWrap" setter="false";
+	property name="isAutoWidth" setter="false" type="boolean";
 	property name="isFiltered" type="boolean";
 	property name="isSorted" type="boolean";
 	property name="isSortedDesc" type="boolean";
@@ -41,7 +42,8 @@ component accessors="true"{
 						 sortable = true,
 						 width="",
 						 textAlign="left",
-						 boolean showRowFilterButton=true
+						 boolean showRowFilterButton=true,
+						 isAutoWidth = false
 						 ){
 		variables.columnName = arguments.columnName;
 
@@ -91,6 +93,7 @@ component accessors="true"{
 
 		variables.textAlign = arguments.textAlign;
 		variables.width = arguments.width;
+		variables.isAutoWidth = arguments.isAutoWidth;
 
 		variables.customOutput = "";
 
@@ -274,6 +277,7 @@ component accessors="true"{
 			"hidden":this.gethidden(),
 			"icon":this.getIcon(),
 			"input_name":this.getInputName(),
+			"is_auto_width":this.getisAutoWidth(),
 			"is_filtered":this.getIsFiltered(),
 			"is_primary":this.getisPrimary(),
 			"is_sorted_asc":this.getisSortedAsc(),

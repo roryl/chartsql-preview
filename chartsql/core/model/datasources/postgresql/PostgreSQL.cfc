@@ -21,11 +21,14 @@ component
 
 	public function getConnectionInfo(){
 
+		// 2024-10-31: Started to receive the error:prepared statement "S_2" already exists on Supabase. This
+		// seems related to PGBouncer. Needed to add the prepareThreshold=0 to the connection string.
+		// https://stackoverflow.com/questions/7611926/postgres-error-prepared-statement-s-1-already-exists
 		var out = {
 			class: "#this.getClass()#",
 			bundleName: "org.postgresql.jdbc",
 			bundleVersion: "42.6.0",
-			connectionString: 'jdbc:postgresql://#this.getHost()#:#this.getPort()#/#this.getDatabase()#?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&allowMultiQueries=true&useLegacyDatetimeCode=false&serverTimezone=UTC',
+			connectionString: 'jdbc:postgresql://#this.getHost()#:#this.getPort()#/#this.getDatabase()#?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&allowMultiQueries=true&useLegacyDatetimeCode=false&serverTimezone=UTC&prepareThreshold=0',
 			username: '#this.getUsername()#',
 			password: '#this.getPassword()#',
 			timezone:'UTC'

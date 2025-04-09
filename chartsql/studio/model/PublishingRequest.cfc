@@ -18,11 +18,13 @@ component accessors="true" {
 	property name="RequestType" type="string" setter="false";
 	property name="PublishingResult" type="PublishingResult";
 	property name="ChartSQLStudio" type="ChartSQLStudio" setter="false";
+	property name="SqlFile" type="string" setter="false";
 
 	public function init(
 		required ChartSQLStudio ChartSQlStudio,
 		required string Uri,
 		required string RequestType,
+		string SqlFile,
 		struct Headers = {},
 		struct FormFields = {},
 		string Method = "POST"
@@ -37,10 +39,16 @@ component accessors="true" {
 		variables.IsHttpError = false;
 		variables.ErrorMessage = "";
 
+		if(structKeyExists(arguments, "SqlFile")){
+			variables.SqlFile = arguments.SqlFile;
+		}
+
 		variables.requestTypes = {
 			"VERIFY":{},
 			"UPDATE_CHART":{},
-			"PUBLISH_CHART":{}
+			"PUBLISH_CHART":{},
+			"GET_STATS":{},
+			"MARK_MISSING_CHARTS_AS_TRASHED":{}
 		}
 
 		if (!structKeyExists(variables.requestTypes, arguments.requestType)){

@@ -5,9 +5,11 @@ component accessors="true" {
 
 	processingdirective preservecase="true";
 	property name="Packages";
+	property name="Workspaces";
 	property name="SqlFiles";
 	property name="PackagePublishers";
 	property name="PublishingHost" type="string";
+	property name="UserDirectory";
 	property name="ConfigPath";
 	property name="Config";
 	property name="LastEditorUrl";
@@ -30,9 +32,10 @@ component accessors="true" {
 	property name="PublishingResults" type="array";
 
 	public function init(
-		string ConfigPath
+		string UserDirectory
 	){
 		variables.Packages = [];
+		variables.Workspaces = [];
 		variables.SqlFiles = [];
 		variables.PackagePublishers = [];
 		variables.StudioDatasources = [];
@@ -49,8 +52,9 @@ component accessors="true" {
 		variables.LastEditorUrl = "/studio/main";
 		variables.LastPresentationUrl = "/studio/main?PresentationMode=true&RenderPanelView=chart";
 
-		if(arguments.keyExists("ConfigPath")){
-			variables.ConfigPath = arguments.ConfigPath;
+		if(arguments.keyExists("UserDirectory")){
+			variables.UserDirectory = arguments.UserDirectory;
+			variables.ConfigPath = "#arguments.UserDirectory#ChartSQLStudio.config.json";
 			if(fileExists(variables.ConfigPath)){
 				this.loadConfig();
 			} else {
@@ -131,7 +135,7 @@ component accessors="true" {
 	public function addStudioDatasource(StudioDatasource){
 
 		if(this.findStudioDatasourceByName(StudioDatasource.getName()).exists()){
-			throw("A datasource with the name '#arguments.StudioDatasource.getName()#' already exists");
+			throw("A datasource with the name '#arguments.StudioDatasource.getName()#' already exists", "StudioDatasourceExists");
 		}
 
 		variables.StudioDatasources.append(StudioDatasource);
@@ -171,11 +175,38 @@ component accessors="true" {
 
 	public function createPackageFromFile(
 		required string path,
-		required string FriendlyName
+		required string FriendlyName,
+		string DashId,
+		string PublisherKey
 	){
-		var Package = Package::fromFile(directory=path, ChartSQLStudio=this, FriendlyName=arguments.FriendlyName);
+
+		var Package = Package::fromFile(
+			directory=path,
+			ChartSQLStudio=this,
+			FriendlyName=arguments.FriendlyName
+		);
+
+		if(arguments.keyExists("DashId")){
+			Package.setDashId(arguments.DashId);
+		}
+
+		if(arguments.keyExists("PublisherKey")){
+			Package.setPublisherKey(arguments.PublisherKey);
+		}
+
 		this.saveConfig();
 		return Package;
+	}
+
+	public function createWorkspace(
+		string FriendlyName
+	) {
+		var Workspace = new Workspace(
+			FriendlyName = FriendlyName,
+			ChartSQLStudio = this
+		);
+		this.saveConfig();
+		return Workspace;
 	}
 
 	/**
@@ -218,6 +249,22 @@ component accessors="true" {
 			}
 		}
 		variables.Packages = newPackages;
+		this.saveConfig();
+	}
+
+	/**
+	 * Deletes the Workspace from the instance
+	 *
+	 * @Package
+	 */
+	public void function deleteWorkspace(required Workspace Workspace){
+		var newWorkspaces = [];
+		for(var Workspace in variables.Workspaces){
+			if(Workspace.getUniqueId() != arguments.Workspace.getUniqueId()){
+				arrayAppend(newWorkspaces, Workspace);
+			}
+		}
+		variables.Workspaces = newWorkspaces;
 		this.saveConfig();
 	}
 
@@ -296,6 +343,17 @@ component accessors="true" {
 		for (var Package in variables.Packages){
 			if (Package.getUniqueId() == arguments.UniqueId){
 				return new optional(Package);
+			}
+		}
+		return new optional(nullValue());
+	}
+
+	public optional function findWorkspaceByUniqueId(
+		required string UniqueId
+	) {
+		for (var Workspace in variables.Workspaces){
+			if (Workspace.getUniqueId() == arguments.UniqueId){
+				return new optional(Workspace);
 			}
 		}
 		return new optional(nullValue());
@@ -390,7 +448,7 @@ component accessors="true" {
 	public function getBasePublishingUrl(
 		required string key
 	){
-		return "#this.getPublishingHost()#/Publisher/#arguments.key#/main";
+		return "#this.getPublishingHost()#/PublisherKey/#arguments.key#/main";
 	}
 
 	public function getDatasourceTemplate(
@@ -473,6 +531,17 @@ component accessors="true" {
 		this.saveConfig();
 	}
 
+	/**
+	 * Adds the Workspace to the instance if it does not already exist
+	 */
+	public function addWorkspace(required Workspace Workspace){
+		// Check if a Workspace with the same UniqueId already exists
+		if (!this.findWorkspaceByUniqueId(Workspace.getUniqueId()).exists()) {
+			variables.Workspaces.append(Workspace);
+		}
+		this.saveConfig();
+	}
+
 	public function findPackageByPath(required string path){
 		for(var Package in variables.Packages){
 			if(Package.getPath() == arguments.path){
@@ -523,7 +592,33 @@ component accessors="true" {
 					UniqueId: {},
 					FriendlyName: {},
 					Path:{},
-					IsReadOnly:{}
+					IsReadOnly:{},
+					DashId:{},
+					PublisherKey:{},
+					DefaultStudioDatasource:{
+						Name:{}
+					},
+					Storys:{
+						Name:{},
+						Id:{},
+						Slides:{
+							FullName:{},
+							Title:{},
+							Id:{}
+						}
+					}
+				},
+				Workspaces: {
+					FriendlyName: {},
+					UniqueId: {},
+					WorkspacePackages: {
+						DefaultStudioDatasource: {
+							Name: {}
+						},
+						Package: {
+							UniqueId: {}
+						}
+					}
 				},
 				DefaultPackage: {
 					UniqueId:{}
@@ -536,6 +631,7 @@ component accessors="true" {
 					}
 				}
 			})
+			// variables.config = out;
 			var ConfigFile = ConfigFile::fromStruct(out);
 			ConfigFile.setPath(variables.ConfigPath);
 			ConfigFile.write();
@@ -546,37 +642,46 @@ component accessors="true" {
 
 		var MenuItem = new MenuItem(
 			ChartSQLStudio = this,
+			StepOrder = 1,
+			Name = "Docs",
+			IconClass = "ti ti-book",
+			Link = "https://docs.chartsql.com/",
+			Tooltip = "Open Docs",
+			Location = "bottom",
+			OpenNewTab = true
+		);
+
+		var MenuItem = new MenuItem(
+			ChartSQLStudio = this,
 			Name = "Settings",
+			StepOrder = 4,
 			IconClass = "ti ti-settings",
 			Link = "/studio/settings",
 			Tooltip = "Editor Settings",
 			Location = "bottom",
 			OpenNewTab = false
 		);
+	}
 
-		var MenuItem = new MenuItem(
-			ChartSQLStudio = this,
-			Name = "Docs",
-			IconClass = "ti ti-book",
-			Link = "https://docs.chartsql.com/",
-			Tooltip = "Open Docs",
-			Location = "top",
-			OpenNewTab = true
-		);
+	public function getMenuItems() {
+		// Sort the menu items by StepOrder then return
+		return variables.MenuItems.sort(function(a, b){
+			return a.getStepOrder() - b.getStepOrder();
+		});
 	}
 
 	public function loadConfig(){
 		variables.Config = deserializeJson(fileRead(variables.ConfigPath));
 
 		var fileName = 'expanded_logo.png';
-		var filePath = server.installLocation & server.separator.file & fileName;
+		var filePath = this.getUserDirectory() & server.separator.file & fileName;
 		if (fileExists(filePath)) {
 			var imageBinary = fileReadBinary(filePath);
 			variables.LogoBinary = imageBinary;
 		}
 
 		var fileName = 'small-logo.png';
-		var filePath = server.installLocation & server.separator.file & fileName;
+		var filePath = this.getUserDirectory() & server.separator.file & fileName;
 		if (fileExists(filePath)) {
 			var imageBinary = fileReadBinary(filePath);
 			variables.MascotBinary = imageBinary;
@@ -600,25 +705,23 @@ component accessors="true" {
 			variables.Packages = [];
 			for(var Package in variables.Config.Packages){
 
+				if (isDefined('Package.UniqueId')) {
+					var UniqueId = Package.UniqueId;
+				} else {
+					// Otherwise generate a new one
+					UniqueId = this.generateUniqueIdForPackage(
+						Package.FriendlyName
+					);
+				}
+
 				var NewPackage = new Package(
 					path = Package.Path,
 					ChartSQLStudio = this,
 					FriendlyName = Package.FriendlyName?:"New Package",
-					PublisherKey = Package.PublisherKey?:nullValue()
+					UniqueId = UniqueId,
+					PublisherKey = Package.PublisherKey?:nullValue(),
+					DashId = Package.DashId?:nullValue()
 				);
-
-
-				if (isDefined('Package.UniqueId')) {
-					NewPackage.setUniqueId(Package.UniqueId);
-				} else if (!isNull(NewPackage.getUniqueId()) && !isEmpty(NewPackage.getUniqueId())) {
-					// Do nothing, it already has an unique id
-				} else {
-					// Otherwise generate a new one
-					UniqueId = this.generateUniqueIdForPackage(
-						NewPackage.getFriendlyName()
-					);
-					NewPackage.setUniqueId(UniqueId);
-				}
 
 				if (
 					isDefined('variables.Config.DefaultPackage.UniqueId')
@@ -627,6 +730,66 @@ component accessors="true" {
 				) {
 					this.setDefaultPackage(NewPackage);
 					NewPackage.setIsDefaultPackage(true);
+				}
+
+				if(isDefined("package.DefaultStudioDatasource.Name")){
+					var StudioDatasourceOptional = this.findStudioDatasourceByName(Package.DefaultStudioDatasource.Name);
+					if(StudioDatasourceOptional.exists()){
+						var StudioDatasource = StudioDatasourceOptional.get();
+						NewPackage.setDefaultStudioDatasource(StudioDatasource);
+					}
+				}
+
+				//Restore the stories
+				if(Package.keyExists("Storys") and isArray(Package.Storys)){
+					for(var Story in Package.Storys){
+
+						var NewStory = NewPackage.createStory(
+							Name = Story.Name,
+							Id = Story.Id
+						);
+
+						for(var slideConfig in Story.Slides){
+							var Slide = NewStory.createSlide(
+								Title = slideConfig.Title,
+								FullName = slideConfig.FullName,
+								Id = slideConfig.Id
+							);
+						}
+
+					}
+				}
+
+			}
+		}
+
+		// Load Workspaces
+		if(variables.Config.keyExists("Workspaces") and isArray(variables.Config.Workspaces)){
+			variables.Workspaces = [];
+			for(var Workspace in variables.Config.Workspaces){
+				var newWorkspace = new Workspace(
+					FriendlyName = Workspace.FriendlyName,
+					UniqueId = Workspace.UniqueId,
+					ChartSQLStudio = this
+				);
+
+				// Add all the packages to the Workspace that are in the Workspace.Packages array
+				for(var WorkspacePackage in Workspace.WorkspacePackages){
+					var PackageOptional = this.findPackageByUniqueId(WorkspacePackage.Package.UniqueId);
+					if (PackageOptional.exists()) {
+						var Package = PackageOptional.get();
+						var newWorkspacePackage = newWorkspace.addPackage(Package);
+						if (isDefined('WorkspacePackage.DefaultStudioDatasource')
+							and !isNull('WorkspacePackage.DefaultStudioDatasource')
+							and !isEmpty(WorkspacePackage.DefaultStudioDatasource)
+						) {
+							var StudioDatasourceOptional = this.findStudioDatasourceByName(WorkspacePackage.DefaultStudioDatasource.Name);
+							if (StudioDatasourceOptional.exists()) {
+								var StudioDatasource = StudioDatasourceOptional.get();
+								newWorkspacePackage.setDefaultStudioDatasource(StudioDatasource);
+							}
+						}
+					}
 				}
 			}
 		}
@@ -638,6 +801,16 @@ component accessors="true" {
 		var newUniqueId = new values.PackageUniqueId(arguments.PackageFriendlyName).toString();
 		while(this.findPackageByUniqueId(newUniqueId).exists()){
 			newUniqueId = new values.PackageUniqueId(arguments.PackageFriendlyName & "_#i#").toString();
+			i++;
+		}
+		return newUniqueId;
+	}
+
+	public function generateUniqueIdForWorkspace(required string WorkspaceFriendlyname) {
+		var i = 1;
+		var newUniqueId = new values.WorkspaceUniqueId(arguments.WorkspaceFriendlyname).toString();
+		while(this.findWorkspaceByUniqueId(newUniqueId).exists()){
+			newUniqueId = new values.WorkspaceUniqueId(arguments.WorkspaceFriendlyname & "_#i#").toString();
 			i++;
 		}
 		return newUniqueId;
@@ -704,7 +877,16 @@ component accessors="true" {
 								}
 								var keys = duplicate(openFileKeys);
 								keys[SqlFiles.getFullName()] = true;
-								return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
+								var clonedQs = qs.clone();
+								// if (isDefined("request.context.WorkspaceName") && !isNull(request.context.WorkspaceName) && !isEmpty(request.context.WorkspaceName)) {
+								// 	clonedQs.setValue("WorkspaceName", request.context.WorkspaceName);
+								// }
+								// if (isDefined("request.context.PackageName") && !isNull(request.context.PackageName) && !isEmpty(request.context.PackageName)) {
+								// 	clonedQs.setValue("PackageName", request.context.PackageName);
+								// } else if (!isDefined("request.context.WorkspaceName")) {
+								// 	clonedQs.setValue("PackageName", SqlFiles.getPackage().getUniqueId());
+								// }
+								return clonedQs.setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
 							},
 						})
 					});
@@ -758,7 +940,16 @@ component accessors="true" {
 								}
 								var keys = duplicate(openFileKeys);
 								keys[SqlFiles.getFullName()] = true;
-								return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
+								var clonedQs = qs.clone();
+								// if (isDefined("request.context.WorkspaceName") && !isNull(request.context.WorkspaceName) && !isEmpty(request.context.WorkspaceName)) {
+								// 	clonedQs.setValue("WorkspaceName", request.context.WorkspaceName);
+								// }
+								// if (isDefined("request.context.PackageName") && !isNull(request.context.PackageName) && !isEmpty(request.context.PackageName)) {
+								// 	clonedQs.setValue("PackageName", request.context.PackageName);
+								// } else if (!isDefined("request.context.WorkspaceName")) {
+								// 	clonedQs.setValue("PackageName", SqlFiles.getPackage().getUniqueId());
+								// }
+								return clonedQs.setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
 							},
 						})
 					});
@@ -797,18 +988,18 @@ component accessors="true" {
 					"metadata": new zero.serializerFast(Package, {
 						UniqueId:{},
 						OpenPackageLink: function(Package){
-							var qs = qs.clone();
-							qs.setValue("PackageName", Package.getUniqueId())
+							var clonedQs = qs.clone();
+							clonedQs.setValue("PackageName", Package.getUniqueId())
 							.delete("SchemaFilter")
 							.delete("Filter");
 
 							var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
 							if(StudioDatasourceOptional.exists()){
 								var StudioDatasource = StudioDatasourceOptional.get();
-								qs.setValue("StudioDatasource", StudioDatasource.getName());
+								clonedQs.setValue("StudioDatasource", StudioDatasource.getName());
 							}
 
-							return qs.get();
+							return clonedQs.get();
 						}
 					})
 				};
@@ -897,7 +1088,16 @@ component accessors="true" {
 						}
 						var keys = duplicate(openFileKeys);
 						keys[SqlFiles.getFullName()] = true;
-						return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
+						var clonedQs = qs.clone();
+						if (isDefined("request.context.WorkspaceName") && !isNull(request.context.WorkspaceName) && !isEmpty(request.context.WorkspaceName)) {
+							clonedQs.setValue("WorkspaceName", request.context.WorkspaceName);
+						}
+						if (isDefined("request.context.PackageName") && !isNull(request.context.PackageName) && !isEmpty(request.context.PackageName)) {
+							clonedQs.setValue("PackageName", request.context.PackageName);
+						} else if (!isDefined("request.context.WorkspaceName")) {
+							clonedQs.setValue("PackageName", SqlFiles.getPackage().getUniqueId());
+						}
+						return clonedQs.setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
 					},
 				})
 			};

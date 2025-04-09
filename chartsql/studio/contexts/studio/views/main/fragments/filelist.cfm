@@ -1,7 +1,6 @@
 <div id="fileList" class="list-group list-group-flush" style="max-height:10vh;" data-current-open-files="{{data.CurrentOpenFiles}}" data-current-active-file="{{data.CurrentActiveFile}}">
-	<div class="list-group-header sticky-top">A</div>
-	{{#each data.CurrentPackage.SqlFiles}}
-	<form class="open-file-form" method="get" action="/studio/main/" class="text-body d-block" style="text-decoration:none;"
+	{{#each data.SqlFiles}}
+	<!--- <form class="open-file-form" method="get" action="/studio/main/" class="text-body d-block" style="text-decoration:none;"
 	zero-target="{{view_state.main_zero_targets}},#filterContainer"
 	>
 		{{#each UrlParams}}
@@ -20,7 +19,27 @@
 			{{/if}}
 		{{/each}}
 		<button class="open-file" id="keepFileOpenButton{{@index}}" type="submit" style="display:none;"/></button>
-	</form>
+	</form> --->
+
+	<a 	href="{{UrlLink}}"
+		zx-swap="{{view_state.main_zero_targets}},#filterContainer"
+		<!--- zx-swap="#renderingContainer,#fileList" --->
+		studio-form-links="false"
+		zx-link-mode="app"
+		id="openFile{{@index}}"
+		style="display:none;"
+	>PreviewFile</a>
+
+	<a 	href="{{OpenLink}}"
+		zx-swap="{{view_state.main_zero_targets}},#filterContainer"
+		<!--- zx-swap="#renderingContainer,#fileList" --->
+		studio-form-links="false"
+		zx-link-mode="app"
+		id="keepFileOpenButton{{@index}}"
+		style="display:none;"
+	>OpenFile</a>
+
+	<!--- ##renderer-card-header,##renderContainer,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders,##header,##globalSearchModal,##new-file-dropdown,##modalErrorContainer --->
 
 	<div class="list-group-item {{#if IsActive}}active{{/if}}" onclick="if (isPressingCmdOrCtrl) {document.getElementById('keepFileOpenButton{{@index}}').click();} else { document.getElementById('openFile{{@index}}').click(); }; document.getElementById('fileOpenProgress{{Id}}').classList.remove('d-none');" style="{{#unless IsMatchingFilter}}display:none;{{/unless}}cursor: pointer; {{#if IsOpen}}border-right:solid 1px #4299e1;{{/if}}">
 		<div class="row">
@@ -98,7 +117,6 @@
 		</div>
 	</div>
 	{{/each}}
-	<div class="list-group-header sticky-top">B</div>
 </div>
 <script>
 	var isPressingCmdOrCtrl = false;

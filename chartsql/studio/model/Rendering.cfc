@@ -10,6 +10,7 @@ component accessors="true" {
 	property name="IsError";
 	property name="ErrorMessage";
 	property name="ErrorStruct";
+	property name="AsyncExecutionRequest";
 
 	public function init(
 		required SqlFile SqlFile,
@@ -25,6 +26,27 @@ component accessors="true" {
 		width: "100%",
 		height: "100%"
 	){
+		if (!isNull(variables.AsyncExecutionRequest)) {
+			// Get datasource from AsyncExecutionRequest
+			var StudioDatasource = variables.AsyncExecutionRequest.getStudioDatasource();
+			var SqlFileCacheOptional = variables.SqlFile.getSqlFileCacheFromStudioDatasourceName(StudioDatasource.getName());
+			// Set last rendering to the cache if is not null
+			if (SqlFileCacheOptional.exists()) {
+				var SqlFileCache = SqlFileCacheOptional.get();
+				SqlFileCache.setLastRendering(this);
+			} else {
+				// Create a new cache if it does not exist
+				// TO DO: Delete this
+				// var SqlFileCache = new SqlFileCache(
+				// 	StudioDatasource = StudioDatasource,
+				// 	LastExecutionRequest = variables.AsyncExecutionRequest,
+				// 	LastSuccessfulExecutionRequest = null,
+				// 	LastRendering = this
+				// );
+				// variables.SqlFile.addSqlFileCache(SqlFileCache);
+			}
+		}
+		variables.SqlFile.setLastRendering(this);
 		try{
 			var data = arguments.data;
 			var directives = SqlFile.getParsedDirectives();
@@ -63,7 +85,6 @@ component accessors="true" {
 			variables.ErrorMessage = e.message;
 			variables.ErrorStruct = e;
 		}
-		variables.SqlFile.setLastRendering(this);
 		return this;
 	}
 

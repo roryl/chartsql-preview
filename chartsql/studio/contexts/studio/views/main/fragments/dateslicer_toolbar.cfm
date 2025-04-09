@@ -6,7 +6,7 @@
 			</button>
 			{{#each view_state.datetime_slicer_links}}
 				<button onclick="document.getElementById('datetimeSlicer{{key}}').click();" type="button" class="btn {{#if isActive}}active{{/if}}" data-bs-toggle="tooltip" zero-icon="false" data-bs-placement="bottom" title="From 1 day ago">{{key}}</button>
-				<form method="GET" action="/studio/main" style="display:none;" zero-target="#renderContainer,#header,#fileList,#aside">
+				<form method="GET" action="/studio/main" style="display:none;" zx-swap="#renderContainer,#header,#fileList,#aside">
 					{{#each params}}
 						<input type="hidden" name="{{key}}" value="{{value}}">
 					{{/each}}

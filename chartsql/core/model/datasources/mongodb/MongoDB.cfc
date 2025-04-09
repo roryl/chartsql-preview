@@ -93,7 +93,12 @@ component
 		}
 
 		if(!isJson(directives["mongodb-query"])){
-			throw("Invalid JSON in @mongodb-query directive");
+			// Decode base64 mongodb-query
+			directives["mongodb-query"] = toString(toBinary(directives["mongodb-query"]));
+
+			if (!isJson(directives["mongodb-query"])) {
+				throw("Invalid JSON in @mongodb-query directive");
+			}
 		}
 
 		// Create JAVA based JSON object that we can use to parse the JSON
@@ -247,12 +252,12 @@ component
 			// they are comments
 			var startTick = getTickCount();
 
-				var strippedSql = SqlScript.stripDirectives();
+				var strippedSql = SqlScript.getExecutableSQL();
 				if(strippedSql contains "@"){
 					throw("SQL contains @ symbol");
 				}
 
-				var result = variables.SQLite.executeSql(SqlScript.stripDirectives());
+				var result = variables.SQLite.executeSql(SqlScript.getExecutableSQL());
 			var timers.query = getTickCount() - startTick;
 			return result;
 		} else if (isDefined("jsonData.aggregate")) {
@@ -360,12 +365,12 @@ component
 			// they are comments
 			var startTick = getTickCount();
 
-			var strippedSql = SqlScript.stripDirectives();
+			var strippedSql = SqlScript.getExecutableSQL();
 			if(strippedSql contains "@"){
 				throw("SQL contains @ symbol");
 			}
 
-			var result = variables.SQLite.executeSql(SqlScript.stripDirectives());
+			var result = variables.SQLite.executeSql(SqlScript.getExecutableSQL());
 			var timers.query = getTickCount() - startTick;
 			return result;
 		}

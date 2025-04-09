@@ -52,14 +52,14 @@
 		{{/each}}
 
 		{{#each data.ChartSQLStudio.SqlFiles}}
-			<form id="SqlFileForm-{{Id}}" action="/studio/main/" method="GET" zero-target="{{view_state.main_zero_targets}},#filterContainer">
+			<form id="SqlFileForm-{{Id}}" action="/studio/main/" method="GET" zx-swap="{{view_state.main_zero_targets}},#filterContainer">
 				{{#each OpenUrlParams}}
 					{{#if value}}
 							<input type="hidden" name="{{{key}}}" value="{{{value}}}">
 					{{/if}}
 				{{/each}}
 			</form>
-			<form id="CloseSqlFileForm-{{Id}}" action="/studio/main/" method="GET" zero-target="{{view_state.main_zero_targets}},#filterContainer">
+			<form id="CloseSqlFileForm-{{Id}}" action="/studio/main/" method="GET" zx-swap="{{view_state.main_zero_targets}},#filterContainer">
 				{{#each CloseUrlParams}}
 					{{#if value}}
 							<input type="hidden" name="{{{key}}}" value="{{{value}}}">
@@ -69,21 +69,21 @@
 		{{#if IsOpen}}{{#unless IsScratch}}
 			<div id="{{Id}}-file-rightclick-dropdown" class="file-right-click-dropdown" style="display: none; z-index: 9999;">
 				<ul class="dropdown-menu show" data-popper-placement="bottom-start" style="position: absolute; inset: 0px auto auto 0px; margin: 0px;">
-					<a class="dropdown-item" href="{{view_state.close_all_link}}">
+					<a class="dropdown-item" href="{{view_state.close_all_link}}" zx-swap="#pageContent" studio-form-links="false">
 						<svg xmlns="http://www.w3.org/2000/svg" style="z-index:10;" class="icon icon-tabler icon-tabler-square-rounded-x me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 						<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10l4 4m0 -4l-4 4"></path><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
 						</svg> <span class="me-2">Close All Open Files</span>
 					</a>
-					<a class="dropdown-item" href="{{CloseAllOtherFilesLink}}">
+					<a class="dropdown-item" href="{{CloseAllOtherFilesLink}}" zx-swap="#pageContent" studio-form-links="false">
 						<svg xmlns="http://www.w3.org/2000/svg" style="z-index:10;" class="icon icon-tabler icon-tabler-square-rounded-x me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 						<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M10 10l4 4m0 -4l-4 4"></path><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z"></path>
 						</svg> <span class="me-2">Close Other Files</span>
 					</a>
-					<form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
+					<a href="{{RenameFileLink}}" class="dropdown-item" zx-swap="#openFilesList" zx-link-mode="app" studio-form-links="false">
 						<svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 						<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
-						</svg> <span class="me-2">Rename File</span> </button>
-					</form>
+						</svg> <span class="me-2">Rename File</span>
+					</a>
 					<button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete-sqlfile-modal-{{Id}}">
 						<svg class="icon icon-tabler me-2"  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
 						<span class="me-2">Delete File</span>
@@ -92,7 +92,7 @@
 			</div>
 			<div class="modal modal-blur fade" id="delete-sqlfile-modal-{{Id}}" tabindex="-1" role="dialog" aria-hidden="true">
 				<div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-					<form method="POST" action="/studio/main/deleteFile" zero-target={{view_state.main_zero_targets}} >
+					<form method="POST" action="/studio/main/deleteFile" zx-swap={{view_state.main_zero_targets}} >
 						<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 						<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
 						<input type="hidden" name="FullName" value="{{FullName}}">
@@ -127,7 +127,7 @@
 			{{#if IsMissingFile}}
 				<li data-sqlfile-id="{{Id}}" class="file-item nav-item border-info" role="presentation" style="{{#if IsActive}}border-bottom:2px solid; text-decoration:none; color:white{{/if}}">
 					<span class="nav-link position-relative h-100 m-0 {{#if IsActive}}active{{/if}}">
-						<button type="submit" form="SqlFileForm-{{Id}}" class="file-link stretched-link btn btn-dark border-0 {{#if IsActive}}active{{/if}}" zero-target="{{view_state.main_zero_targets}},#filterContainer,#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1;" onclick="document.getElementById('{{Id}}-spinnner').classList.remove('d-none'); document.getElementById('{{Id}}-icon').classList.add('d-none');">
+						<button type="submit" form="SqlFileForm-{{Id}}" class="file-link stretched-link btn btn-dark border-0 {{#if IsActive}}active{{/if}}" zx-sync-params="ActiveFile" zx-swap="{{view_state.main_zero_targets}},#filterContainer,#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1;" onclick="document.getElementById('{{Id}}-spinnner').classList.remove('d-none'); document.getElementById('{{Id}}-icon').classList.add('d-none');">
 							<div id="{{Id}}-spinnner" class="d-none" style="margin-right: 16px; max-width: 20px !important; max-height: 20px !important;">
 								<div class="spinner-border spinner-border-sm text-white" role="status"></div>
 							</div>
@@ -187,7 +187,7 @@
 				{{else if IsRenamingFile}}
 					<li id="{{Id}}-change-file-name-dropdown" class="nav-item border-info d-flex align-items-center" role="presentation">
 						<span class="nav-link position-relative h-100 m-0 {{#if IsActive}}active{{/if}}">
-							<span class="file-link border-0 {{#if IsActive}}active{{/if}}" zero-target="{{view_state.main_zero_targets}},#filterContainer,#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1;">
+							<span class="file-link border-0 {{#if IsActive}}active{{/if}}" zx-sync-params="ActiveFile" zx-swap="{{view_state.main_zero_targets}},#filterContainer,#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1;">
 								<span class="me-2">
 									{{#if (eq NamedDirectives.Chart.ValueRaw "bar")}}
 										<!--- BAR --->
@@ -242,7 +242,7 @@
 						document.getElementById('{{Id}}-changeFileNameInput').focus();
 					</script>
 			{{else}}
-				<li data-sqlfile-id="{{Id}}" class="file-item nav-item border-info" role="presentation" style="{{#if IsActive}}border-bottom:2px solid; text-decoration:none; color:white{{/if}}">
+				<li data-sqlfile-id="{{Id}}" class="file-item nav-item border-info" role="presentation" style="{{#if IsActive}}border-bottom:2px solid; text-decoration:none; color:white;{{/if}}">
 
 				<!--- Commenting out the original nav link but keeping for troubleshooting purposes. We needed to be
 					able to have 2 links within the nav (one to close the file). We had to override the styles to achieve
@@ -258,7 +258,20 @@
 
 					</button> --->
 					<span class="nav-link position-relative h-100 m-0 {{#if IsActive}}active{{/if}}">
-						<button type="submit" form="SqlFileForm-{{Id}}" class="file-link stretched-link btn btn-dark border-0 {{#if IsActive}}active{{/if}}" zero-target="{{view_state.main_zero_targets}},#filterContainer,#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1;" onclick="document.getElementById('switchFileProgress{{Id}}').classList.remove('d-none'); document.getElementById('{{Id}}-spinnner').classList.remove('d-none'); document.getElementById('{{Id}}-icon').classList.add('d-none');">
+						<a 	href="{{OpenLink}}"
+							class="file-link stretched-link btn btn-dark border-0 {{#unless IsActive}}text-muted{{/unless}}"
+							<!--- zx-swap="#infoPanel,#fileList,#editorPanel,#renderPanel,#openFilesList,#openFilePath" --->
+							zx-swap="#infoPanel,#editorCard,#rendererPanel,#openFilePath,#openFilesList,#fileList"
+							zx-sync-params="ActiveFile"
+							studio-form-links="false"
+							zx-link-mode="app"
+							zero-icon="false"
+							style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1; {{#if IsActive}}pointer-events: none;{{/if}}"
+							<!--- onclick="document.getElementById('switchFileProgress{{Id}}').classList.remove('d-none'); document.getElementById('{{Id}}-spinnner').classList.remove('d-none'); document.getElementById('{{Id}}-icon').classList.add('d-none');" --->
+							{{#unless IsActive}}
+								onclick="document.getElementById('switchFileProgress{{Id}}').classList.remove('d-none');"
+							{{/unless}}
+						>
 							<div id="{{Id}}-spinnner" class="d-none" style="margin-right: 16px; max-width: 20px !important; max-height: 20px !important;">
 								<div class="spinner-border spinner-border-sm text-white" role="status"></div>
 							</div>
@@ -306,12 +319,11 @@
 								{{Name}}
 							{{/if}}
 							<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
-
-						</button>
+						</a>
 						<button type="submit" form="CloseSqlFileForm-{{Id}}" class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0" zero-icon="false" style="z-index: 2;">
 							<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
 						</button>
-						<div style="position:absolute; bottom:-2px; left:0; width:100%;">
+						<div style="position:absolute; bottom:0px; left:0; width:100%;">
 							<div id="switchFileProgress{{Id}}" class="progress progress-sm d-none" style="border-radius:0; height:1px;">
 								<div class="progress-bar progress-bar-indeterminate bg-info"></div>
 							</div>
@@ -324,7 +336,7 @@
 			{{/each}}
 			{{#if data.CurrentSQLFile.IsActiveButNotOpen}}
 				{{#with data.CurrentSQLFile}}
-					<form id="PreviewCloseSqlFileForm" action="/studio/main/" method="GET" zero-target="{{../view_state.main_zero_targets}}">
+					<form id="PreviewCloseSqlFileForm" action="/studio/main/" method="GET" zx-swap="{{../view_state.main_zero_targets}}">
 						{{#each CloseUrlParams}}
 							{{#if value}}
 									<input type="hidden" name="{{{key}}}" value="{{{value}}}">
@@ -388,7 +400,11 @@
 									<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 
 								</button>
-								<button form="PreviewCloseSqlFileForm" class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0" zero-icon="false" style="z-index: 2;">
+								<button form="PreviewCloseSqlFileForm"
+										class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0"
+										style="z-index: 2;"
+										zx-loader="cursor-wait"
+									>
 									<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
 								</button>
 							</span>
@@ -397,7 +413,7 @@
 						{{#if data.ChangeActiveFileName}}
 							<li id="change-file-name-dropdown" class="nav-item border-info d-flex align-items-center" role="presentation">
 								<span class="nav-link position-relative h-100 m-0 {{#if IsActive}}active{{/if}}">
-									<span class="file-link border-0 {{#if IsActive}}active{{/if}}" zero-target="{{view_state.main_zero_targets}},#filterContainer,#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1;">
+									<span class="file-link border-0 {{#if IsActive}}active{{/if}}" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1;">
 										<span class="me-2">
 											{{#if (eq NamedDirectives.Chart.ValueRaw "bar")}}
 												<!--- BAR --->
@@ -431,7 +447,7 @@
 											{{/if}}
 										</span>
 									</span>
-									<form id="changeFileNameForm" method="POST" action="/studio/main/changeFileName" style="display:inline;">
+									<form id="changeFileNameForm" method="POST" action="/studio/main/changeFileName" zx-sync-params="ActiveFile" zx-swap="{{view_state.main_zero_targets}},#filterContainer,#editorCard" style="display:inline;">
 										{{#each view_state.params}}
 											{{#if this.value}}
 													<input type="hidden" name="{{{this.key}}}" value="{{{this.value}}}">
@@ -468,13 +484,13 @@
 											</svg> <span class="me-2">Close Other Files</span>
 										</a>
 										{{#if (eq data.ActiveFile this.FullName)}}
-											<form method="GET" action="{{view_state.change_file_name_link}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
+											<form method="GET" action="{{view_state.change_file_name_link}}" zx-swap="#openFilesList" > <button type="submit" class="dropdown-item">
 											<svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 											<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
 											</svg> <span class="me-2">Rename File</span> </button>
 											</form>
 										{{else}}
-											<form method="GET" action="{{RenameFileLink}}" zero-target="#openFilesList"> <button type="submit" class="dropdown-item">
+											<form method="GET" action="{{RenameFileLink}}" zx-swap="#openFilesList"> <button type="submit" class="dropdown-item">
 											<svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
 											<path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z"></path>
 											</svg> <span class="me-2">Rename File</span> </button>
@@ -488,7 +504,7 @@
 								</div>
 								<div class="modal modal-blur fade" id="delete-sqlfile-modal-{{Id}}" tabindex="-1" role="dialog" aria-hidden="true">
 									<div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-										<form method="POST" action="/studio/main/deleteFile" zero-target={{view_state.main_zero_targets}} >
+										<form method="POST" action="/studio/main/deleteFile" zx-swap={{view_state.main_zero_targets}} >
 											<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 											<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
 											<input type="hidden" name="FullName" value="{{FullName}}">
@@ -535,7 +551,7 @@
 
 									</button> --->
 									<span class="nav-link position-relative h-100 m-0 {{#if IsActive}}active{{/if}}">
-										<button type="submit" form="SqlFileForm-{{Id}}" class="file-link stretched-link btn btn-dark border-0 {{#if IsActive}}active{{/if}}" zero-target="{{view_state.main_zero_targets}},#filterContainer,#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1;" onclick="document.getElementById('{{Id}}-spinnner').classList.remove('d-none'); document.getElementById('{{Id}}-icon').classList.add('d-none');">
+										<button type="submit" form="SqlFileForm-{{Id}}" class="file-link stretched-link btn btn-dark border-0 {{#if IsActive}}active{{/if}}" zx-sync-params="ActiveFile" zx-swap="{{view_state.main_zero_targets}},#filterContainer,#editorCard" style="text-decoration:none; {{#if IsActive}}color:white{{/if}} margin:0; padding:0; background:none; z-index: 1;" onclick="document.getElementById('{{Id}}-spinnner').classList.remove('d-none'); document.getElementById('{{Id}}-icon').classList.add('d-none');">
 											<div id="{{Id}}-spinnner" class="d-none" style="margin-right: 16px; max-width: 20px !important; max-height: 20px !important;">
 												<div class="spinner-border spinner-border-sm text-white" role="status"></div>
 											</div>
@@ -590,8 +606,12 @@
 											<span class="{{#if IsActive}}active{{/if}} status-dot {{#if LastExecutionRequest.IsError}}status-dot-animated status-red{{else}}status-primary{{/if}} ms-2" style="{{#if LastExecutionRequest.IsError}}{{else}}{{#unless IsDirty}}visibility:hidden;{{/unless}}{{/if}}{{#unless IsActive}}opacity:.8;{{/unless}}"></span>
 
 										</button>
-										<!--- TO DO: Change CloseLinks to use forms and zero-target --->
-										<button form="PreviewCloseSqlFileForm" class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0" zero-icon="false" style="z-index: 2;">
+
+										<button form="PreviewCloseSqlFileForm"
+												class="btn btn-icon btn-ghost-primary btn-sm ms-2 me-0"
+												style="z-index: 2;"
+												zx-loader="cursor-wait"
+											>
 											<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6l-12 12" /><path d="M6 6l12 12" /></svg>
 										</button>
 									</span>
@@ -602,7 +622,7 @@
 				{{/if}}
 
 			<li id="new-file-dropdown" class="nav-item d-flex align-items-center" role="presentation">
-				<form id="createFileForm" method="POST" action="/studio/main/createSqlFile" style="display:inline;" zero-target="{{view_state.main_zero_targets}},#filterContainer">
+				<form id="createFileForm" method="POST" action="/studio/main/createSqlFile" style="display:inline;" zx-swap="{{view_state.main_zero_targets}},#filterContainer">
 					{{#each view_state.params}}
 						{{#unless (eq key "PackageName")}}
 							{{#if value}}
@@ -613,46 +633,60 @@
 					<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 					<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
 					<input type="hidden" name="OpenFileAt" value="{{view_state.current_url}}"/>
-					<input type="hidden" name="PackageName" value="{{data.CurrentPackage.UniqueId}}">
 					<input type="hidden" name="preserve_response" value="view_state.response">
-					<div id="createFileContainer" class="input-group d-none">
-						<input id="createFileInput" type="text" name="FileName" class="form-control form-control-sm" placeholder="File name" value=".sql">
-						<button form="createFileForm" class="btn btn-sm" type="submit">Create</button>
-					</div>
+					<!--- {{#if data.CurrentPackage}}
+						<input type="hidden" name="PackageName" value="{{data.CurrentPackage.UniqueId}}">
+						<div id="createFileContainer" class="input-group d-none">
+							<input id="createFileInput" type="text" name="FileName" class="form-control form-control-sm" placeholder="File name" value=".sql">
+							<button form="createFileForm" class="btn btn-sm" type="submit">Create</button>
+						</div>
+					{{/if}} --->
 				</form>
-				<div class="btn-group " style="position:relative;" {{#if data.CurrentPackage.IsReadOnly}}data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{data.CurrentPackage.FriendlyName}} Package is Read Only"{{/if}}>
+				<div class="btn-group" style="position:relative;" {{#if data.CurrentPackage.IsReadOnly}}data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{data.CurrentPackage.FriendlyName}} Folder is Read Only"{{/if}}>
 					<!--- <button class="btn btn-ghost-primary btn-sm" type="button" onclick="document.getElementById('createFileContainer').remove('d-none'); document.getElementById('createFileInput').focus();"> --->
-
+						<!--- {{#unless data.CurrentPackage}} --->
+							<div class="dropdown">
+								<a data-bs-toggle="dropdown" href="#" id="new-file-button" class="btn btn-ghost-primary {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}}" style="border-radius: 0; padding: var(--tblr-nav-link-padding-y) var(--tblr-nav-link-padding-x);" type="button" zero-icon="false" onclick="document.getElementById('createFileInputDropdown').focus();">
+									<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-type-sql" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M5 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75" /><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" /><path d="M18 15v6h2" /><path d="M13 15a2 2 0 0 1 2 2v2a2 2 0 1 1 -4 0v-2a2 2 0 0 1 2 -2z" /><path d="M14 20l1.5 1.5" /></svg>
+									New
+								</a>
+								<div class="dropdown-menu">
+									<div class="px-2">
+										<select form="createFileForm" name="PackageName" class="form-select" onchange="document.getElementById('createFileInputDropdown').focus();" required>
+											<option value="" disabled>Select a Folder</option>
+											{{#each data.GlobalChartSQLStudio.Packages}}
+												{{#unless this.IsFiltered}}
+													{{#unless this.IsReadOnly}}
+														{{#if (eq data.CurrentPackage.UniqueId this.UniqueId)}}
+															<option value="{{this.UniqueId}}" selected>{{this.FriendlyName}}</option>
+														{{else}}
+															<option value="{{this.UniqueId}}">{{this.FriendlyName}}</option>
+														{{/if}}
+													{{/unless}}
+												{{/unless}}
+											{{/each}}
+										</select>
+									</div>
+									<a class="dropdown-item" >
+										<input form="createFileForm" id="createFileInputDropdown" type="text" name="FileName" class="form-control form-control-sm" placeholder="File name" value=".sql">
+									</a>
+									<a class="dropdown-item">
+										<button form="createFileForm" class="w-100 btn btn-sm" type="submit">Create</button>
+									</a>
+								</div>
+							</div>
+						<!--- {{else}}
 							<button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} id="new-file-button" class="btn btn-ghost-primary" style="border-radius: 0; padding: var(--tblr-nav-link-padding-y) var(--tblr-nav-link-padding-x);" type="button" onclick="document.getElementById('createFileContainer').classList.remove('d-none'); this.classList.add('d-none'); document.getElementById('createFileInput').focus();">
 								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-type-sql" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M5 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75" /><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" /><path d="M18 15v6h2" /><path d="M13 15a2 2 0 0 1 2 2v2a2 2 0 1 1 -4 0v-2a2 2 0 0 1 2 -2z" /><path d="M14 20l1.5 1.5" /></svg>
 								New
 							</button>
-						<button type="button" class="btn btn-ghost-primary dropdown-toggle dropdown-toggle-split" style="padding: var(--tblr-nav-link-padding-y) var(--tblr-nav-link-padding-x);" data-bs-toggle="dropdown" aria-expanded="false">
-							<span class="visually-hidden">Toggle Dropdown</span>
-						</button>
-						<ul class="dropdown-menu">
-							<a class="dropdown-item" href="{{view_state.close_all_link}}">
-								<svg xmlns="http://www.w3.org/2000/svg" style="z-index:10;" class="icon icon-tabler icon-tabler-square-rounded-x me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 10l4 4m0 -4l-4 4" /><path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9 -9 9s-9 -1.8 -9 -9s1.8 -9 9 -9z" /></svg>
-								<span class="me-2">Close All Open Scripts</span>
-							</a>
-							<form method="GET" action="{{view_state.change_file_name_link}}" zero-target="#openFilesList">
-								<button {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="submit" class="dropdown-item">
-									<svg xmlns="http://www.w3.org/2000/svg" style="z-index: 10;" class="icon icon-tabler icon-tabler-file-pencil me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><path d="M10 18l5 -5a1.414 1.414 0 0 0 -2 -2l-5 5v2h2z" /></svg>
-									<span class="me-2">Rename File</span>
-								</button>
-							</form>
-							<button form="deleteCurrentFile" {{#if data.CurrentPackage.IsReadOnly}}disabled{{/if}} type="submit" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#delete-sqlfile-modal">
-								<svg class="icon icon-tabler me-2"  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-trash"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 7l16 0" /><path d="M10 11l0 6" /><path d="M14 11l0 6" /><path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" /><path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" /></svg>
-								<span class="me-2">Delete File</span>
-							</button>
-						</ul>
-					</div>
+						{{/unless}} --->
 				</li>
 
 			</ul>
 			<div class="modal modal-blur fade" id="delete-sqlfile-modal" tabindex="-1" role="dialog" aria-hidden="true">
 				<div class="modal-dialog modal-sm modal-dialog-centered" role="document">
-					<form method="POST" action="/studio/main/deleteFile" zero-target={{view_state.main_zero_targets}} >
+					<form method="POST" action="/studio/main/deleteFile" zx-swap={{view_state.main_zero_targets}} >
 						<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 						<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
 						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
@@ -686,14 +720,14 @@
 			  </div>
 		</div>
 		{{#if data.ChangeActiveFileName}}
-			<form method="GET" action="{{view_state.stop_change_file_name_link}}" style="display:inline;" zero-target="#openFilesList">
+			<form method="GET" action="{{view_state.stop_change_file_name_link}}" style="display:inline;" zx-swap="#openFilesList">
 				<input type="hidden" name="goto" value="{{view_state.stop_change_file_name_link}}"/>
 				<input type="hidden" name="goto_fail" value="{{view_state.stop_change_file_name_link}}"/>
 				<!--- Hidden button --->
 				<button id="stopChangeFileNameButton" type="submit" class="d-none"></button>
 			</form>
 		{{else if data.ChangingFileName}}
-			<form method="GET" action="{{view_state.stop_change_file_name_link}}" style="display:inline;" zero-target="#openFilesList">
+			<form method="GET" action="{{view_state.stop_change_file_name_link}}" style="display:inline;" zx-swap="#openFilesList">
 				<input type="hidden" name="goto" value="{{view_state.stop_change_file_name_link}}"/>
 				<input type="hidden" name="goto_fail" value="{{view_state.stop_change_file_name_link}}"/>
 				<!--- Hidden button --->
@@ -724,6 +758,10 @@
 		</script>
 		<script>
 			$('.file-item').on('contextmenu', function(e) {
+				// If the ctrl or commnand key is pressed, don't show the right click menu
+				if (e.ctrlKey || e.metaKey) {
+					return;
+				}
 				$('.file-right-click-dropdown').css('display', 'none');
 				var top = e.pageY - 10;
 				var left = e.pageX;

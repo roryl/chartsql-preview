@@ -14,20 +14,28 @@
 	<div id="renderer-card-header" class="card-header">
 		<ul id="renderer-card-tabs" class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist" style="padding:0;">
 			<li class="nav-item" role="presentation">
-				<form method="GET" action="{{view_state.render_panel.chart.link}}" zero-target="#rendererPanel">
-					<button type="submit" class="nav-link {{#if (eq view_state.render_panel.active_view "chart")}}active{{/if}}">
-						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye me-2" style="--tblr-icon-size: 1rem;" width="10" height="10" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
-						Preview
-					</button>
-				</form>
+				<a 	href="{{view_state.render_panel.chart.link}}"
+					class="nav-link {{#if (eq view_state.render_panel.active_view "chart")}}active{{/if}}"
+					zx-swap="#rendererPanel"
+					zx-loader="cursor-progress"
+					zx-sync-params="RenderPanelView"
+					studio-form-links="false"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-eye me-2" style="--tblr-icon-size: 1rem;" width="10" height="10" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" /><path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" /></svg>
+					Preview
+				</a>
 			</li>
 			<li id="optionTab" class="nav-item" role="presentation">
-				<form method="GET" action="{{view_state.render_panel.option.link}}" zero-target="#rendererPanel">
-					<button type="submit" class="nav-link {{#if (eq view_state.render_panel.active_view "option")}}active{{/if}}">
-						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code-dots me-2" style="--tblr-icon-size: 1rem;" width="10" height="10" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 12h.01" /><path d="M12 12h.01" /><path d="M9 12h.01" /><path d="M6 19a2 2 0 0 1 -2 -2v-4l-1 -1l1 -1v-4a2 2 0 0 1 2 -2" /><path d="M18 19a2 2 0 0 0 2 -2v-4l1 -1l-1 -1v-4a2 2 0 0 0 -2 -2" /></svg>
-						Option
-					</button>
-				</form>
+				<a	href="{{view_state.render_panel.option.link}}"
+					class="nav-link {{#if (eq view_state.render_panel.active_view "option")}}active{{/if}}"
+					zx-swap="#rendererPanel"
+					zx-loader="cursor-progress"
+					zx-sync-params="RenderPanelView"
+					studio-form-links="false"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code-dots me-2" style="--tblr-icon-size: 1rem;" width="10" height="10" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M15 12h.01" /><path d="M12 12h.01" /><path d="M9 12h.01" /><path d="M6 19a2 2 0 0 1 -2 -2v-4l-1 -1l1 -1v-4a2 2 0 0 1 2 -2" /><path d="M18 19a2 2 0 0 0 2 -2v-4l1 -1l-1 -1v-4a2 2 0 0 0 -2 -2" /></svg>
+					Option
+				</a>
 			</li>
 			<!--- <li class="nav-item dropdown">
 				<a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
@@ -68,23 +76,34 @@
 	<div class="card-body w-100 h-100 p-0">
 		<div class="tab-content w-100 h-100 p-0">
 			<div id="renderContainer" class="tab-pane active w-100 d-flex p-0" id="tabs-home-4" role="tabpanel" style="height:100%; overflow-y:scroll;">
-				{{#if data.CurrentSqlFile.LastExecutionRequest.IsError}}
+				{{#unless data.CurrentSqlFile.Id}}
+					<div class="p-2 text-muted align-items-center justify-content-center" style="display:flex; height:100%; width:100%; align-items:center; justify-content:center;">
+						<span class="btn btn-outline-info" style="pointer-events:none; opacity:.4">No file open</span>
+					</div>
+				{{else}}
+				{{#if view_state.missing_studio_datasource}}
+					<div class="p-2 text-muted align-items-center justify-content-center" style="display:flex; height:100%; width:100%; align-items:center; justify-content:center;">
+						<span class="btn btn-outline-info" style="pointer-events:none; opacity:.4">Please select a datasource</span>
+					</div>
+				{{else if data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastExecutionRequest.IsError}}
 					<div class="p-2 text-muted align-items-center justify-content-center" style="display:flex; height:100%; width:100%">
 						<button id="renderingErrorButton" class="btn btn-outline-danger" style="opacity:.4" onclick="document.getElementById('renderingErrorContent').classList.remove('d-none');document.getElementById('renderingErrorButton').classList.add('d-none');">
 							Error Querying Data
 						</button>
 					</div>
 					<div id="renderingErrorContent" class="d-none" style="width:100%; height:100%;">
-						{{{data.CurrentSqlFile.LastExecutionRequest.ErrorContent}}}
+						{{{data.CurrentSqlFile.CurrentDatasourceLastExecutionRequest.ErrorContent}}}
 					</div>
-				{{else if data.CurrentSqlFile.LastRendering.IsError}}
+
+
+				{{else if data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastRendering.IsError}}
 					<div id="renderingErrorButton" class="p-2 text-muted align-items-center justify-content-center" style="display:flex; height:100%; width:100%">
 						<button class="btn btn-outline-danger" style="opacity:.4" onclick="document.getElementById('renderingErrorContent').classList.remove('d-none');document.getElementById('renderingErrorButton').classList.add('d-none');">
-							Error: {{data.CurrentSqlFile.LastRendering.ErrorMessage}}
+							Error: {{data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastRendering.ErrorMessage}}
 						</button>
 					</div>
 					<div id="renderingErrorContent" class="d-none" style="width:100%; height:100%;">
-						{{{data.CurrentSqlFile.LastRendering.ErrorContent}}}
+						{{{data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastRendering.ErrorContent}}}
 					</div>
 				{{else}}
 					{{#if data.CurrentSqlFile.Id}}
@@ -101,8 +120,109 @@
 								</div>
 							{{else}}
 								{{#if (eq view_state.render_panel.active_view "chart")}}
-									<div style="width:100%; height:100%; overflow:scroll;">
-										{{{data.CurrentSqlFile.LastRendering.Content}}}
+									<div style="width:100%; height:100%; display:flex; flex-flow:column;">
+										<div class="">
+											{{#if data.CurrentSqlFile.SelectListDirectives}}
+											<div class="row mt-2 mb-2 g-0 align-items-center p-1 ms-3">
+												<div class="col-auto text-muted">
+													<form id="selectList_{{UserName}}" method="POST" action="/studio/main/resetSelectListSelections" zx-swap="{{view_state.main_zero_targets}}" onchange="getElementById('selectListSubmit_{{UserName}}').click();">
+														<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
+														<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
+														<input type="hidden" name="SqlFileFullName" value="{{data.CurrentSqlFile.FullName}}"/>
+														<button class="btn btn-sm btn-icon" type="submit">
+														<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icons-tabler-outline icon-tabler-filter {{#if data.CurrentSqlFile.IsAnySelectListSelected}}text-info{{/if}}" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+															<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+															<path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-6 2v-8.5l-4.48 -4.928a2 2 0 0 1 -.52 -1.345v-2.227z" />
+														</svg>
+														</button>
+													</form>
+												</div>
+												{{#each data.CurrentSqlFile.SelectListDirectives}}
+												<!--- <div class="col-auto">
+													<label for="inputPassword6" class="col-form-label me-1">{{UserName}}</label>
+												</div> --->
+												<div class="col-auto ps-1" style="position:relative;">
+													<form id="selectList_{{UserName}}" method="POST" action="/studio/main/updateSelectListSelection" zx-swap="{{view_state.main_zero_targets}}" onchange="getElementById('selectListSubmit_{{UserName}}').click();">
+														<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
+														<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
+														<input type="hidden" name="SqlFileFullName" value="{{data.CurrentSqlFile.FullName}}"/>
+														<input type="hidden" name="SelectListUserName" value="{{UserName}}"/>
+														<div class="input-group align-items-center" style="background-color: var(--tblr-bg-forms); border: var(--tblr-border-width) solid var(--tblr-border-color);">
+															<span class="text-muted me-1 ps-1" style="font-size: .7rem;">{{UserName}}:</span>
+															<select id="select-list-fields" name="SelectListSelectedValue" class="form-control form-select form-select-sm" style="border:none;">
+																{{#each Parsed}}
+																	{{#select SelectListSelectedValue}}<option value="{{this}}">
+
+																		<!--- {{{repeat "&nbsp;" (length UserName)}}}
+																		&nbsp;&nbsp;&nbsp;&nbsp;
+																		&nbsp;&nbsp; --->
+																		{{this}}</option>{{/select}}
+																{{/each}}
+																<!--- {{#each data.CurrentSqlFile.ParsedDirectives.fields}}
+																	<option value="{{this}}">{{this}}</option>
+																{{/each}} --->
+																<input id="selectListSubmit_{{UserName}}" type="submit" style="display:none">
+															</select>
+														</div>
+														<!--- <label for="select-list-fields" class="text-muted" style="position:absolute; top:4px; left:10px; font-size: .7rem;">{{UserName}}</label> --->
+													</form>
+												</div>
+												{{/each}}
+
+												<!--- <div class="col-auto ms-2">
+													<label for="inputPassword6" class="col-form-label">Dropdown 2</label>
+												</div>
+												<div class="col-auto">
+													<select id="select-list-fields" class="form-control form-select form-select-sm">
+														<option>foo</option>
+														<!--- {{#each data.CurrentSqlFile.ParsedDirectives.fields}}
+															<option value="{{this}}">{{this}}</option>
+														{{/each}} --->
+													</select>
+												</div> --->
+											</div>
+											{{/if}}
+										</div>
+										<div class="" style="flex: 1;">
+											{{#unless data.ShouldRefreshExecution}}
+												{{#if data.EditorSession.LastExecutionRequest.IsSuccess}}
+													<label class="form-check form-switch form-switch-2" for="toggleAllSeries" style="cursor: pointer !important; position: absolute; top: 0px; right: 15px; z-index: 1;">
+														<input class="form-check-input" type="checkbox" id="toggleAllSeries" onchange="toggleAllSeries(this)" style="cursor: pointer !important;" checked >
+														<label class="form-check-label text-muted" style="cursor: pointer !important;" for="toggleAllSeries">All Series</label>
+													</label>
+												{{/if}}
+											{{/unless}}
+											{{{data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastRendering.Content}}}
+										</div>
+
+										<!--- @select-list form selects --->
+										<!--- <div class="row g-1 align-items-center p-1 ms-3">
+											<div class="col-auto">
+												<label for="inputPassword6" class="col-form-label">Password</label>
+											</div>
+											<div class="col-auto">
+												<select id="select-list-fields" class="form-control form-select form-select-sm">
+													<option>foo</option>
+													<!--- {{#each data.CurrentSqlFile.ParsedDirectives.fields}}
+														<option value="{{this}}">{{this}}</option>
+													{{/each}} --->
+												</select>
+											</div>
+
+											<div class="col-auto ms-2">
+												<label for="inputPassword6" class="col-form-label">Dropdown 2</label>
+											</div>
+											<div class="col-auto">
+												<select id="select-list-fields" class="form-control form-select form-select-sm">
+													<option>foo</option>
+													<!--- {{#each data.CurrentSqlFile.ParsedDirectives.fields}}
+														<option value="{{this}}">{{this}}</option>
+													{{/each}} --->
+												</select>
+											</div>
+										</div> --->
+
+
 									</div>
 
 										<!--- <div class="d-flex py-3 ms-3" style="height:100%; width:92%;">
@@ -135,7 +255,7 @@
 										</div> --->
 
 									{{else if (eq view_state.render_panel.active_view "option")}}
-											<pre style="width:100%; height:100%;">{{{data.CurrentSqlFile.LastRendering.Option}}}</pre>
+											<pre style="width:100%; height:100%;">{{{data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastRendering.Option}}}</pre>
 								{{/if}}
 						{{/if}}
 						{{/if}}
@@ -147,6 +267,7 @@
 						</div>
 					{{/if}}
 				{{/if}}
+				{{/unless}}
 			</div>
 		</div>
 	</div>

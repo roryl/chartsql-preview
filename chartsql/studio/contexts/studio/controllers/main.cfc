@@ -26,6 +26,7 @@ component accessors="true" {
 	 */
 	public struct function list(
 		string PackageName,
+		string WorkspaceName,
 		string OpenFiles,
 		string ActiveFile,
 		string maximizePanel,
@@ -57,7 +58,6 @@ component accessors="true" {
 		//	6. CurrentStudioDatasource: The currently selected datasource
 		//	7. View State: The state of the view, which panels are open, etc
 
-
 		// -----------------------
 		// 1. SETUP AREA
 		// -----------------------
@@ -75,7 +75,7 @@ component accessors="true" {
 			"data":{}
 		}
 
-		try {
+		// try {
 			// Read our open files and put them into an array, create
 			// an ordered struct and save them so that we can use them by
 			// key but keep them in the same order as they were opened
@@ -97,6 +97,11 @@ component accessors="true" {
 			// within the application so that it does not infinitely loop
 			qs.delete("RenderOnLoad");
 
+			// Set default qs values that should always exist
+			qs.setValue("InfoPanelView", InfoPanelView);
+
+			out.data.HasOpenedPackageOrWorkspace = false;
+
 			// Select our current StudioDatasource that we are working with
 			if(arguments.keyExists("StudioDatasource")){
 				var CurrentStudioDatasource = ChartSQLStudio.findStudioDatasourceByName(arguments.StudioDatasource).elseThrow("Could not locate that StudioDatasource: #arguments.StudioDatasource#");
@@ -112,11 +117,11 @@ component accessors="true" {
 					var CurrentPackage = CurrentPackageOptional.get();
 					CurrentPackage.loadSqlFiles();
 					out.data.HasOpenedPackage = true;
+					out.data.HasOpenedPackageOrWorkspace = true;
 				} else {
 					variables.fw.doLocation("/studio/main");
 				}
-			} else {
-
+			} else if (!arguments.keyExists("PackageName") and !arguments.keyExists("WorkspaceName")) {
 				if (isDefined("server.ShouldLoadDefaultPackage") && server.ShouldLoadDefaultPackage == true) {
 					// Redirect to the url with the default package if there is a default package and the
 					// app is starting for the first time
@@ -142,6 +147,19 @@ component accessors="true" {
 				out.data.HasOpenedPackage = false;
 			}
 
+			out.data.HasOpenedWorkspace = false;
+			if(arguments.keyExists("WorkspaceName")){
+				var CurrentWorkspaceOptional = ChartSQLStudio.findWorkspaceByUniqueId(arguments.WorkspaceName);
+				if(CurrentWorkspaceOptional.exists()){
+					var CurrentWorkspace = CurrentWorkspaceOptional.get();
+					CurrentWorkspace.loadPackagesSqlFiles();
+					out.data.HasOpenedWorkspace = true;
+					out.data.HasOpenedPackageOrWorkspace = true;
+				} else {
+					variables.fw.doLocation("/studio/main");
+				}
+			}
+
 			var endTick = getTickCount();
 			request.timerData.initialize = endTick - startTick;
 
@@ -150,6 +168,8 @@ component accessors="true" {
 			// --------------------------------------
 			var lastRenderOnLoadCalled = false;
 			var startTick = getTickCount();
+
+
 			try {
 				if (isDefined('arguments.ActiveFile') && !isNull(arguments.ActiveFile)) {
 					var SqlFileOptional = ChartSQLStudio.findSqlFileByFullName(arguments.ActiveFile);
@@ -168,6 +188,20 @@ component accessors="true" {
 			}
 
 			if(isDefined('SqlFile') && !isNull(SqlFile)){
+				var LastExecutionRequestOptional = SqlFile.getLastExecutionRequestFromStudioDatasourceName(
+					CurrentStudioDatasource.getName()
+				);
+				var ShouldRefreshExecution = false;
+
+				if (LastExecutionRequestOptional.exists()) {
+					var LastExecutionRequest = LastExecutionRequestOptional.get();
+					if (LastExecutionRequest.getIsRunning()) {
+						ShouldRefreshExecution = true;
+					}
+				} else {
+					ShouldRefreshExecution = true;
+				}
+				out.data.ShouldRefreshExecution = ShouldRefreshExecution;
 
 				// If RednerOnLoad was passed in when opening the file, we are going to
 				// run an execution unless we alreayd have one. This is so that we can
@@ -177,7 +211,9 @@ component accessors="true" {
 				// infinite loop.
 
 				if(arguments.RenderOnLoad){
-					var LastExecutionRequestOptional = SqlFile.getLastExecutionRequest();
+					var LastExecutionRequestOptional = SqlFile.getLastExecutionRequestFromStudioDatasourceName(
+						CurrentStudioDatasource.getName()
+					);
 					if(!LastExecutionRequestOptional.exists()){
 
 						// Set this to true so that we can force LastExecutionRequest.getIsRunning()
@@ -201,13 +237,16 @@ component accessors="true" {
 						// execution from the rendering that happens next is a bit of a problem,
 						// the rendering should be fired after the execution is complete, but
 						// we don't have a way to do that right now.
-						sleep(50);
+						// sleep(50);
 					}
 				}
 
 				var startTick = getTickCount();
-				var LastExecutionRequestOptional = SqlFile.getLastExecutionRequest();
+				var LastExecutionRequestOptional = SqlFile.getLastExecutionRequestFromStudioDatasourceName(
+					CurrentStudioDatasource.getName()
+				);
 				var lastRenderOnLoadComplete = false;
+
 				if(!SqlFile.getHasDirectiveErrors() and LastExecutionRequestOptional.exists()){
 					var LastExecutionRequest = LastExecutionRequestOptional.get();
 					if(LastExecutionRequest.getIsDone() and !LastExecutionRequest.getIsCancelled()){
@@ -223,8 +262,8 @@ component accessors="true" {
 								var data = Slicer.slice(data, SqlFile.getParsedDirectives());
 							}
 
-							var Rendering = new studio.model.Rendering(SqlFile);
-							Rendering.render(data);
+							var Rendering = new studio.model.Rendering(SqlFile, LastExecutionRequest);
+							Rendering.render(data, LastExecutionRequest);
 
 							// Set this to true so that we can force LastExecutionRequest.getIsRunning()
 							// to false when we have called the render on load, since we know that the
@@ -244,8 +283,11 @@ component accessors="true" {
 				// multiple times for all of the NamedDirectives that we want to serialize
 				var directiveStruct = {
 					Name:{},
+					CoreName:{},
 					ValueRaw:{},
 					PrettyPrint:{},
+					IsUserNamed:{},
+					UserName:{},
 					IsValid:{},
 					CleanedName: {},
 					HasErrors:{},
@@ -260,6 +302,7 @@ component accessors="true" {
 						title:{},
 						type:{}
 					},
+					SelectListSelectedValue:{},
 					AvailableFields: function(Directive){
 						var out = [];
 
@@ -299,7 +342,9 @@ component accessors="true" {
 							} else {
 								var parsedColumns = [];
 							}
-							var LastExecutionRequestOptional = SqlFile.getLastExecutionRequest();
+							var LastExecutionRequestOptional = SqlFile.getLastExecutionRequestFromStudioDatasourceName(
+								CurrentStudioDatasource.getName()
+							);
 							if(LastExecutionRequestOptional.exists()){
 								var LastExecutionRequest = LastExecutionRequestOptional.get();
 
@@ -320,7 +365,9 @@ component accessors="true" {
 						//If we are a category directive then we can return all available fields
 						if(Directive.getName() == "category"){
 							var out = [];
-							var LastExecutionRequestOptional = SqlFile.getLastExecutionRequest();
+							var LastExecutionRequestOptional = SqlFile.getLastExecutionRequestFromStudioDatasourceName(
+								CurrentStudioDatasource.getName()
+							);
 							if(LastExecutionRequestOptional.exists()){
 								var LastExecutionRequest = LastExecutionRequestOptional.get();
 
@@ -347,10 +394,11 @@ component accessors="true" {
 					Content:{},
 					FullName:{},
 					Name:{},
+					IsAnySelectListSelected:{},
 					IsDirty:{},
-					ShouldLoadMongoDbEditor: function (SqlFiles) {
-						var NamedDirectives = SqlFiles.getNamedDirectives();
-						if (NamedDirectives.containsKey("mongodb-query")
+					ShouldLoadMongoDbEditor: function (SqlFile) {
+						var NamedDirectives = SqlFile.getNamedDirectives();
+						if (NamedDirectives.keyExists("mongodb-query")
 							&& !isNull(NamedDirectives["mongodb-query"])
 							&& !isEmpty(NamedDirectives["mongodb-query"].getValueRaw())
 						) {
@@ -361,16 +409,16 @@ component accessors="true" {
 						}
 						return false;
 					},
-					IsRenamingFile: function(SqlFiles){
+					IsRenamingFile: function(SqlFile){
 						if(
 							(
 								args.keyExists("ChangeActiveFileName")
 								and args.ChangeActiveFileName
 								and args.keyExists("ActiveFile")
-								and args.ActiveFile == SqlFiles.getFullName()
+								and args.ActiveFile == SqlFile.getFullName()
 							) || (
 								args.keyExists("ChangingFileName")
-								and args.ChangingFileName == SqlFiles.getFullName()
+								and args.ChangingFileName == SqlFile.getFullName()
 							)
 						){
 							return true;
@@ -378,19 +426,19 @@ component accessors="true" {
 							return false;
 						}
 					},
-					CloseAllOtherFilesLink: function(SqlFiles){
+					CloseAllOtherFilesLink: function(SqlFile){
 						var out = qs.clone()
-							.setValue("OpenFiles", SqlFiles.getFullName())
-							.setValue("ActiveFile", SqlFiles.getFullName())
+							.setValue("OpenFiles", SqlFile.getFullName())
+							.setValue("ActiveFile", SqlFile.getFullName())
 							.delete("ChangeActiveFileName")
 							.get();
 						return out;
 					},
-					RenameFileLink: function(SqlFiles){
+					RenameFileLink: function(SqlFile){
 						var keys = duplicate(openFileKeys);
 						var out = qs.clone()
 							.setValue("OpenFiles", keys.keyList())
-							.setValue("ChangingFileName", SqlFiles.getFullName())
+							.setValue("ChangingFileName", SqlFile.getFullName())
 							.get();
 						return out;
 					},
@@ -416,30 +464,30 @@ component accessors="true" {
 					},
 					// Whether this currently open file is the active file. Of course it is,
 					// but the openfiles code is expecting this flag to be here
-					IsActive: function(SqlFiles){
-						if(args.keyExists("ActiveFile") and args.ActiveFile == SqlFiles.getFullName()){
+					IsActive: function(SqlFile){
+						if(args.keyExists("ActiveFile") and args.ActiveFile == SqlFile.getFullName()){
 							return true;
 						} else {
 							return false;
 						}
 					},
-					OpenUrlParams: function(SqlFiles){
+					OpenUrlParams: function(SqlFile){
 						var keys = duplicate(openFileKeys);
 						if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
 							keys[ActiveFile] = true;
 						}
-						keys[SqlFiles.getFullName()] = true;
-						keys[SqlFiles.getFullName()] = true;
-						var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).setValue("RenderOnLoad", "true").getFields();
+						keys[SqlFile.getFullName()] = true;
+						keys[SqlFile.getFullName()] = true;
+						var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFile.getFullName()).setValue("RenderOnLoad", "true").getFields();
 						return out;
 					},
-					CloseUrlParams: function(SqlFiles){
+					CloseUrlParams: function(SqlFile){
 						// When we are just previewing and are not yet open, when we
 						// close this file we want to go back to the package last open
 						// file
 						var keys = duplicate(openFileKeys);
-						if (keys.keyExists(SqlFiles.getFullName())) {
-							keys.delete(SqlFiles.getFullName());
+						if (keys.keyExists(SqlFile.getFullName())) {
+							keys.delete(SqlFile.getFullName());
 						}
 						var qs = qs.clone();
 						qs.setValue("OpenFiles", keys.keyList());
@@ -452,7 +500,7 @@ component accessors="true" {
 						var out = qs.getFields();
 						return out;
 					},
-					PreviewCloseLink: function(SqlFiles){
+					PreviewCloseLink: function(SqlFile){
 						// When we are just previewing and are not yet open, when we
 						// close this file we want to go back to the package last open
 						// file
@@ -481,8 +529,9 @@ component accessors="true" {
 						"Stacking-Mode":directiveStruct,
 						"Tags":directiveStruct,
 						Formats:directiveStruct,
-						"mongodb-query":directiveStruct,
+						"mongodb-query":directiveStruct
 					},
+					SelectListDirectives: directiveStruct,
 					ParsedDirectives: {
 						"mongodb-query": directiveStruct
 					},
@@ -523,7 +572,9 @@ component accessors="true" {
 						// instead of a query object
 						var out = {};
 						var startTick = getTickCount();
-						var LastExecutionRequestOptional = SqlFile.getLastExecutionRequest();
+						var LastExecutionRequestOptional = SqlFile.getLastExecutionRequestFromStudioDatasourceName(
+							CurrentStudioDatasource.getName()
+						);
 						if(LastExecutionRequestOptional.exists()){
 							var LastExecutionRequest = LastExecutionRequestOptional.get();
 							if(LastExecutionRequest.getIsDone() and !LastExecutionRequest.getIsCancelled()){
@@ -537,7 +588,30 @@ component accessors="true" {
 									}
 
 									var out = deserializeJson(serializeJson(data));
+
+									// Only return the first 100 rows
+									try {
+										if(out.Data.len() > 0){
+											out.Data = out.Data.slice(1, len(out.Data) > 100 ? 100 : len(out.Data) - 1);
+										}
+									}catch(any e){
+										writeDump(out);
+										abort;
+									}
+									// Sort by the first column DESC
+									out.Data = out.Data.sort(
+										function(a, b) {
+											if (a[1] > b[1]) {
+												return  -1;
+											} else if (a[1] < b[1]) {
+												return 1;
+											} else {
+												return 0;
+											}
+										}
+									);
 									out.ExecutionTime = LastExecutionRequest.getExecutionTime();
+
 
 									var columnOut = [];
 
@@ -606,10 +680,87 @@ component accessors="true" {
 						return out;
 					},
 				})
+
+				var SqlFileCacheOptional = SqlFile.getSqlFileCacheFromStudioDatasourceName(
+					CurrentStudioDatasource.getName()
+				);
+
+				if (SqlFileCacheOptional.exists()) {
+					var SqlFileCache = SqlFileCacheOptional.get();
+					out.data.CurrentSqlFile.CurrentDatasourceSqlFileCache = variables.fw.serializeFast(SqlFileCache, {
+						StudioDatasource: {
+							Name: {}
+						},
+						LastExecutionRequest: {
+							Id:{},
+							Name:{},
+							ExecutionTime:{},
+							ErrorMessage:{},
+							ErrorContent:{},
+							IsSuccess:{},
+							IsError:{},
+							IsRunning:{},
+							IsDone:{},
+							IsCancelled:{}
+						},
+						LastSuccessfulExecutionRequest: {
+							Id:{},
+							Name:{},
+							ExecutionTime:{},
+							ErrorMessage:{},
+							ErrorContent:{},
+							IsSuccess:{},
+							IsError:{},
+							IsRunning:{},
+							IsDone:{},
+							IsCancelled:{}
+						},
+						LastRendering:{
+							Content:{},
+							Option: function(Rendering){
+								// Manually return the Option because the
+								// serializer by defualt doesn't return what you havent
+								// specified
+								var out = "";
+								if(args.RenderPanelView == "option"){
+									var option = Rendering.getOption()?:{};
+									if(isStruct(option)){
+										var out = formatJSON(serializeJson(option));
+									}
+								}
+								return out;
+							},
+							IsSuccess:{},
+							IsError:{},
+							ErrorMessage:{},
+							ErrorContent:{}
+						}
+					});
+				}
+
+
+				var LastExecutionRequestOptional = SqlFile.getLastExecutionRequestFromStudioDatasourceName(
+					CurrentStudioDatasource.getName()
+				);
+
+				if (LastExecutionRequestOptional.exists()) {
+					var CurrentDatasourceLastExecutionRequest = LastExecutionRequestOptional.get();
+					out.data.CurrentSqlFile.CurrentDatasourceLastExecutionRequest = variables.fw.serializeFast(CurrentDatasourceLastExecutionRequest, {
+						Id:{},
+						Name:{},
+						ExecutionTime:{},
+						ErrorMessage:{},
+						ErrorContent:{},
+						IsSuccess:{},
+						IsError:{},
+						IsRunning:{},
+						IsDone:{},
+						IsCancelled:{}
+					});
+				}
 			}
 			var endTick = getTickCount();
 			request.timerData.CurrentSqlFile = endTick - startTick;
-
 
 			var startTick = getTickCount();
 			// --------------------------------------
@@ -697,7 +848,7 @@ component accessors="true" {
 						}
 					},
 					SelectLink: function(StudioDatasource){
-						return qs.clone().setValue("StudioDatasource", StudioDatasource.getName()).get();
+						return qs.clone().setValue("StudioDatasource", StudioDatasource.getName()).setValue("RenderOnLoad", true).get();
 					}
 				},
 				SqlFiles:{
@@ -716,16 +867,16 @@ component accessors="true" {
 							IsValid:{}
 						}
 					},
-					IsRenamingFile: function(SqlFiles){
+					IsRenamingFile: function(SqlFile){
 						if(
 							(
 								args.keyExists("ChangeActiveFileName")
 								and args.ChangeActiveFileName
 								and args.keyExists("ActiveFile")
-								and args.ActiveFile == SqlFiles.getFullName()
+								and args.ActiveFile == SqlFile.getFullName()
 							) || (
 								args.keyExists("ChangingFileName")
-								and args.ChangingFileName == SqlFiles.getFullName()
+								and args.ChangingFileName == SqlFile.getFullName()
 							)
 						){
 							return true;
@@ -733,38 +884,38 @@ component accessors="true" {
 							return false;
 						}
 					},
-					CloseAllOtherFilesLink: function(SqlFiles){
+					CloseAllOtherFilesLink: function(SqlFile){
 						var out = qs.clone()
-							.setValue("OpenFiles", SqlFiles.getFullName())
-							.setValue("ActiveFile", SqlFiles.getFullName())
+							.setValue("OpenFiles", SqlFile.getFullName())
+							.setValue("ActiveFile", SqlFile.getFullName())
 							.delete("ChangeActiveFileName")
 							.get();
 						return out;
 					},
-					RenameFileLink: function(SqlFiles){
+					RenameFileLink: function(SqlFile){
 						var keys = duplicate(openFileKeys);
 						var out = qs.clone()
 							.setValue("OpenFiles", keys.keyList())
-							.setValue("ChangingFileName", SqlFiles.getFullName())
+							.setValue("ChangingFileName", SqlFile.getFullName())
 							.get();
 						return out;
 					},
-					OpenUrlParams: function(SqlFiles){
+					OpenUrlParams: function(SqlFile){
 						var keys = duplicate(openFileKeys);
 						if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
 							keys[ActiveFile] = true;
 						}
-						keys[SqlFiles.getFullName()] = true;
-						var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).setValue("RenderOnLoad", "true").getFields();
+						keys[SqlFile.getFullName()] = true;
+						var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFile.getFullName()).setValue("RenderOnLoad", "true").getFields();
 						return out;
 					},
-					CloseUrlParams: function(SqlFiles){
+					CloseUrlParams: function(SqlFile){
 						// When we are just previewing and are not yet open, when we
 						// close this file we want to go back to the package last open
 						// file
 						var keys = duplicate(openFileKeys);
-						if (keys.keyExists(SqlFiles.getFullName())) {
-							keys.delete(SqlFiles.getFullName());
+						if (keys.keyExists(SqlFile.getFullName())) {
+							keys.delete(SqlFile.getFullName());
 						}
 						var qs = qs.clone();
 						qs.setValue("OpenFiles", keys.keyList());
@@ -777,14 +928,31 @@ component accessors="true" {
 						var out = qs.getFields();
 						return out;
 					},
-					OpenLink: function(SqlFiles){
-						var keys = duplicate(openFileKeys);
-						keys[SqlFiles.getFullName()] = true;
-						return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
+					UrlLink: function(SqlFile){
+						// var keys = duplicate(openFileKeys);
+						if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
+							OpenFilesArray = [];
+						} else {
+							var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+						}
+						var SqlFileFullName = SqlFile.getFullName();
+						// keys[SqlFileFullName] = true;
+						var out = qs.clone().setValue("OpenFiles", OpenFilesArray.toList(',')).setValue("ActiveFile", SqlFileFullName).setValue('RenderOnLoad', 'true').get();
+						return out;
 					},
-					CloseLink: function(SqlFiles){
+					// A link to open the file
+					OpenLink: function(SqlFile){
 						var keys = duplicate(openFileKeys);
-						keys.delete(SqlFiles.getFullName());
+						if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
+							keys[ActiveFile] = true;
+						}
+						keys[SqlFile.getFullName()] = true;
+						var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFile.getFullName()).setValue("RenderOnLoad", "true").get();
+						return out;
+					},
+					CloseLink: function(SqlFile){
+						var keys = duplicate(openFileKeys);
+						keys.delete(SqlFile.getFullName());
 						var qs = qs.clone();
 						qs.setValue("OpenFiles", keys.keyList());
 						if(keys.count() ==0 ){
@@ -792,8 +960,8 @@ component accessors="true" {
 						}
 						return qs.get();
 					},
-					IsOpen: function(SqlFiles){
-						return openFileKeys.keyExists(SqlFiles.getFullName());
+					IsOpen: function(SqlFile){
+						return openFileKeys.keyExists(SqlFile.getFullName());
 					},
 					IsScratch: function(SqlFile){
 						if(SqlFile.getName() == "scratch.sql"){
@@ -802,8 +970,8 @@ component accessors="true" {
 							return false;
 						}
 					},
-					IsActive: function(SqlFiles){
-						if(args.keyExists("ActiveFile") and args.ActiveFile == SqlFiles.getFullName()){
+					IsActive: function(SqlFile){
+						if(args.keyExists("ActiveFile") and args.ActiveFile == SqlFile.getFullName()){
 							return true;
 						} else {
 							return false;
@@ -824,11 +992,210 @@ component accessors="true" {
 				var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
 			}
 
-			out.data.ChartSqlStudio.SqlFiles = out.data.ChartSqlStudio.SqlFiles.sort(function(a, b) {
-				var aIndex = OpenFilesArray.contains(a.FullName);
-				var bIndex = OpenFilesArray.contains(b.FullName);
-				return aIndex - bIndex;
-			});
+			// Create a lookup map for faster containment checks
+			var openFilesMap = {};
+			if (!isDefined("OpenFiles") || isNull(OpenFiles)) {
+				var OpenFilesArray = [];
+			} else {
+				var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+				// Build index map for O(1) lookups
+				for (var i = 1; i <= OpenFilesArray.len(); i++) {
+					openFilesMap[OpenFilesArray[i]] = i;
+				}
+			}
+
+			// --------------------------------------
+			// CURRENT WORKSPACE
+			// --------------------------------------
+			// The currently open package
+			if (arguments.keyExists("WorkspaceName")) {
+				out.data.CurrentWorkspace = variables.fw.serializeFast(CurrentWorkspace, {
+					UniqueId: {},
+					FriendlyName:{},
+					OpenWorkspaceLink: function(Workspace){
+						var qs = qs.clone();
+						qs.setValue("WorkspaceName", Workspace.getUniqueId())
+						.delete("PackageName")
+						.delete("EditWorkspace")
+						.delete("EditPackage")
+						.delete("Filter")
+						.delete("SchemaFilter");
+						return qs.get();
+					},
+					WorkspacePackages: {
+						Package: {
+							UniqueId: {},
+							FriendlyName: {},
+							SqlFiles:{
+								ShareableContent:{},
+								Id:{},
+								Content:{},
+								FullName:{},
+								Name:{},
+								IsMissingFile:{},
+								NamedDirectives:{
+									Title:{
+										ValueRaw:{},
+										IsValid:{}
+									},
+									Subtitle:{
+										ValueRaw:{},
+										IsValid:{}
+									},
+									Description:{
+										ValueRaw:{},
+										IsValid:{}
+									},
+									Chart:{
+										ValueRaw:{},
+										IsValid:{}
+									},
+								},
+								IsMatchingFilter: function(SqlFile){
+
+									var out = true;
+									var trace = "";
+
+									if(args.Filter == ""){
+										return true;
+									}
+
+									var filter = Filter.toLowerCase();
+									var name = SqlFile.getName().toLowerCase();
+									var content = SqlFile.getContent().toLowerCase();
+
+									var SqlFileNamedDirectives = SqlFile.getNamedDirectives();
+									if(SqlFileNamedDirectives.keyExists("title")){
+										var title = SqlFileNamedDirectives.title.getValueRaw()?:"".toLowerCase();
+									} else {
+										var title = "";
+									}
+
+									if(SqlFileNamedDirectives.keyExists("tags")){
+										var tags = SqlFileNamedDirectives.tags.getValueRaw()?:"".toLowerCase();
+									} else {
+										var tags = "";
+									}
+
+									// 2024-07-09: Needed to switch from string.contains() to contains operator
+									// because .contains() is case sensitive
+									if(name contains filter or title contains filter or tags contains filter){
+										return true;
+									} else {
+										return false;
+									}
+								},
+								// Used to show an indicator if this is our active file
+								IsActive: function(SqlFiles){
+									if(args.keyExists("ActiveFile") and args.ActiveFile == SqlFiles.getFullName()){
+										return true;
+									} else {
+										return false;
+									}
+								},
+								// Used to show a border if this file is open
+								IsOpen: function(SqlFiles){
+									return openFileKeys.keyExists(SqlFiles.getFullName());
+								},
+								UrlLink: function(SqlFiles){
+									// var keys = duplicate(openFileKeys);
+									if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
+										OpenFilesArray = [];
+									} else {
+										var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+									}
+									var SqlFileFullName = SqlFiles.getFullName();
+									// keys[SqlFileFullName] = true;
+
+									var WorkspacePackage = CurrentWorkspace.findWorkspacePackageByUniqueId(
+										SqlFiles.getPackage().getUniqueId()
+									).get();
+									var out = qs.clone().setValue("OpenFiles", OpenFilesArray.toList(',')).setValue("ActiveFile", SqlFileFullName).setValue('RenderOnLoad', 'true');
+
+									var DefaultStudioDatasourceOptional = WorkspacePackage.getDefaultStudioDatasource();
+									if (DefaultStudioDatasourceOptional.exists()) {
+										var DefaultStudioDatasource = DefaultStudioDatasourceOptional.get();
+										out.setValue("StudioDatasource", DefaultStudioDatasource.getName());
+									}
+
+									out = out.get();
+									return out;
+								},
+								// A link to open the file
+								OpenLink: function(SqlFiles){
+									var keys = duplicate(openFileKeys);
+									if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
+										keys[ActiveFile] = true;
+									}
+									keys[SqlFiles.getFullName()] = true;
+
+									var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).setValue("RenderOnLoad", "true");
+
+									var WorkspacePackage = CurrentWorkspace.findWorkspacePackageByUniqueId(
+										SqlFiles.getPackage().getUniqueId()
+									).get();
+
+									var DefaultStudioDatasourceOptional = WorkspacePackage.getDefaultStudioDatasource();
+									if (DefaultStudioDatasourceOptional.exists()) {
+										var DefaultStudioDatasource = DefaultStudioDatasourceOptional.get();
+										out.setValue("StudioDatasource", DefaultStudioDatasource.getName());
+									}
+
+									out = out.get();
+									return out;
+								},
+								UrlParams: function(SqlFiles){
+									// var keys = duplicate(openFileKeys);
+									if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
+										OpenFilesArray = [];
+									} else {
+										var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+									}
+									var SqlFileFullName = SqlFiles.getFullName();
+									// keys[SqlFileFullName] = true;
+
+									var WorkspacePackage = CurrentWorkspace.findWorkspacePackageByUniqueId(
+										SqlFiles.getPackage().getUniqueId()
+									).get();
+									var out = qs.clone().setValue("OpenFiles", OpenFilesArray.toList(',')).setValue("ActiveFile", SqlFileFullName).setValue('RenderOnLoad', 'true');
+
+									var DefaultStudioDatasourceOptional = WorkspacePackage.getDefaultStudioDatasource();
+									if (DefaultStudioDatasourceOptional.exists()) {
+										var DefaultStudioDatasource = DefaultStudioDatasourceOptional.get();
+										out.setValue("StudioDatasource", DefaultStudioDatasource.getName());
+									}
+
+									out = out.getFields();
+									return out;
+								},
+								OpenUrlParams: function(SqlFiles){
+									var keys = duplicate(openFileKeys);
+									if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
+										keys[ActiveFile] = true;
+									}
+									keys[SqlFiles.getFullName()] = true;
+
+									var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).setValue("RenderOnLoad", "true");
+
+									var WorkspacePackage = CurrentWorkspace.findWorkspacePackageByUniqueId(
+										SqlFiles.getPackage().getUniqueId()
+									).get();
+
+									var DefaultStudioDatasourceOptional = WorkspacePackage.getDefaultStudioDatasource();
+									if (DefaultStudioDatasourceOptional.exists()) {
+										var DefaultStudioDatasource = DefaultStudioDatasourceOptional.get();
+										out.setValue("StudioDatasource", DefaultStudioDatasource.getName());
+									}
+
+									out = out.getFields();
+									return out;
+								}
+							}
+						}
+					}
+				})
+			}
+
 
 			// --------------------------------------
 			// CURRENT PACKAGE
@@ -836,123 +1203,169 @@ component accessors="true" {
 			// The currently open package
 			var startTick = getTickCount();
 			if(arguments.keyExists("PackageName")){
-				out.data.CurrentPackage = variables.fw.serializeFast(CurrentPackage, {
-					UniqueId: {},
-					FriendlyName:{},
-					IsReadOnly: {},
-					SqlFiles:{
-						Id:{},
-						FullName:{},
-						Name:{},
-						IsMissingFile:{},
-						NamedDirectives:{
-							Title:{
-								ValueRaw:{},
-								IsValid:{}
-							},
-							Subtitle:{
-								ValueRaw:{},
-								IsValid:{}
-							},
-							Description:{
-								ValueRaw:{},
-								IsValid:{}
-							},
-							Chart:{
-								ValueRaw:{},
-								IsValid:{}
-							},
-						},
-						// Used to rerender the package file list if it has been filtered
-						IsMatchingFilter: function(SqlFile){
-
-							var out = true;
-							var trace = "";
-
-							if(args.Filter == ""){
-								return true;
-							}
-
-							var filter = Filter.toLowerCase();
-							var name = SqlFile.getName().toLowerCase();
-							var content = SqlFile.getContent().toLowerCase();
-
-							if(SqlFile.getNamedDirectives().keyExists("title")){
-								var title = SqlFile.getNamedDirectives().title.getValueRaw()?:"".toLowerCase();
-							} else {
-								var title = "";
-							}
-
-							if(SqlFile.getNamedDirectives().keyExists("tags")){
-								var tags = SqlFile.getNamedDirectives().tags.getValueRaw()?:"".toLowerCase();
-							} else {
-								var tags = "";
-							}
-
-							// 2024-07-09: Needed to switch from string.contains() to contains operator
-							// because .contains() is case sensitive
-							if(name contains filter or title contains filter or tags contains filter){
-								return true;
-							} else {
-								return false;
-							}
-						},
-						// Used to show an indicator if this is our active file
-						IsActive: function(SqlFiles){
-							if(args.keyExists("ActiveFile") and args.ActiveFile == SqlFiles.getFullName()){
-								return true;
-							} else {
-								return false;
-							}
-						},
-						// Used to show a border if this file is open
-						IsOpen: function(SqlFiles){
-							return openFileKeys.keyExists(SqlFiles.getFullName());
-						},
-						// A link to open the file
-						OpenLink: function(SqlFiles){
-							var keys = duplicate(openFileKeys);
-							// keys[SqlFiles.getFullName()] = true;
-							return qs.clone().setValue("ActiveFile", SqlFiles.getFullName()).get();
-							// return qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).get();
-						},
-						// OpenedOrder: function(SqlFiles){
-						// 	if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
-						// 		OpenFilesArray = [];
-						// 	} else {
-						// 		var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
-						// 	}
-
-						// 	return OpenFilesArray.contains(SqlFiles.getFullName());
-						// },
-						// A structure of URL parameters so we can make the open link a form GET which improves
-						// the browser respnsiveness
-						UrlParams: function(SqlFiles){
-							// var keys = duplicate(openFileKeys);
-							if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
-								OpenFilesArray = [];
-							} else {
-								var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
-							}
-							var SqlFileFullName = SqlFiles.getFullName();
-							// keys[SqlFileFullName] = true;
-							var out = qs.clone().setValue("OpenFiles", OpenFilesArray.toList(',')).setValue("ActiveFile", SqlFileFullName).setValue('RenderOnLoad', 'true').getFields();
-							return out;
-						},
-						OpenUrlParams: function(SqlFiles){
-							var keys = duplicate(openFileKeys);
-							if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
-								keys[ActiveFile] = true;
-							}
-							keys[SqlFiles.getFullName()] = true;
-							var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFiles.getFullName()).setValue("RenderOnLoad", "true").getFields();
-							return out;
-						}
+				if (arguments.keyExists("WorkspaceName")) {
+					var CurrentPackageIndex = out.data.CurrentWorkspace.WorkspacePackages.find(function(wp) {
+						return wp.Package.UniqueId == PackageName;
+					});
+					if (CurrentPackageIndex != 0) {
+						out.data.CurrentPackage = out.data.CurrentWorkspace.WorkspacePackages[CurrentPackageIndex].Package;
 					}
-				})
+				} else {
+					out.data.CurrentPackage = variables.fw.serializeFast(CurrentPackage, {
+						UniqueId: {},
+						FriendlyName:{},
+						IsReadOnly: {},
+						SqlFiles:{
+							Id:{},
+							FullName:{},
+							Name:{},
+							IsMissingFile:{},
+							NamedDirectives:{
+								Title:{
+									ValueRaw:{},
+									IsValid:{}
+								},
+								Subtitle:{
+									ValueRaw:{},
+									IsValid:{}
+								},
+								Description:{
+									ValueRaw:{},
+									IsValid:{}
+								},
+								Chart:{
+									ValueRaw:{},
+									IsValid:{}
+								},
+							},
+							// Used to rerender the package file list if it has been filtered
+							IsMatchingFilter: function(SqlFile){
+
+								var out = true;
+								var trace = "";
+
+								if(args.Filter == ""){
+									return true;
+								}
+
+								var filter = Filter.toLowerCase();
+								var name = SqlFile.getName().toLowerCase();
+								var content = SqlFile.getContent().toLowerCase();
+								var SqlFileNamedDirectives = SqlFile.getNamedDirectives();
+
+								if(SqlFileNamedDirectives.keyExists("title")){
+									var title = SqlFileNamedDirectives.title.getValueRaw()?:"".toLowerCase();
+								} else {
+									var title = "";
+								}
+
+								if(SqlFileNamedDirectives.keyExists("tags")){
+									var tags = SqlFileNamedDirectives.tags.getValueRaw()?:"".toLowerCase();
+								} else {
+									var tags = "";
+								}
+
+								// 2024-07-09: Needed to switch from string.contains() to contains operator
+								// because .contains() is case sensitive
+								if(name contains filter or title contains filter or tags contains filter){
+									return true;
+								} else {
+									return false;
+								}
+							},
+							// Used to show an indicator if this is our active file
+							IsActive: function(SqlFile){
+								if(args.keyExists("ActiveFile") and args.ActiveFile == SqlFile.getFullName()){
+									return true;
+								} else {
+									return false;
+								}
+							},
+							// Used to show a border if this file is open
+							IsOpen: function(SqlFile){
+								return openFileKeys.keyExists(SqlFile.getFullName());
+							},
+							UrlLink: function(SqlFile){
+								// var keys = duplicate(openFileKeys);
+								if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
+									OpenFilesArray = [];
+								} else {
+									var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+								}
+								var SqlFileFullName = SqlFile.getFullName();
+								// keys[SqlFileFullName] = true;
+								var out = qs.clone().setValue("OpenFiles", OpenFilesArray.toList(',')).setValue("ActiveFile", SqlFileFullName).setValue('RenderOnLoad', 'true').get();
+								return out;
+							},
+							// A link to open the file
+							OpenLink: function(SqlFile){
+								var keys = duplicate(openFileKeys);
+								if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
+									keys[ActiveFile] = true;
+								}
+								keys[SqlFile.getFullName()] = true;
+								var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFile.getFullName()).setValue("RenderOnLoad", "true").get();
+								return out;
+							},
+							// OpenedOrder: function(SqlFile){
+							// 	if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
+							// 		OpenFilesArray = [];
+							// 	} else {
+							// 		var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+							// 	}
+
+							// 	return OpenFilesArray.contains(SqlFile.getFullName());
+							// },
+							// A structure of URL parameters so we can make the open link a form GET which improves
+							// the browser respnsiveness
+							UrlParams: function(SqlFile){
+								// var keys = duplicate(openFileKeys);
+								if (!isDefined("OpenFiles") or isNull(OpenFiles)) {
+									OpenFilesArray = [];
+								} else {
+									var OpenFilesArray = this.arrayRemoveDuplicates(OpenFiles.listToArray(','));
+								}
+								var SqlFileFullName = SqlFile.getFullName();
+								// keys[SqlFileFullName] = true;
+								var out = qs.clone().setValue("OpenFiles", OpenFilesArray.toList(',')).setValue("ActiveFile", SqlFileFullName).setValue('RenderOnLoad', 'true').getFields();
+								return out;
+							},
+							OpenUrlParams: function(SqlFile){
+								var keys = duplicate(openFileKeys);
+								if (!isNull(ActiveFile) and !isEmpty(ActiveFile != "")) {
+									keys[ActiveFile] = true;
+								}
+								keys[SqlFile.getFullName()] = true;
+								var out = qs.clone().setValue("OpenFiles", keys.keyList()).setValue("ActiveFile", SqlFile.getFullName()).setValue("RenderOnLoad", "true").getFields();
+								return out;
+							}
+						}
+					});
+				}
 			}
+
 			var endTick = getTickCount();
 			request.timerData.CurrentPackage = endTick - startTick;
+
+			if (arguments.keyExists("PackageName") and !arguments.keyExists("WorkspaceName")) {
+				out.data.SqlFiles = out.data.CurrentPackage.SqlFiles;
+			} else if (arguments.keyExists("WorkspaceName")) {
+				// Merge all the WorkspacePackages.Package.SqlFiles into one list
+				out.data.SqlFiles = [];
+
+				// if we have a PackageName in arguments, we want to show the files only for that package
+				if (arguments.keyExists("PackageName")) {
+					out.data.SqlFiles = out.data.CurrentPackage.SqlFiles;
+				} else {
+					// More efficient array concatenation using arrayConcat()
+					var allPackageFiles = out.data.CurrentWorkspace.WorkspacePackages.map(function(wp) {
+						return wp.Package.SqlFiles;
+					});
+					out.data.SqlFiles = arrayConcat(allPackageFiles);
+				}
+			} else {
+				out.data.SqlFiles = [];
+			}
 
 			var startTick = getTickCount();
 			// --------------------------------------
@@ -1027,6 +1440,7 @@ component accessors="true" {
 			var endTick = getTickCount();
 			request.timerData.CurrentStudioDatasource = endTick - startTick;
 
+			out.data.InfoPanelView = arguments.InfoPanelView;
 
 			var startTick = getTickCount();
 			// --------------------------------------
@@ -1176,6 +1590,12 @@ component accessors="true" {
 				out.view_state.has_maximized_panel = false;
 			}
 
+			if(arguments.keyExists("PackageName") or arguments.keyExists("WorkspaceName")){
+				out.view_state.is_home_screen = false;
+			} else {
+				out.view_state.is_home_screen = true;
+			}
+
 			if(arguments.keyExists("Filter")){
 				out.view_state.filter = arguments.Filter;
 			}
@@ -1188,11 +1608,10 @@ component accessors="true" {
 			out.view_state.maximizeRendererLink = qs.clone().setValue('maximizePanel', 'renderer').get();
 			out.view_state.maximizeEditorLink = qs.clone().setValue('maximizePanel', 'editor').get();
 			out.view_state.minimizeLink = qs.clone().delete('maximizePanel').get();
+			out.view_state.openSqlEditorLink = qs.clone().setValue('EditorPanelView', 'sql').get();
+			out.view_state.openDirectivesEditorLink = qs.clone().setValue('EditorPanelView', 'directives').get();
+			out.view_state.openMongoDBQueryEditorLink = qs.clone().setValue('EditorPanelView', 'mongodb-query').get();
 
-			out.view_state.presentation_mode = {
-				is_active: arguments.PresentationMode,
-				link: qs.clone().setValue("PresentationMode", "true").get()
-			}
 
 			// // The editor link should remove the PresentationMode variable from the URL
 			// // to get back to the same file as we were in preview mode
@@ -1220,7 +1639,7 @@ component accessors="true" {
 			out.view_state.save_or_update_file_redirect = qs.clone().setValue("OpenFiles", newOpenKeys.keyList()).get();
 
 			// The main target objects that we want to replace within the view on form posts
-			out.view_state.main_zero_targets = "##renderer-card-header,##renderContainer,##editorTabs,##infoPanel,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders,##header,##globalSearchModal,##new-file-dropdown,##modalErrorContainer";
+			out.view_state.main_zero_targets = "##renderer-card-header,##renderContainer,##editorTabs,##infoPanelInner,##openFilesList,##fileList,##openFilePath,##file-browswer-view-links,##editorBody,##aside,##directivesEditorColumnHeaders,##header,##globalSearchModal,##new-file-dropdown,##modalErrorContainer";
 			out.view_state.directives_editor_targets = "##editorTabs,##openFilesList,##sqlSourceCode,##editorBody,##saveButton,##rendererPanel,##editorProgressContainer,##fileList,.directiveErrorAlert,.directiveEditorTitle,##modalErrorContainer";
 
 			// This was taking about 100ms to run and so we are not going to run it on every
@@ -1232,12 +1651,17 @@ component accessors="true" {
 			out.data.keyPerformanceInfo = application.lastKeyPerformanceInfo;
 			out.data.ChangeActiveFileName = arguments.ChangeActiveFileName;
 			out.data.ChangingFileName = arguments.ChangingFileName;
-			out.data.ActiveFile = arguments.ActiveFile;
+			if (arguments.keyExists('ActiveFile') && !isNull(arguments.ActiveFile)) {
+				out.data.ActiveFile = arguments.ActiveFile;
+			} else {
+				out.data.ActiveFile = "";
+			}
 
 			if (arguments.keyExists('PackageName') && !arguments.keyExists('StudioDatasource')) {
 				// throw("Package didn't have a default datasource, you must select one before opening the package. <br><a href='/studio/settings/packages?EditPackage=#arguments.PackageName#'>Go to '#arguments.PackageName#' package settings</a>", "StudioDatasourceRequired");
 				if (!isDefined('out.view_state.error')) {
-					out.view_state.error = {
+					out.view_state.missing_studio_datasource = {
+						code: "missing_studio_datasource",
 						message: "Package didn't have a default datasource, you must select one to execute the query. <br /><br />You can setup a default datasource in settings <br><a href='/studio/settings/packages?EditPackage=#arguments.PackageName#'>Go to '#arguments.PackageName#' package settings</a>"
 					};
 				}
@@ -1247,26 +1671,26 @@ component accessors="true" {
 			var endTick = getTickCount();
 			request.timerData.ViewState = endTick - startTick;
 
-			// writeDump(out);
+			// writeDump(request.timerData);
 			// abort;
 
 			// writeDump(out.data.CurrentSqlFile.NamedDirectives["mongodb-query"]);
 			// abort;
 			request.startTick = getTickCount();
 			return out;
-		} catch (any e) {
-			var out = {
-				"success":true,
-				"view_state": {
-					"error": {
-						"message": e.message,
-						"type": e.type,
-						"detail": e.detail
-					}
-				}
-			}
-			return out;
-		}
+		// } catch (any e) {
+		// 	var out = {
+		// 		"success":true,
+		// 		"view_state": {
+		// 			"error": {
+		// 				"message": e.message,
+		// 				"type": e.type,
+		// 				"detail": e.detail
+		// 			}
+		// 		}
+		// 	}
+		// 	return out;
+		// }
 	}
 
 	public function keyPerformanceInfo() method="POST" {
@@ -1512,9 +1936,12 @@ component accessors="true" {
 		required string FullName,
 		required string Sql
 	) method="POST" {
-		try {
+		// try {
 			var ChartSQLStudio = variables.fw.getChartSQLStudio();
 			var SqlFile = ChartSQLStudio.findSqlFileByFullName(arguments.FullName).elseThrow("Could not locate that SqlFile: #arguments.FullName#");
+			if (!isDefined('arguments.Sql') || arguments.Sql == nullValue()) {
+				arguments.Sql = "";
+			}
 			SqlFile.writeContent(arguments.Sql);
 
 			var EditorSession = variables.fw.getEditorSession();
@@ -1525,18 +1952,18 @@ component accessors="true" {
 			var out = {
 				"success":true,
 			}
-		} catch (any e) {
-			var out = {
-				"success":true,
-				"view_state": {
-					"error": {
-						"message": e.message,
-						"type": e.type,
-						"detail": e.detail
-					}
-				}
-			}
-		}
+		// } catch (any e) {
+		// 	var out = {
+		// 		"success":true,
+		// 		"view_state": {
+		// 			"error": {
+		// 				"message": e.message,
+		// 				"type": e.type,
+		// 				"detail": e.detail
+		// 			}
+		// 		}
+		// 	}
+		// }
 		return out;
 	}
 
@@ -1544,25 +1971,25 @@ component accessors="true" {
 		required string FullName,
 		required string Sql
 	) method="POST" {
-		try {
+		// try {
 			var ChartSQLStudio = variables.fw.getChartSQLStudio();
 			var SqlFile = ChartSQLStudio.findSqlFileByFullName(arguments.FullName).elseThrow("Could not locate that SqlFile: #arguments.FullName#");
 			SqlFile.setEditorContent(arguments.Sql);
 			var out = {
 				"success":true,
 			}
-		} catch (any e) {
-			var out = {
-				"success":true,
-				"view_state": {
-					"error": {
-						"message": e.message,
-						"type": e.type,
-						"detail": e.detail
-					}
-				}
-			}
-		}
+		// } catch (any e) {
+		// 	var out = {
+		// 		"success":true,
+		// 		"view_state": {
+		// 			"error": {
+		// 				"message": e.message,
+		// 				"type": e.type,
+		// 				"detail": e.detail
+		// 			}
+		// 		}
+		// 	}
+		// }
 
 		return out;
 	}
@@ -1572,7 +1999,7 @@ component accessors="true" {
 		required string FileName,
 		string OpenFileAt
 	) method="POST" {
-		try {
+		// try {
 			var ChartSQLStudio = variables.fw.getChartSQLStudio();
 			var Package = ChartSQLStudio.findPackageByUniqueId(arguments.PackageName).elseThrow("Could not locate that Package: #arguments.PackageName#");
 			var PreexistingSqlFileOptional = Package.findSqlFileByName(arguments.FileName);
@@ -1592,6 +2019,7 @@ component accessors="true" {
 				var openFiles = urlDecode(qs.getValue("OpenFiles")) & "," & SqlFile.getFullName();
 				// var openFiles = qs.getValue("OpenFiles") & "," & SqlFile.getFullName();
 
+				qs.setValue("PackageName", arguments.PackageName);
 				qs.setValue("ActiveFile", SqlFile.getFullName());
 				qs.setValue("OpenFiles", openFiles);
 				variables.fw.doLocation(qs.get());
@@ -1605,18 +2033,18 @@ component accessors="true" {
 					})
 				}
 			}
-		} catch (any e) {
-			var out = {
-				"success":true,
-				"view_state": {
-					"error": {
-						"message": e.message,
-						"type": e.type,
-						"detail": e.detail
-					}
-				}
-			}
-		}
+		// } catch (any e) {
+		// 	var out = {
+		// 		"success":true,
+		// 		"view_state": {
+		// 			"error": {
+		// 				"message": e.message,
+		// 				"type": e.type,
+		// 				"detail": e.detail
+		// 			}
+		// 		}
+		// 	}
+		// }
 		return out;
 	}
 
@@ -1624,7 +2052,7 @@ component accessors="true" {
 		required string FullName,
 		required string Directive
 	) method="POST" {
-		try {
+		// try {
 			var ChartSQLStudio = variables.fw.getChartSQLStudio();
 			var SqlFile = ChartSQLStudio.findSqlFileByFullName(arguments.FullName).elseThrow("Could not locate that SqlFile: #arguments.FullName#");
 			SqlFile.toggleDirective(
@@ -1633,18 +2061,18 @@ component accessors="true" {
 			var out = {
 				"success":true,
 			}
-		} catch (any e) {
-			var out = {
-				"success":true,
-				"view_state": {
-					"error": {
-						"message": e.message,
-						"type": e.type,
-						"detail": e.detail
-					}
-				}
-			}
-		}
+		// } catch (any e) {
+		// 	var out = {
+		// 		"success":true,
+		// 		"view_state": {
+		// 			"error": {
+		// 				"message": e.message,
+		// 				"type": e.type,
+		// 				"detail": e.detail
+		// 			}
+		// 		}
+		// 	}
+		// }
 		return out;
 	}
 
@@ -1657,7 +2085,7 @@ component accessors="true" {
 		required string Directive,
 		required string Value
 	) method="POST" {
-		try {
+		// try {
 			var ChartSQLStudio = variables.fw.getChartSQLStudio();
 			var SqlFile = ChartSQLStudio.findSqlFileByFullName(arguments.FullName).elseThrow("Could not locate that SqlFile: #arguments.FullName#");
 			SqlFile.addOrUpdateDirective(
@@ -1667,18 +2095,18 @@ component accessors="true" {
 			var out = {
 				"success":true,
 			}
-		} catch (any e) {
-			var out = {
-				"success":true,
-				"view_state": {
-					"error": {
-						"message": e.message,
-						"type": e.type,
-						"detail": e.detail
-					}
-				}
-			}
-		}
+		// } catch (any e) {
+		// 	var out = {
+		// 		"success":true,
+		// 		"view_state": {
+		// 			"error": {
+		// 				"message": e.message,
+		// 				"type": e.type,
+		// 				"detail": e.detail
+		// 			}
+		// 		}
+		// 	}
+		// }
 		return out;
 	}
 
@@ -1710,7 +2138,7 @@ component accessors="true" {
 		if(ExecutionRequest.getIsSuccess()){
 			var SqlFile = ExecutionRequest.getSqlFile();
 			var data = ExecutionRequest.getData();
-			var Rendering = new studio.model.Rendering(SqlFile);
+			var Rendering = new studio.model.Rendering(SqlFile, ExecutionRequest);
 			Rendering.render(data);
 		}
 		// sleep(5000);
@@ -1727,6 +2155,230 @@ component accessors="true" {
 				"status":ExecutionRequest.getStatus()
 			}
 		}
+		return out;
+	}
+
+	function resetSelectListSelections(
+		required string SqlFileFullName
+	) method="POST" {
+
+		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		var SqlFile = ChartSQLStudio.findSqlFileByFullName(arguments.SqlFileFullName).elseThrow("Could not locate that SqlFile: #arguments.SqlFileFullName#");
+
+		SqlFile.resetSelectListSelections();
+
+		var EditorSession = variables.fw.getEditorSession();
+		var ExecutionRequest = EditorSession.createExecutionRequest(
+			SqlFile = SqlFile
+		);
+
+		var out = {
+			"success":true,
+			"message": "The select list has been reset"
+		}
+
+		return out;
+	}
+
+	function updateSelectListSelection(
+		required string SqlFileFullName,
+		required string SelectListUserName,
+		required string SelectListSelectedValue
+	) method="POST" {
+
+		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		var SqlFile = ChartSQLStudio.findSqlFileByFullName(arguments.SqlFileFullName).elseThrow("Could not locate that SqlFile: #arguments.SqlFileFullName#");
+
+		SqlFile.updateSelectListSelection(
+			SelectListUserName = arguments.SelectListUserName,
+			SelectListSelectedValue = arguments.SelectListSelectedValue
+		);
+
+		var EditorSession = variables.fw.getEditorSession();
+		var ExecutionRequest = EditorSession.createExecutionRequest(
+			SqlFile = SqlFile
+		);
+
+		var out = {
+			"success":true,
+			"message": "The select list has been updated"
+		}
+
+		return out;
+	}
+
+	function getLastExecutionRequestData(
+		required string SqlFileFullName,
+		numeric start = 1
+	) method="GET" {
+		// We serialize and deserialize to get the data in a regular JSON struct
+		// instead of a query object
+		out = {
+			"success": true,
+			"data": {
+				"datatable": {
+					"data": [],
+					"columns": [],
+					"recordsTotal": 0,
+					"recordsFiltered": 0
+				}
+			}
+		}
+
+		// try {
+			var pageLength = 100;
+			var ChartSQLStudio = variables.fw.getChartSQLStudio();
+			var EditorSession = variables.fw.getEditorSession();
+			var SqlFileOptional = ChartSQLStudio.findSqlFileByFullName(arguments.SqlFileFullName);
+
+			if (!SqlFileOptional.exists()) {
+				throw("Could not locate that SqlFile: #arguments.SqlFileFullName#", "SqlFileNotFound");
+			}
+
+			var SqlFile = SqlFileOptional.get();
+
+			var LastExecutionRequestOptional = SqlFile.getLastExecutionRequestFromStudioDatasourceName(
+				StudioDatasourceName = EditorSession.getCurrentStudioDatasource().getName()
+			);
+
+
+			if(LastExecutionRequestOptional.exists()){
+				var LastExecutionRequest = LastExecutionRequestOptional.get();
+
+				if(LastExecutionRequest.getIsDone() and !LastExecutionRequest.getIsCancelled()){
+					if(LastExecutionRequest.getIsSuccess()){
+						var data = LastExecutionRequest.getData();
+
+						// Selete the _sortid column as it was just temporary for the
+						// backend
+						if(data.columnExists("_sortid")){
+							data.deleteColumn("_sortid");
+						}
+
+						out.data.datatable = deserializeJson(serializeJson(data));
+
+						var search = request.context["search[value]"];
+
+						if (isDefined('search') && !isNull(search) && !isEmpty(search)) {
+							// Check every row for the value in search
+							out.data.datatable.data = out.data.datatable.data.filter(function (row) {
+								for (var column in row) {
+									if (column.toString() contains search) {
+										return true;
+									}
+								}
+								return false;
+							})
+						}
+
+
+						if (request.context.keyExists('order[0][column]')) {
+							var sortColumnIndex = request.context.keyExists('order[0][column]') + 1;
+							var sortDirection = request.context.keyExists('order[0][dir]');
+
+							out.data.datatable.data = out.data.datatable.data.sort(
+								function(a, b) {
+									if (a[sortColumnIndex] > b[sortColumnIndex]) {
+										return (sortDirection == 'asc') ? 1 : -1;
+									} else if (a[sortColumnIndex] < b[sortColumnIndex]) {
+										return (sortDirection == 'asc') ? -1 : 1;
+									} else {
+										return 0;
+									}
+								}
+							);
+						}
+
+						var recordsTotal = len(out.data.dataTable.data);
+
+						// Show the out.data.datatable.data depending on the start value and pageLength
+						if (arguments.start + pageLength > len(out.data.datatable.data)) {
+							out.data.datatable.data = out.data.datatable.data.slice(arguments.start + 1, recordsTotal - arguments.start);
+						} else {
+							out.data.datatable.data = out.data.datatable.data.slice(arguments.start + 1, pageLength);
+						}
+
+						out.data.datatable.ExecutionTime = LastExecutionRequest.getExecutionTime();
+
+						var columnOut = [];
+
+						// We are going to decorate the colums with meta data about chart
+						// directives so that we can display visual elements in the datalist
+						// about how the columns are used
+						for(var column in out.data.datatable.columns){
+
+							var working = {
+								name: column,
+								isValueField: false,
+								isCategoryField: false,
+								isStackingField: false,
+								isUsedAnywhere: false,
+							};
+							var directives = SqlFile.getParsedDirectives();
+							var atValues = directives.series?:[];
+							var atCategory = directives.category?:"";
+							var atGroups = directives.groups?:[];
+							var atStacks = directives.stacks?:[];
+
+							if(atCategory == column){
+								working.isCategoryField = true;
+								working.isUsedAnywhere = true;
+							}
+
+							if(atValues.containsNoCase(column)){
+								working.isValueField = true;
+								working.isUsedAnywhere = true;
+							}
+
+							if(atCategory contains column or atGroups.containsNoCase(column)){
+								working.isCategoryField = true;
+								working.isUsedAnywhere = true;
+							}
+
+							if(atGroups.containsNoCase(column)){
+								working.IsGroupingField = true;
+								working.isUsedAnywhere = true;
+							}
+
+							if(atStacks.containsNoCase(column)){
+								working.isStackingField = true;
+								working.isUsedAnywhere = true;
+							}
+
+							if(directives.keyExists("stacking-mode") and directives["stacking-mode"] == "percent"){
+								if(atValues.containsNoCase(column)){
+									working.IsStackingModePercentField = true;
+									working.isUsedAnywhere = true;
+								}
+							}
+
+							columnOut.append(working);
+						}
+
+						out.data.datatable["columns"] = columnOut;
+						// writeDump(out);
+						// abort;
+						var data = out.data.datatable.data;
+						out.data.datatable.delete("data");
+						out.data.datatable["data"] = data;
+						out.data.datatable["recordsTotal"] = recordsTotal;
+						out.data.datatable["recordsFiltered"] = recordsTotal;
+					}
+				}
+			}
+		// } catch (any e) {
+		// 	out = {
+		// 		"success": false,
+		// 		"data": {
+		// 			"datatable": {
+		// 				"data": [],
+		// 				"columns": [],
+		// 				"recordsTotal": 0,
+		// 				"recordsFiltered": 0
+		// 			}
+		// 		}
+		// 	}
+		// }
 		return out;
 	}
 
@@ -1767,6 +2419,15 @@ component accessors="true" {
 	private function arrayRemoveDuplicates(array){
 		return array.reduce(function(deduped, el){
 			return deduped.find(el) ? deduped : deduped.append(el);
+		}, []);
+	}
+
+	/**
+	 * Helper function to efficiently concatenate multiple arrays
+	 */
+	private array function arrayConcat(required array arrayOfArrays) {
+		return arrayOfArrays.reduce(function(result, currentArray) {
+			return result.append(currentArray, true);
 		}, []);
 	}
 

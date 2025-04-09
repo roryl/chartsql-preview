@@ -20,7 +20,6 @@ component accessors="true" {
 		required string Type,
 		required struct Config
 	) method="POST" {
-
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
 		var StudioDatasource = ChartSQLStudio.createStudioDatasource(
 			arguments.Name,

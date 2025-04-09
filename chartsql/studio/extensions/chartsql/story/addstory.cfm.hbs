@@ -16,6 +16,21 @@
 				</button>
 			</form>
 		</li>
+		<li><hr class="dropdown-divider"></li>
+		{{#each data.CurrentPackage.Storys}}
+			<li>
+				<form method="POST" action="/studio/storys/{{Id}}/addSlide">
+					<input type="hidden" name="goto" value="{{view_state.current_url}}">
+					<input type="hidden" name="goto_fail" value="{{view_state.current_url}}">
+					<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
+					<input type="hidden" name="Title" value="{{data.CurrentSqlFile.NamedDirectives.Title.ValueRaw}}">
+					<button class="dropdown-item" href="">
+						<i class="ti ti-photo-plus"></i>
+						&nbsp;Add to&nbsp;<i>{{Name}}</i>
+					</button>
+				</form>
+			</li>
+		{{/each}}
 		{{!-- <li><hr class="dropdown-divider"></li>
 		<li>
 			<a class="dropdown-item" href="">

@@ -1,0 +1,138 @@
+.zx-loader {
+	display: none;
+}
+
+@keyframes loader-dots {
+	0% {
+		transform: translateX(-100%);
+	}
+}
+.loader-dots {
+	display: inline-block;
+	overflow: hidden;
+	vertical-align: bottom;
+}
+.loader-dots:after {
+	display: inline-block;
+	content: "...";
+	animation: loader-dots 1.2s steps(4, jump-none) infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.zx-link-app {
+	cursor: pointer;
+}
+
+.zx-loading-cursor-wait {
+	cursor: wait !important;
+}
+
+.zx-loading-cursor-progress {
+	cursor: progress !important;
+}
+
+.zx-spinner-button {
+    display: inline-flex; /* Use flexbox to align items */
+    align-items: center; /* Vertically center items */
+}
+
+.zx-spinner {
+    border: 2px solid #ccc;
+    border-top-color: #1d72b8; /* Different color for the spinner */
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    animation: spin 0.6s linear infinite;
+	margin-right: 5px; /* Space between the spinner and the text */
+    display: inline-block; /* Inline element for use in a flexbox */
+}
+
+.zx-loader-link {
+    position: relative;
+    /* padding: 8px 16px; */
+    overflow: hidden;
+	/* padding-bottom:0px; */
+}
+
+a .zx-loader-progress-bar {
+    position: absolute;
+	margin:0;
+	padding:0;
+    bottom: 0;
+    left: 0;
+    height: 100%; /* Height of the progress indicator */
+    width: 100%; /* Full width of the button */
+    background-color: rgba(255, 255, 255, 0.8);
+    animation: simulateProgress 2.5s linear forwards, pulseOpacity 1s infinite alternate; /* Animation setup */
+}
+
+.zx-loader-button {
+    position: relative;
+    /* padding: 8px 16px; */
+    overflow: hidden;
+	/* padding-bottom:0px; */
+}
+
+button .zx-loader-progress-bar {
+    position: absolute;
+	margin:0;
+	padding:0;
+    bottom: 0;
+    left: 0;
+    height: 100%; /* Height of the progress indicator */
+    width: 100%; /* Full width of the button */
+    background-color: rgba(255, 255, 255, 0.3);
+	opacity: .3;
+    animation: simulateProgress 2.5s linear forwards, pulseOpacity 1s infinite alternate; /* Animation setup */
+}
+
+@keyframes moveProgress {
+    from {
+        transform: translateX(-100%); /* Start full width to the left */
+    }
+    to {
+        transform: translateX(100%); /* End full width to the right */
+    }
+}
+
+@keyframes simulateProgress {
+    0% {
+        transform: translateX(-100%);
+    }
+    20% {
+        transform: translateX(-40%);
+    }
+    60% {
+        transform: translateX(-25%);
+    }
+    80% {
+        transform: translateX(-20%);
+    }
+    90% {
+        transform: translateX(-18%);
+    }
+    95% {
+        transform: translateX(-16%);
+    }
+    100% {
+        transform: translateX(-10%);
+    }
+}
+
+@keyframes pulseOpacity {
+    0% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 1.0;
+    }
+}
+
+button span.zx-loader-progress-bar {
+    display: block;
+}

@@ -3,60 +3,35 @@
 		<ul id="editorTabs" class="nav nav-tabs card-header-tabs {{view_state.editor_width}}" role="tablist" style="padding:0;">
 			<li class="nav-item" role="presentation">
 				<div class="h-100 d-flex justify-content-center align-items-center">
-					<form action="/studio/main" method="GET" zero-target="{{view_state.main_zero_targets}}">
-						{{#each view_state.params}}
-							{{#unless (eq key "EditorPanelView")}}
-								<input type="hidden" name="{{key}}" value="{{value}}">
-							{{/unless}}
-						{{/each}}
-						<input type="hidden" name="EditorPanelView" value="sql">
-
-						<button type="submit" class="nav-link px-3 {{#if (eq view_state.editor_panel.active_view "sql")}}active{{/if}}" aria-selected="true" role="tab" style="border-radius:0; border-top:none; border-left:none; border-right:none; margin:0; height:100%;">
-							<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-type-sql me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M5 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75" /><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" /><path d="M18 15v6h2" /><path d="M13 15a2 2 0 0 1 2 2v2a2 2 0 1 1 -4 0v-2a2 2 0 0 1 2 -2z" /><path d="M14 20l1.5 1.5" /></svg>
-							SQL
-						</button>
-					</form>
+					<a href="{{view_state.openSqlEditorLink}}" zx-swap="#editorCard" zx-sync-params="EditorPanelView" zx-loader="cursor-progress" class="nav-link px-3 {{#if (eq view_state.editor_panel.active_view "sql")}}active{{/if}}" aria-selected="true" role="tab" style="border-radius:0; border-top:none; border-left:none; border-right:none; margin:0; height:100%;">
+						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-file-type-sql me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M5 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75" /><path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" /><path d="M18 15v6h2" /><path d="M13 15a2 2 0 0 1 2 2v2a2 2 0 1 1 -4 0v-2a2 2 0 0 1 2 -2z" /><path d="M14 20l1.5 1.5" /></svg>
+						SQL
+					</a>
 				</div>
 			</li>
 			{{#if data.CurrentSqlFile.ShouldLoadMongoDbEditor}}
 				<li class="nav-item" role="presentation">
 					<div class="h-100 d-flex justify-content-center align-items-center">
-						<form action="/studio/main" method="GET" zero-target="{{view_state.main_zero_targets}}">
-							{{#each view_state.params}}
-								{{#unless (eq key "EditorPanelView")}}
-									<input type="hidden" name="{{key}}" value="{{value}}">
-								{{/unless}}
-							{{/each}}
-							<input type="hidden" name="EditorPanelView" value="mongodb-query">
-							<button type="submit" class="nav-link px-3 {{#if (eq view_state.editor_panel.active_view "mongodb-query")}}active{{/if}}" aria-selected="true" role="tab" style="border-radius:0; border-top:none; border-left:none; border-right:none; margin:0; height:100%;">
-								<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-mongodb me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3v19" /><path d="M18 11.227c0 3.273 -1.812 4.77 -6 9.273c-4.188 -4.503 -6 -6 -6 -9.273c0 -4.454 3.071 -6.927 6 -9.227c2.929 2.3 6 4.773 6 9.227z" /></svg>
-								MongoDB Query
-								<!--- {{#if data.CurrentSqlFile.HasDirectiveErrors}}
-								<span class="status-dot status-dot-animated status-orange ms-2"></span>
-								{{/if}} --->
-							</button>
-						</form>
+						<a href="{{view_state.openMongoDBQueryEditorLink}}" zx-swap="#editorCard" zx-sync-params="EditorPanelView" zx-loader="cursor-progress" class="nav-link px-3 {{#if (eq view_state.editor_panel.active_view "mongodb-query")}}active{{/if}}" aria-selected="true" role="tab" style="border-radius:0; border-top:none; border-left:none; border-right:none; margin:0; height:100%;">
+							<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-mongodb me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3v19" /><path d="M18 11.227c0 3.273 -1.812 4.77 -6 9.273c-4.188 -4.503 -6 -6 -6 -9.273c0 -4.454 3.071 -6.927 6 -9.227c2.929 2.3 6 4.773 6 9.227z" /></svg>
+							MongoDB Query
+							<!--- {{#if data.CurrentSqlFile.HasDirectiveErrors}}
+							<span class="status-dot status-dot-animated status-orange ms-2"></span>
+							{{/if}} --->
+						</a>
 					</div>
 				</li>
 			{{/if}}
 
 			<li class="nav-item" role="presentation">
 				<div>
-					<form action="/studio/main" method="GET" zero-target="{{view_state.main_zero_targets}}">
-						{{#each view_state.params}}
-							{{#unless (eq key "EditorPanelView")}}
-								<input type="hidden" name="{{key}}" value="{{value}}">
-							{{/unless}}
-						{{/each}}
-						<input type="hidden" name="EditorPanelView" value="directives">
-						<button class="nav-link px-2 {{#if (eq view_state.editor_panel.active_view "directives")}}active{{/if}}" aria-selected="false" tabindex="-1" role="tab" style="border-radius:0; border-top:none; border-left:none; border-right:none; margin:0; height:100%;">
-							<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-at me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M16 12v1.5a2.5 2.5 0 0 0 5 0v-1.5a9 9 0 1 0 -5.5 8.28" /></svg>
-							Directives
-							{{#if data.CurrentSqlFile.HasDirectiveErrors}}
-								<span class="status-dot status-dot-animated status-orange ms-2"></span>
-							{{/if}}
-						</button>
-					</form>
+					<a href="{{view_state.openDirectivesEditorLink}}" zx-swap="#editorCard" zx-sync-params="EditorPanelView" zx-loader="cursor-progress" class="nav-link px-2 {{#if (eq view_state.editor_panel.active_view "directives")}}active{{/if}}" aria-selected="false" tabindex="-1" role="tab" style="border-radius:0; border-top:none; border-left:none; border-right:none; margin:0; height:100%;">
+						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-at me-2" style="--tblr-icon-size: 1rem;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M16 12v1.5a2.5 2.5 0 0 0 5 0v-1.5a9 9 0 1 0 -5.5 8.28" /></svg>
+						Directives
+						{{#if data.CurrentSqlFile.HasDirectiveErrors}}
+							<span class="status-dot status-dot-animated status-orange ms-2"></span>
+						{{/if}}
+					</a>
 				</div>
 			</li>
 
@@ -172,7 +147,7 @@
 			<!--- #sqlSourceCode is moved out of the SQL editor panel so that it can be submitted from the directives panel
 				as well.
 			--->
-			<form id="sqlSourceCode" action="/studio/main/saveFile" method="POST" zero-target="#rendererPanel,#editorTabs,#directivesEditor,#infoPanel,#openFilesList,#fileList,#refreshExecution,#editorFooter,#modalErrorContainer">
+			<form id="sqlSourceCode" action="/studio/main/saveFile" method="POST" zx-swap="#rendererPanel,#editorTabs,#directivesEditor,#infoPanel,#openFilesList,#fileList,#editorProgressContainer,#refreshExecution,#editorFooter,#modalErrorContainer">
 				<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 				<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
 				<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">

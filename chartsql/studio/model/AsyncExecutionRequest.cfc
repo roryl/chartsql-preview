@@ -9,6 +9,7 @@ component accessors="true" {
 	property name="Name";
 	property name="SqlFile";
 	property name="SqlFullName";
+	property name="StudioDatasource";
 	property name="PackageFullName";
 	property name="ExecutionTime";
 	property name="Data";
@@ -47,6 +48,12 @@ component accessors="true" {
 		variables.SqlFullName = SqlFile.getFullName();
 		variables.PackageFullName = SqlFile.getPackage().getUniqueId();
 		variables.SqlFile.setLastExecutionRequest(this);
+		// Create a SqlFileCache object to store the last successful execution request
+		new SqlFileCache(
+			SqlFile = variables.SqlFile,
+			StudioDatasource=arguments.StudioDatasource,
+			LastExecutionRequest=this
+		);
 		variables.IsRunning = false;
 		variables.IsDone = false;
 		variables.IsCancelled = false;
@@ -58,6 +65,17 @@ component accessors="true" {
 		//Setup the SqlScript that we will later pass to the Datasource to execute
 		var ChartSQL = new ChartSQL();
 		variables.SqlScript = ChartSQL.createSqlScript(variables.content);
+
+		// Setup the handlebars context with data that can be dynamically inserted into the SQL
+		var context = {};
+		var SelectListDirectives = variables.SqlFile.getSelectListDirectives();
+		for (var SelectListDirective in SelectListDirectives) {
+			context[SelectListDirective.getName()] = {
+				'selected': SelectListDirective.getSelectListSelectedValueOrDefault(),
+				'values': SelectListDirective.getParsed()
+			}
+		}
+		variables.SqlScript.setHandlebarsContext(context);
 
 		variables.scriptExecutionId = variables.SqlScript.tagWithExecutionId();
 		variables.StudioDatasource = arguments.StudioDatasource?:throw("StudioDatasource must be provided or defined in the script");
@@ -77,6 +95,7 @@ component accessors="true" {
 		var me = this;
 
 		thread name="#variables.ThreadName#" me="#me#" {
+
 			writeLog(file="async", text="Starting thread");
 			// variables.task = runAsync(function(){
 			var data = "";
@@ -98,13 +117,28 @@ component accessors="true" {
 					me.setIsSuccess(true);
 					me.setData(data);
 					me.setRecordCount(data.recordCount);
+					var StudioDatasource = me.getStudioDatasource();
 
 					// We store that we were successful so that the view can display the results
 					// from the most recently successful execution.
+					var SqlFileCacheOptional = me.getSqlFile().getSqlFileCacheFromStudioDatasourceName(me.getName());
+					if(SqlFileCacheOptional.exists()){
+						var SqlFileCache = SqlFileCacheOptional.get();
+						SqlFileCache.setLastSuccessfulExecutionRequest(me);
+					} else {
+						// Create SqlFileCache for this StudioDatasource
+						new SqlFileCache(
+							SqlFile=me.getSqlFile(),
+							StudioDatasource=StudioDatasource,
+							LastExecutionRequest=me,
+							LastSuccessfulExecutionRequest=me
+						);
+					}
 					me.getSqlFile().setLastSuccessfulExecutionRequest(me);
 
+					// We store a hard coded SQL string that can be used to recreate the data and directives
+					// so that the chart can be shared with other instances of ChartSQL
 					var SqlFileParsedDirectives = SqlFile.getParsedDirectives();
-					me.setShareableContent(me.generateShareableSQLFromData());
 
 					var SqlFileDirectivesContent = "";
 					for (directiveName in SqlFileParsedDirectives) {
@@ -145,7 +179,7 @@ component accessors="true" {
 					writeDump(e);
 				}
 
-				me.setErrorContent(errorContent);
+				me.setErrorContent(errorContentString);
 			}
 
 			me.setExecutionTime(me.getEndedTick() - me.getStartedTick());
@@ -156,6 +190,18 @@ component accessors="true" {
 			writeLog(file="async", text="ending thread");
 		}
 		return this;
+	}
+
+	public function getErrorMessage() {
+		if (!isDefined('variables.ErrorMessage') || variables.ErrorMessage == nullValue()) {
+			return;
+		}
+
+		if (variables.ErrorMessage.contains("call for table")) {
+			return variables.ErrorMessage = variables.ErrorMessage.split("call for table")[2].split("operator")[1].trim();
+		} else {
+			return variables.ErrorMessage;
+		}
 	}
 
 	/**

@@ -179,7 +179,7 @@ component extends="one" {
 		//Set the base location to /contexts
 		base = "/contexts",
 		//Set the default subsystem to home
-		defaultSubsystem = variables.zero.defaultSubsystem?:"home"
+		defaultSubsystem = 'home'
 	}
 
 	variables.zero.argumentModelValueObjectPath = "model";
@@ -944,9 +944,8 @@ component extends="one" {
 
 			var deleteCookies = createObject("zeroStructure").flattenDataStructureForCookies(data=cookies.preserve_response, prefix="preserve_response", ignore=[]);
 			for(var cook in deleteCookies){
-
+				// structDelete(cookie,cook);
 				header name="Set-Cookie" value="#ucase(cook)#=; path=/; Max-Age=0; Expires=Thu, 01-Jan-1970 00:00:00 GMT";
-
 				structDelete(cookie,cook);
 				structDelete(variables.zero.flashStorage, cook)
 			}
@@ -1917,8 +1916,11 @@ component extends="one" {
 			// 2023-11-12: Update this for Ortus Hibernate 5 and Lucee 5.4
 			// On version 5, how we detect the meta data classes is different
 			var version = createObject("java", "org.hibernate.Version").getVersionString();
+			// writeDump(version);
 			var versionMajor = listFirst(version, ".");
-			if(versionMajor == 5){
+			// writeDump(versionMajor);
+			// abort;
+			if(versionMajor == 5 or versionMajor == "[WORKING]") {
 				var Factory = ORMGetSession().getSessionFactory();
 				var EntityNames = Factory.getMetaModel().getAllEntityNames();
 				var found = false;
@@ -2666,7 +2668,7 @@ component extends="one" {
     	return cookie.CSRF_TOKEN;
     }
 
-    public function	getJsoup(){
+    public function getJsoup(){
 		var jsoup = application._zero.jsoup = application._zero.jsoup?:createObject("java", "org.jsoup.Jsoup", "formcheck/jsoup-1.13.1.jar");
 		return jsoup;
 	}
@@ -3434,34 +3436,35 @@ component extends="one" {
 	}
 
 	public function getZeroContext(){
-		if(!server.keyExists("ZeroContext#this.name#") or url.keyExists("clearzerocontext")){
-			server["ZeroContext#this.name#"] = new zeromodel.model.context.ZeroContext();
+		if(!application.keyExists("ZeroContext#this.name#") or url.keyExists("clearzerocontext")){
+			application["ZeroContext#this.name#"] = new zeromodel.model.context.ZeroContext();
 			for(var path in this.ormsettings.cfclocation){
-				server["ZeroContext#this.name#"].createSearchPath(new zeromodel.model.context.SearchPath(path));
+				application["ZeroContext#this.name#"].createSearchPath(new zeromodel.model.context.SearchPath(path));
 			}
 		}
-		return server["ZeroContext#this.name#"];
+		return application["ZeroContext#this.name#"];
 	}
 
 	function getOrmValidator(){
-		if(!server.keyExists("OrmValidator") or url.keyExists("reloadorm")){
+		if(!application.keyExists("OrmValidator") or url.keyExists("reloadorm")){
 			//Create an instance of the validator
-			server.OrmValidator = new zeromodel.model.ormvalidator.OrmValidator(this);
+			application.OrmValidator = new zeromodel.model.ormvalidator.OrmValidator(this);
 			/* Register all of the default validations which are in
 			*  zero/plugins/zeromodel/model/ormvalidator/validations
 			*  You can override or remove validations that you do not want. See
 			*  The documation
 			*/
-			server.OrmValidator.registerDefaultValidations();
+			application.OrmValidator.registerDefaultValidations();
 
 		}
 
-		server.OrmValidator.setAutoRebuildContexts(variables.zero.autoRebuildContexts);
+		application.OrmValidator.setAutoRebuildContexts(variables.zero.autoRebuildContexts);
 
-		return server.OrmValidator;
+		return application.OrmValidator;
 	}
 
 	function onRequest(){
+
 		// 2022-01-08: If the application is in production and we need to reload
 		// the orm, we can call ?reloadorm. This is used for produciton deployments
 		// where the orm needs to be reloaded at boot
@@ -4095,6 +4098,7 @@ component extends="one" {
 		variables.zero.cacheRoutes = variables.zero.cacheRoutes ?: false;
 		variables.zero.throwOnFirstArgumentError = variables.zero.throwOnFirstArgumentError ?: false;
 		variables.zero.throwOnControllerError = variables.zero.throwOnControllerError ?: false;
+		variables.zero.ormEnabled = variables.zero.ormEnabled ?: true;
 		variables.zero.checkReloadOrm = variables.zero.checkReloadOrm?:false;
 		variables.zero.usingHibernateMigration = variables.zero.usingHibernateMigration?:false;
 		variables.zero.rebuildContexts = variables.zero.rebuildContexts?:false;
@@ -4389,11 +4393,11 @@ component extends="one" {
 		* 	'Getting Ready for Production' section.
 		*/
 		this.setupZeroDefaults();
-		// if(variables.zero.checkReloadOrm and ! variables.zero.usingHibernateMigration){
-		// 	var OrmValidator = this.getOrmValidator();
-		// 	OrmValidator.scan();
-		// 	OrmValidator.CheckReloadORM();
-		// }
+		if(variables.zero.ormEnabled and variables.zero.checkReloadOrm and ! variables.zero.usingHibernateMigration){
+			var OrmValidator = this.getOrmValidator();
+			OrmValidator.scan();
+			OrmValidator.CheckReloadORM();
+		}
 
         // this will recreate the main bean factory on a reload:
         internalFrameworkTrace( 'setupApplication() called' );

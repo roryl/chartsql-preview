@@ -17,7 +17,7 @@ component accessors="true" {
 	 */
 	public function init(required string queryString=""){
 
-		var workingString = listLast(arguments.queryString,"?");
+		var workingString = arguments.queryString;
 		if(left(workingString, 1) == "?"){
 			workingString = right(workingString, len(workingString) - 1);
 		}
@@ -63,17 +63,6 @@ component accessors="true" {
 	 */
 	public function getNew(){
 		return duplicate(this);
-	}
-
-
-	public function getFields(){
-		var out = [];
-		for(var field in variables.fields){
-			if(trim(field.value) != ""){
-				out.append(field);
-			}
-		}
-		return out;
 	}
 
 	/**
@@ -150,9 +139,7 @@ component accessors="true" {
 		var out = [];
 
 		for(var field in variables.fields){
-			if(trim(field.value) != ""){
-				out.append("#field.key#=#field.value#")
-			};
+			out.append("#field.key#=#field.value#")
 		}
 		return "#variables.protocol##variables.domain##variables.basePath#?#arrayToList(out,"&")#";
 	}

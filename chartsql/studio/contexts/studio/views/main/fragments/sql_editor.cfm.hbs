@@ -1,4 +1,4 @@
-<form id="storeEditorContentForm" action="/studio/main/storeEditorContent" method="POST" zero-target="#openFilesList,#fileList,#editorTabs,#editorFooter">
+<form id="storeEditorContentForm" action="/studio/main/storeEditorContent" method="POST" zx-swap="#openFilesList,#fileList,#editorTabs,#editorFooter">
 	<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 	<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 	<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
@@ -54,26 +54,34 @@
 			let fromCursor = sqlEditor.getCursor(true);
 			let toCursor = sqlEditor.getCursor(false);
 			let lines = sqlEditor.getValue().split('\n');
-			let newLines = [...lines];
 
 			for (let i = fromCursor.line; i <= toCursor.line; i++) {
 				let line = sqlEditor.getLineHandle(i);
-				if (lines[i].match(/^\s*--\s*\/\/@/)) {
+				let lineContent = sqlEditor.getLine(i);
+				let from = {line: i, ch: 0};
+				let to = {line: i, ch: lineContent.length};
+
+				if (lineContent.match(/^\s*--\s*\/\/@/)) {
 					// If directive is commented then uncomment it
-					newLines[i] = lines[i].replace("//", "");
-				} else if (lines[i].match(/^\s*--\s*@\w+/)) {
+					let pos = lineContent.indexOf("//");
+					sqlEditor.replaceRange("", {line: i, ch: pos}, {line: i, ch: pos + 2});
+				} else if (lineContent.match(/^\s*--\s*@\w+/)) {
 					// If directive is not commented out then comment it
-					newLines[i] = lines[i].replace("@", "//@");
-				} else if (lines[i].match(/^\s*--/)) {
+					let pos = lineContent.indexOf("@");
+					sqlEditor.replaceRange("//", {line: i, ch: pos}, {line: i, ch: pos});
+				} else if (lineContent.match(/^\s*--/)) {
 					// If the MySql line is commented out then uncomment it
-					newLines[i] = lines[i].replace("--", "");
-				} else if(isOnlyWhitespace(lines[i])) {
+					let pos = lineContent.indexOf("--");
+					sqlEditor.replaceRange("", {line: i, ch: pos}, {line: i, ch: pos + 3});
+				} else if(isOnlyWhitespace(lineContent)) {
 					continue;
 				} else {
-					newLines[i] = `--${lines[i]}`;
+					sqlEditor.replaceRange("-- ", from, from);
 				}
 			}
-			sqlEditor.setValue(newLines.join("\n"));
+			
+			let newLines = sqlEditor.getValue().split('\n');
+
 			sqlEditor.setSelection(
 				{
 					line: fromCursor.line,
@@ -146,8 +154,21 @@
 					"series-labels",
 					"overlay-series",
 					"dash-id",
-					"tags"
+					"tags",
 				];
+
+				// 2024-10-31: Adding support for directives which can contain a user
+				// specified portion in the name. For example, select-list-<user-specified-name>
+
+				//If the left hand size of the directive is 'select-list' then everything after select-list-* is valid. We need
+				//to add this directive into the validFormats array
+				if(directive.startsWith('select-list-')){
+
+					//The directive must end with a word after select-list- in order to be valid
+					if(directive.split('select-list-')[1].length > 0){
+						validFormats.push(directive);
+					}
+				}
 
 				if(!validFormats.includes(directive)){
 					editor.markText(cursor.from(), cursor.to(), {className: 'invalid-directive', attributes: {'data-bs-toggle': 'tooltip', 'title': "Not a valid directive"}});
@@ -169,57 +190,48 @@
 
 		// Attach the change event listener to your CodeMirror instance
 		var typingTimer; // Timer identifier
-		var doneTypingInterval = 400;  // Time in ms
+		var doneTypingInterval = 500;  // Time in ms
 
 		// Define the function that will be called when the content changes
 		function onEditorContentChange(instance, changeObj) {
-			localStorage.setItem(`SqlFileHistory-${CurrentSqlFileId}`, JSON.stringify(sqlEditor.doc.getHistory()));
+			const value = instance.getValue();
+			const elements = {
+				sqlSubmit: document.getElementById('SqlSubmit{{Id}}'),
+				editorContent: document.getElementById('editorContentTextarea')
+			};
 
-			// Find the directives in the editor and mark them as
-			// 'directive' or 'invalid-directive'
+			// Update hidden text areas with current content
+			elements.sqlSubmit.value = value;
+			elements.editorContent.value = value;
+
+			clearTimeout(typingTimer);
 			findDirectives(sqlEditor);
 
-			// Update the content of the hidden text area with the current content of the CodeMirror instance
-			// so that it can be submitted with the form
-			document.getElementById('SqlSubmit{{Id}}').value = instance.getValue();
-			document.getElementById('editorContentTextarea').value = instance.getValue();
+			typingTimer = setTimeout(() => {
+				// Update save button styling
+				const saveSqlbutton = document.getElementById('saveSqlbutton');
+				if (saveSqlbutton) {
+					saveSqlbutton.classList.replace('btn-ghost-secondary', 'btn-primary');
+				}
 
-			// Click the storeEditorContentButton which will send the editor content to the server
-			// in SqlFile (but not actually save the file) so that it can be restored if the user
-			// navigates away from the page and then comes back and it hasn't been saved
+				// Show active file indicator
+				const activeFile = document.querySelector('.status-dot.active');
+				if (activeFile) {
+					activeFile.style.visibility = 'visible';
+				}
 
-			// If the user is typing, clear the timer
-			clearTimeout(typingTimer);
+				// Store editor history
+				localStorage.setItem(
+					`SqlFileHistory-${CurrentSqlFileId}`, 
+					JSON.stringify(sqlEditor.doc.getHistory())
+				);
 
-			// Set a timer to wait for the user to stop typing
-			typingTimer = setTimeout(function () {
+				// Store content on server
 				document.getElementById('storeEditorContentButton').click();
 			}, doneTypingInterval);
-
-
-			// Decorate the save button that we have changes and so we are going to
-			// remove the btn-ghost-secondary class and add the btn-primary class
-			// var button = document.getElementById('saveSqlbutton');
-			// // Remove an existing class
-			// button.classList.remove('btn-ghost-secondary');
-			// // Add a new class
-			// button.classList.add('btn-primary');
 		}
 
 		sqlEditor.on('change', function (instance, changeObj) {
-			let saveSqlbutton = document.getElementById('saveSqlbutton');
-			if (saveSqlbutton) {
-				saveSqlbutton.classList.remove('btn-ghost-secondary');
-				saveSqlbutton.classList.add('btn-primary');
-			}
-
-			// Search for a element that has the 'status-dot' class and the 'active' class
-			// and make it 'visibility: visible;'
-			let activeFile = document.querySelector('.status-dot.active');
-			if (activeFile) {
-				activeFile.style.visibility = 'visible';
-			}
-
 			onEditorContentChange(instance, changeObj);
 		});
 

@@ -29,6 +29,11 @@ component accessors="true" {
 			RequestType:{},
 			PublishingResult:{
 				IsSuccess:{},
+				ResultMessage:{},
+				ResultType:{},
+				PublishingRequest:{
+					SqlFile:{}
+				}
 			}
 		})
 
@@ -129,6 +134,22 @@ component accessors="true" {
 
 		return out;
 
+	}
+
+	/**
+	 * Trashes all the dashids at the remote package that do not exist within the local package
+	 *
+	 * @PackageFullName
+	 */
+	remote function MarkMissingChartsAsTrashed(
+		required string PackageFullName
+	){
+		var ChartSQLStudio = variables.ChartSQLStudio;
+		var Package = ChartSQLStudio.findPackageByUniqueId(PackageFullName).elseThrow("Could not find that package");
+		var PackagePublisher = Package.getPackagePublisher();
+		var dashIds = Package.getAllDashIds();
+		var result = PackagePublisher.markMissingChartsAsTrashed(dashIds);
+		return result;
 	}
 
 }

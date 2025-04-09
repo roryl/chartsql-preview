@@ -1,4 +1,4 @@
-<form id="storeMongoDirectiveForm" action="/studio/main/addOrUpdateDirective" method="POST" zero-target="#openFilesList,#fileList,#editorTabs,#sqlSourceCode">
+<form id="storeMongoDirectiveForm" action="/studio/main/addOrUpdateDirective" method="POST" zx-swap="#openFilesList,#fileList,#editorTabs,#sqlSourceCode">
 	<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 	<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 	<input type="hidden" name="directive" value="mongodb-query">
@@ -52,53 +52,52 @@
 		});
 
 		var typingTimer; // Timer identifier
-		var doneTypingInterval = 400;  // Time in ms
+		var doneTypingInterval = 500;  // Time in ms
 
 		// Define the function that will be called when the content changes
 		function onEditorContentChange(instance, changeObj) {
-
-			var editorContent = instance.getValue();
-			var invalidJsonAlert = document.getElementById('invalidJsonAlert');
-
-
-			//Check if the content is valid JSON
-			try {
-				JSON.parse(editorContent);
-				//We update the textarea insight the submit form
-
-				// add d-none if it's not already there
-				invalidJsonAlert.classList.add('d-none');
-
-			} catch (e) {
-				invalidJsonAlert.classList.remove('d-none');
-			}
-
-			document.getElementById('editorContentTextarea').value = instance.getValue();
-
-			// If the user is typing, clear the timer
+			// Clear the timer
 			clearTimeout(typingTimer);
-
-			// Set a timer to wait for the user to stop typing
 			typingTimer = setTimeout(function () {
+				let saveSqlbutton = document.getElementById('saveSqlbutton');
+				if (saveSqlbutton) {
+					saveSqlbutton.classList.remove('btn-ghost-secondary');
+					saveSqlbutton.classList.add('btn-primary');
+				}
+
+				// Search for a element that has the 'status-dot' class and the 'active' class
+				// and make it 'visibility: visible;'
+				let activeFile = document.querySelector('.status-dot.active');
+				if (activeFile) {
+					activeFile.style.visibility = 'visible';
+				}
+
+				var editorContent = instance.getValue();
+				var invalidJsonAlert = document.getElementById('invalidJsonAlert');
+
+
+				//Check if the content is valid JSON
+				try {
+					JSON.parse(editorContent);
+					//We update the textarea insight the submit form
+
+					// add d-none if it's not already there
+					invalidJsonAlert.classList.add('d-none');
+
+				} catch (e) {
+					invalidJsonAlert.classList.remove('d-none');
+				}
+
+				document.getElementById('editorContentTextarea').value = instance.getValue();
+
+				// Set a timer to wait for the user to stop typing
+			
 				document.getElementById('storeMongoDirectiveButton').click();
 			}, doneTypingInterval);
 		}
 
 		// Attach the change event listener to your CodeMirror instance
 		mongoEditor.on('change', function (instance, changeObj) {
-			let saveSqlbutton = document.getElementById('saveSqlbutton');
-			if (saveSqlbutton) {
-				saveSqlbutton.classList.remove('btn-ghost-secondary');
-				saveSqlbutton.classList.add('btn-primary');
-			}
-
-			// Search for a element that has the 'status-dot' class and the 'active' class
-			// and make it 'visibility: visible;'
-			let activeFile = document.querySelector('.status-dot.active');
-			if (activeFile) {
-				activeFile.style.visibility = 'visible';
-			}
-
 			onEditorContentChange(instance, changeObj);
 		});
 		{{/if}}

@@ -17,7 +17,7 @@
 			<span class="input-icon-addon pt-2" style="align-items:start"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
 				<i class="{{IconClass}}"></i>
 			</span>
-			<form id="fieldsSubmitForm_{{Directive.CleanedName}}" method="POST" action="/studio/main/addOrUpdateDirective" zero-target="{{view_state.directives_editor_targets}},#directivesFieldPills_{{Directive.CleanedName}},#directivesFieldAdd_{{Directive.CleanedName}},#fieldsSubmitForm_{{Directive.CleanedName}}" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
+			<form id="fieldsSubmitForm_{{Directive.CleanedName}}" method="POST" action="/studio/main/addOrUpdateDirective" zx-swap="#editorCard,#fileList,#renderer-card,#editorProgressContainer" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
 				<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 				<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 				<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
@@ -26,7 +26,7 @@
 				<input id="{{Directive.CleanedName}}Input" name="value" class="form-control" spellcheck="false" style="display:none; border:none; border-radius: 0;" placeholder="yAxis Fields" id="datepicker-icon-prepend" value="{{Directive.valueRaw}}">
 				<div id="directivesFieldPills_{{Directive.CleanedName}}" style="width:80%; min-height: 2.3rem; height:100%; top:0; left:0; padding-left:40px; display:flex; align-items:center;">
 					<div>
-					{{#if data.CurrentSqlFile.LastExecutionRequest.IsSuccess}}
+					{{#if data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastExecutionRequest.IsSuccess}}
 						{{#if Directive.HasValue}}
 						{{#each Directive.Parsed}}
 							<button class="btn btn-sm bg-azure-lt me-1" style="height:20px;" onclick="removeFieldValue{{Directive.CleanedName}}('{{this}}')">{{this}}</button>
@@ -149,7 +149,7 @@
 		<td class="text-center align-middle ps-4">
 			{{#if Directive.ValueRaw}}
 						<label class="form-check form-switch m-0">
-							<form method="POST" action="/studio/main/toggleSQLFileDirective" zero-target="{{view_state.directives_editor_targets}}" >
+							<form method="POST" action="/studio/main/toggleSQLFileDirective" zx-swap="#editorCard,#fileList,#renderer-card,#editorProgressContainer" >
 								<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 								<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 								<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}"/>
@@ -174,7 +174,7 @@
 					<span class="input-icon-addon pt-2" style="align-items:start"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
 						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chart-infographic" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M7 3v4h4" /><path d="M9 17l0 4" /><path d="M17 14l0 7" /><path d="M13 13l0 8" /><path d="M21 12l0 9" /></svg>
 					</span>
-					<form method="POST" action="/studio/main/addOrUpdateDirective" zero-target="{{view_state.directives_editor_targets}}" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
+					<form method="POST" action="/studio/main/addOrUpdateDirective" zx-swap="#editorCard,#fileList,#renderer-card,#editorProgressContainer" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
 						<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
@@ -221,7 +221,7 @@
 					<span class="input-icon-addon"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
 						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-h-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19 18v-8l-2 2" /><path d="M4 6v12" /><path d="M12 6v12" /><path d="M11 18h2" /><path d="M3 18h2" /><path d="M4 12h8" /><path d="M3 6h2" /><path d="M11 6h2" /></svg>
 					</span>
-					<form method="POST" action="/studio/main/addOrUpdateDirective" zero-target="{{view_state.directives_editor_targets}}" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
+					<form method="POST" action="/studio/main/addOrUpdateDirective" zx-swap="#editorCard,#fileList,#renderer-card,#editorProgressContainer" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
 						<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
@@ -252,7 +252,7 @@
 					<span class="input-icon-addon"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
 						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-h-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17 12a2 2 0 1 1 4 0c0 .591 -.417 1.318 -.816 1.858l-3.184 4.143l4 0" /><path d="M4 6v12" /><path d="M12 6v12" /><path d="M11 18h2" /><path d="M3 18h2" /><path d="M4 12h8" /><path d="M3 6h2" /><path d="M11 6h2" /></svg>
 					</span>
-					<form method="POST" action="/studio/main/addOrUpdateDirective" zero-target="{{view_state.directives_editor_targets}}" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
+					<form method="POST" action="/studio/main/addOrUpdateDirective" zx-swap="#editorCard,#fileList,#renderer-card,#editorProgressContainer" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
 						<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
@@ -272,7 +272,7 @@
 				</span>
 			</td>
 		</tr>
-		<!--- SUBTITLE DIRECTIVE --->
+		<!--- TAGS DIRECTIVE --->
 		<tr>
 			{{> directiveDisabledColumn Directive=data.CurrentSqlFile.NamedDirectives.Tags}}
 
@@ -283,7 +283,7 @@
 					<span class="input-icon-addon"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
 						<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-tag"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M7.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M3 6v5.172a2 2 0 0 0 .586 1.414l7.71 7.71a2.41 2.41 0 0 0 3.408 0l5.592 -5.592a2.41 2.41 0 0 0 0 -3.408l-7.71 -7.71a2 2 0 0 0 -1.414 -.586h-5.172a3 3 0 0 0 -3 3z" /></svg>
 					</span>
-					<form method="POST" action="/studio/main/addOrUpdateDirective" zero-target="{{view_state.directives_editor_targets}}" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
+					<form method="POST" action="/studio/main/addOrUpdateDirective" zx-swap="#editorCard,#fileList,#renderer-card,#editorProgressContainer" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
 						<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
@@ -303,6 +303,45 @@
 				</span>
 			</td>
 		</tr>
+		<!--- MONGODB-QUERY DIRECTIVE --->
+		{{#if data.CurrentSqlFile.ShouldLoadMongoDbEditor}}
+			<tr>
+				{{> directiveDisabledColumn Directive=data.CurrentSqlFile.NamedDirectives.MongoDB-Query}}
+
+				{{> directiveTitleColumn Directive=data.CurrentSqlFile.NamedDirectives.MongoDB-Query}}
+
+				<td class="p-0 d-flex flex-wrap align-items-center" style="min-height: 34px; width: 100% !important; background-color: #151F2C !important;">
+					<div class="input-icon d-flex flex-row align-items-center w-100">
+						<span class="input-icon-addon"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
+							<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-database"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 6m-8 0a8 3 0 1 0 16 0a8 3 0 1 0 -16 0" /><path d="M4 6v6a8 3 0 0 0 16 0v-6" /><path d="M4 12v6a8 3 0 0 0 16 0v-6" /></svg>
+						</span>
+						<form action="/studio/main" method="GET" zx-swap="#editorCard,#fileList,#renderer-card,#editorProgressContainer">
+							{{#each view_state.params}}
+								{{#unless (eq key "EditorPanelView")}}
+									<input type="hidden" name="{{key}}" value="{{value}}">
+								{{/unless}}
+							{{/each}}
+							<input type="hidden" name="EditorPanelView" value="mongodb-query">
+							<button style="" type="submit" class="nav-link text-info py-0 ps-5 ms-2" aria-selected="true" role="tab" style="background-color: #151F2C !important; border-radius:0; border-top:none; border-left:none; border-right:none; margin:0; height:100%; width: 100%;">
+								Go to MongoDB Editor
+								<!--- {{#if data.CurrentSqlFile.HasDirectiveErrors}}
+								<span class="status-dot status-dot-animated status-orange ms-2"></span>
+								{{/if}} --->
+							</button>
+						</form>
+					</div>
+					{{> directiveErrorRow
+						Directive=data.CurrentSqlFile.NamedDirectives.MongoDB-Query
+					}}
+				</td>
+
+				<td class="align-middle text-center">
+					<span type="button" class="" data-bs-trigger="hover" data-bs-toggle="popover" title="@tags (string)" data-bs-content="Searchable words for your chart">
+						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-help-hexagon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.875 6.27c.7 .398 1.13 1.143 1.125 1.948v7.284c0 .809 -.443 1.555 -1.158 1.948l-6.75 4.27a2.269 2.269 0 0 1 -2.184 0l-6.75 -4.27a2.225 2.225 0 0 1 -1.158 -1.948v-7.285c0 -.809 .443 -1.554 1.158 -1.947l6.75 -3.98a2.33 2.33 0 0 1 2.25 0l6.75 3.98h-.033z" /><path d="M12 16v.01" /><path d="M12 13a2 2 0 0 0 .914 -3.782a1.98 1.98 0 0 0 -2.414 .483" /></svg>
+					</span>
+				</td>
+			</tr>
+		{{/if}}
 		<!--- BASELINES DIRECTIVE --->
 		<tr>
 			{{> directiveDisabledColumn Directive=data.CurrentSqlFile.NamedDirectives.baselines}}
@@ -382,14 +421,14 @@
 					<span class="input-icon-addon pt-2" style="align-items:start"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
 						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-axis-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 13v.01" /><path d="M4 9v.01" /><path d="M4 5v.01" /><path d="M17 20l3 -3l-3 -3" /><path d="M4 17h16" /></svg>
 					</span>
-					<form method="POST" action="/studio/main/addOrUpdateDirective" zero-target="{{view_state.directives_editor_targets}}" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
+					<form method="POST" action="/studio/main/addOrUpdateDirective" zx-swap="#editorCard,#fileList,#renderer-card,#editorProgressContainer" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
 						<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
 						<input type="hidden" name="Directive" value="category">
 						<input type="submit" style="display:none;">
-						<select name="value" class="form-select form-control {{#if data.CurrentSqlFile.LastExecutionRequest.IsSuccess}}text-muted{{else}}text-info{{/if}}" style="border:none; border-radius: 0;">
-							{{#if data.CurrentSqlFile.LastExecutionRequest.IsSuccess}}
+						<select name="value" class="form-select form-control {{#if data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastExecutionRequest.IsSuccess}}text-muted{{else}}text-info{{/if}}" style="border:none; border-radius: 0;">
+							{{#if data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastExecutionRequest.IsSuccess}}
 								<option value="">Select primary category</option>
 								{{#each data.CurrentSqlFile.NamedDirectives.Category.AvailableFields}}
 									{{#select (lowerCase data.CurrentSqlFile.NamedDirectives.Category.ValueRaw)}}<option value="{{lowerCase this}}">{{this}}</option>{{/select}}
@@ -467,7 +506,7 @@
 					<span class="input-icon-addon pt-2" style="align-items:start"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
 						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-percentage" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17 17m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M7 7m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /><path d="M6 18l12 -12" /></svg>
 					</span>
-					<form id="fieldsSubmitForm_stacking-mode" method="POST" action="/studio/main/addOrUpdateDirective" zero-target="{{view_state.directives_editor_targets}}" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
+					<form id="fieldsSubmitForm_stacking-mode" method="POST" action="/studio/main/addOrUpdateDirective" zx-swap="#editorCard,#fileList,#renderer-card,#editorProgressContainer" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
 						<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">
@@ -523,7 +562,7 @@
 					<span class="input-icon-addon pt-2" style="align-items:start"><!-- Download SVG icon from http://tabler-icons.io/i/calendar -->
 						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-transform" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 6a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /><path d="M21 11v-3a2 2 0 0 0 -2 -2h-6l3 3m0 -6l-3 3" /><path d="M3 13v3a2 2 0 0 0 2 2h6l-3 -3m0 6l3 -3" /><path d="M15 18a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
 					</span>
-					<form id="fieldsSubmitForm_formats" method="POST" action="/studio/main/addOrUpdateDirective" zero-target="{{view_state.directives_editor_targets}},#directivesFieldPills_formats,#directivesFieldAdd_formats,#fieldsSubmitForm_formats" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
+					<form id="fieldsSubmitForm_formats" method="POST" action="/studio/main/addOrUpdateDirective" zx-swap="{{view_state.directives_editor_targets}},#directivesFieldPills_formats,#directivesFieldAdd_formats,#fieldsSubmitForm_formats" onchange="this.querySelector('input[type=\'submit\']').click(); document.getElementById('editorProgress').classList.remove('d-none');">
 						<input type="hidden" name="goto" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="goto_fail" value="{{view_state.save_or_update_file_redirect}}"/>
 						<input type="hidden" name="FullName" value="{{data.CurrentSqlFile.FullName}}">

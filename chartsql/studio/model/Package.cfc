@@ -23,14 +23,21 @@ component accessors="true" {
 		required string path,
 		required ChartSQLStudio ChartSQLStudio,
 		required string FriendlyName,
+		required string UniqueId,
+		string DashId,
 		string PublisherKey
 	){
 		variables.path = path;
 		variables.SqlFiles = [];
 		variables.FriendlyName = arguments.FriendlyName;
 		variables.ChartSQLStudio = arguments.ChartSQLStudio;
-		variables.UniqueId = variables.ChartSQLStudio.generateUniqueIdForPackage(arguments.FriendlyName);
+		variables.UniqueId = arguments.UniqueId;
+		// variables.UniqueId = variables.ChartSQLStudio.generateUniqueIdForPackage(arguments.FriendlyName);
 		variables.IsReadOnly = false;
+
+		// writeDump(callStackGet());
+		// abort;
+
 
 		variables.Storys = [];
 		variables.IsLoadingConfig = false;
@@ -39,7 +46,11 @@ component accessors="true" {
 			variables.PublisherKey = arguments.PublisherKey;
 		}
 
-		this.loadConfig();
+		if(isDefined("arguments.DashId")){
+			variables.DashId = arguments.DashId;
+		}
+
+		// this.loadConfig();
 		variables.ChartSQLStudio.addPackage(this);
 		return this;
 	}
@@ -47,8 +58,7 @@ component accessors="true" {
 
 	public function setIsDefaultPackage(required boolean IsDefaultPackage){
 		variables.IsDefaultPackage = arguments.IsDefaultPackage;
-
-		this.saveConfig();
+		variables.ChartSQLStudio.saveConfig();
 	}
 
 	public function addStory(required Story Story){
@@ -74,7 +84,7 @@ component accessors="true" {
 		var Story = new Story(
 			argumentCollection = args
 		);
-		this.saveConfig();
+		variables.ChartSQLStudio.saveConfig();
 		return Story;
 	}
 
@@ -90,7 +100,7 @@ component accessors="true" {
 			}
 		}
 		variables.Storys = newStorys;
-		this.saveConfig();
+		variables.ChartSQLStudio.saveConfig();
 	}
 
 	public optional function findStoryById(
@@ -123,7 +133,15 @@ component accessors="true" {
 		if(!directoryExists(directory)){
 			directoryCreate(directory, true);
 		}
-		return new Package(path=directory, ChartSQLStudio=ChartSQLStudio, FriendlyName=FriendlyName);
+
+		var uniqueId = ChartSQLStudio.generateUniqueIdForPackage(FriendlyName);
+
+		return new Package(
+			path=directory,
+			ChartSQLStudio=ChartSQLStudio,
+			FriendlyName=FriendlyName,
+			UniqueId=uniqueId
+		);
 	}
 
 	public function getPackagePublisher(){
@@ -146,13 +164,18 @@ component accessors="true" {
 		return files;
 	}
 
-	
+
 	public function setDefaultStudioDatasource(StudioDatasource StudioDatasource){
 		variables.DefaultStudioDatasource = arguments.StudioDatasource;
 		//Sets the value into the config
-		this.saveConfig();
+		variables.ChartSQLStudio.saveConfig();
 	}
-	
+
+	public function setPublisherKey(required string PublisherKey){
+		variables.PublisherKey = arguments.PublisherKey;
+		variables.ChartSQLStudio.saveConfig();
+	}
+
 	public function setUniqueId(required string UniqueId){
 		variables.UniqueID = arguments.UniqueId;
 	}
@@ -292,7 +315,6 @@ component accessors="true" {
 	public function setFriendlyName(required string FriendlyName){
 		variables.FriendlyName = arguments.FriendlyName;
 		variables.UniqueId = variables.ChartSQLStudio.generateUniqueIdForPackage(arguments.FriendlyName);
-		this.saveConfig();
 		variables.ChartSQLStudio.saveConfig();
 	}
 
@@ -303,111 +325,133 @@ component accessors="true" {
 	}
 
 	/**
+	 * Returns all of the dashId for all SqlFiles in the package. This is used by package
+	 * publishing to determine which dashIds are already published, and trash any dashids
+	 * that are no longer in the package.
+	 */
+	public array function getAllDashIds(){
+
+		var dashIds = [];
+		for(var sqlFile in variables.SqlFiles){
+			var directives = sqlFile.getParsedDirectives();
+			if(isDefined("directives['dash-id']")){
+
+				var dashId = directives['dash-id'];
+				if(len(trim(dashId)) gt 0){
+					arrayAppend(dashIds, directives['dash-id']);
+				}
+			}
+		}
+
+		return dashIds;
+	}
+
+	/**
 	 * Loads the configuration file for the package and creates
 	 * one if it does not exist. The package config will hold meta data about
 	 * the package that will be used for publishing and other features.
 	 */
-	public function loadConfig(){
-		var basePath = this.getPath();
-		var file = basePath & server.separator.file & "package.config.json";
-		if(!fileExists(file)){
-			variables.config = structNew("ordered");
-			config.Path = this.getPath();
-			this.saveConfig();
-		} else {
+	// public function loadConfig(){
+	// 	var basePath = this.getPath();
+	// 	var file = basePath & server.separator.file & "package.config.json";
+	// 	if(!fileExists(file)){
+	// 		variables.config = structNew("ordered");
+	// 		config.Path = this.getPath();
+	// variables.ChartSQLStudio.saveConfig();
+	// 	} else {
 
-			// When we are loading the config then we do not want to save it
-			// if any related objects call saveConfig();
-			variables.IsLoadingConfig = true;
+	// 		// When we are loading the config then we do not want to save it
+	// 		// if any related objects call saveConfig();
+	// 		variables.IsLoadingConfig = true;
 
-			var config = fileRead(file);
-			config = deserializeJSON(config);
+	// 		var config = fileRead(file);
+	// 		config = deserializeJSON(config);
 
-			if(isDefined("config.DefaultStudioDatasource.Name")){
-				// Only if the datasource exists will we load it. Otherwise we will just ignore it and it will not be
-				// set or saved
-				DefaultStudioDatasourceOptional = variables.ChartSQLStudio.findStudioDatasourceByName(config.DefaultStudioDatasource.Name);
-				if(DefaultStudioDatasourceOptional.exists()){
-					variables.DefaultStudioDatasource = DefaultStudioDatasourceOptional.get();
-				}
-			}
+	// 		// if(isDefined("config.DefaultStudioDatasource.Name")){
+	// 		// 	// Only if the datasource exists will we load it. Otherwise we will just ignore it and it will not be
+	// 		// 	// set or saved
+	// 		// 	DefaultStudioDatasourceOptional = variables.ChartSQLStudio.findStudioDatasourceByName(config.DefaultStudioDatasource.Name);
+	// 		// 	if(DefaultStudioDatasourceOptional.exists()){
+	// 		// 		variables.DefaultStudioDatasource = DefaultStudioDatasourceOptional.get();
+	// 		// 	}
+	// 		// }
 
-			if (isDefined("config.IsReadOnly")) {
-				this.setIsReadOnly(config.IsReadOnly);
-			}
+	// 		if (isDefined("config.IsReadOnly")) {
+	// 			this.setIsReadOnly(config.IsReadOnly);
+	// 		}
 
-			if (isDefined("config.DashId")) {
-				this.setDashId(config.DashId);
-			}
+	// 		// if (isDefined("config.DashId")) {
+	// 		// 	this.setDashId(config.DashId);
+	// 		// }
 
-			if (isDefined("config.PublisherKey")) {
-				this.setPublisherKey(config.PublisherKey);
-			}
+	// 		// if (isDefined("config.PublisherKey")) {
+	// 		// 	this.setPublisherKey(config.PublisherKey);
+	// 		// }
 
-			//Load the stories
-			if(isDefined("config.Storys")){
-				for(var storyConfig in config.Storys){
-					if(!this.findStoryById(storyConfig.Id).exists()){
+	// 		//Load the stories
+	// 		// if(isDefined("config.Storys")){
+	// 		// 	for(var storyConfig in config.Storys){
+	// 		// 		if(!this.findStoryById(storyConfig.Id).exists()){
 
-						var Story = this.createStory(
-							Package = this,
-							Name = storyConfig.Name,
-							Id = storyConfig.Id
-						);
+	// 		// 			var Story = this.createStory(
+	// 		// 				Package = this,
+	// 		// 				Name = storyConfig.Name,
+	// 		// 				Id = storyConfig.Id
+	// 		// 			);
 
-						// Create the Slides
-						for(var slideConfig in storyConfig.Slides){
-							var Slide = Story.createSlide(
-								Title = slideConfig.Title,
-								FullName = slideConfig.FullName,
-								Id = slideConfig.Id
-							);
-						}
-					}
-				}
-			}
+	// 		// 			// Create the Slides
+	// 		// 			for(var slideConfig in storyConfig.Slides){
+	// 		// 				var Slide = Story.createSlide(
+	// 		// 					Title = slideConfig.Title,
+	// 		// 					FullName = slideConfig.FullName,
+	// 		// 					Id = slideConfig.Id
+	// 		// 				);
+	// 		// 			}
+	// 		// 		}
+	// 		// 	}
+	// 		// }
 
-			// Reset flag so that we can save the config again
-			// when we are done loading
-			variables.IsLoadingConfig = false;
-		}
-		return config;
-	}
+	// 		// Reset flag so that we can save the config again
+	// 		// when we are done loading
+	// 		variables.IsLoadingConfig = false;
+	// 	}
+	// 	return config;
+	// }
 
-	public function saveConfig(){
+	// public function saveConfig(){
 
-		// When we are loading the config then we do not want to save it
-		// if any related objects call saveConfig();
-		if(variables.IsLoadingConfig){
-			return;
-		}
+	// 	// When we are loading the config then we do not want to save it
+	// 	// if any related objects call saveConfig();
+	// 	if(variables.IsLoadingConfig){
+	// 		return;
+	// 	}
 
-		var basePath = this.getPath();
-		var file = basePath & server.separator.file & "package.config.json";
+	// 	var basePath = this.getPath();
+	// 	var file = basePath & server.separator.file & "package.config.json";
 
-		var out = new zero.serializerFast(this, {
-			IsReadOnly:{},
-			DefaultStudioDatasource:{
-				Name:{}
-			},
-			DashId:{},
-			PublisherKey:{},
-			Storys:{
-				Name:{},
-				Id:{},
-				Slides:{
-					Title:{},
-					FullName:{},
-					Id:{}
-				}
-			}
-		});
+	// 	var out = new zero.serializerFast(this, {
+	// 		IsReadOnly:{},
+	// 		DefaultStudioDatasource:{
+	// 			Name:{}
+	// 		},
+	// 		DashId:{},
+	// 		PublisherKey:{},
+	// 		Storys:{
+	// 			Name:{},
+	// 			Id:{},
+	// 			Slides:{
+	// 				Title:{},
+	// 				FullName:{},
+	// 				Id:{}
+	// 			}
+	// 		}
+	// 	});
 
-		var ConfigFile = ConfigFile::fromStruct(out);
-		ConfigFile.setPath(file);
-		ConfigFile.write();
-		// fileWrite(file, serializeJSON(variables.config));
-	}
+	// 	var ConfigFile = ConfigFile::fromStruct(out);
+	// 	ConfigFile.setPath(file);
+	// 	ConfigFile.write();
+	// 	// fileWrite(file, serializeJSON(variables.config));
+	// }
 
 	public optional function getLatestStory(){
 		if(variables.storys.len() == 0){

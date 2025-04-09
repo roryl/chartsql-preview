@@ -13,32 +13,24 @@
 				status-dot
 				{{#with PublishingResult}}
 				{{#if IsSuccess}}
-				status-success
-				{{else if IsError}}
-				status-red
-				{{else if IsRunning}}
-				status-dot-animated status-azure
-				{{else if IsCancelled}}
-				status-orange
+					bg-green-lt
+				{{else}}
+					bg-orange-lt
 				{{/if}}
 				{{/with}}
 			"></span>
 		</td>
 		<td class="px-3">
 			<small>
-				<span class="text-muted me-3">TYPE</span>
+				<span class="text-muted me-3">type</span>
 			</small>
 			<span class="
 				badge
 				{{#with PublishingResult}}
 				{{#if IsSuccess}}
-				bg-green-lt
-				{{else if IsError}}
-				bg-red-lt
-				{{else if IsRunning}}
-				bg-azure-lt
-				{{else if IsCancelled}}
-				bg-orange-lt
+					bg-green-lt
+				{{else}}
+					bg-orange-lt
 				{{/if}}
 				{{/with}}
 			">
@@ -47,21 +39,52 @@
 		</td>
 		<td class="px-3">
 			<small>
-				<span class="text-muted me-3">folder</span>
+				<span class="text-muted me-3">file</span>
+			</small>
+			<span class="
+				badge
+				{{#with PublishingResult}}
+				{{#if IsSuccess}}
+					bg-green-lt
+				{{else}}
+					bg-orange-lt
+				{{/if}}
+				{{/with}}
+			">
+				{{PublishingResult.PublishingRequest.SqlFile}}
+			</span>
+		</td>
+		<td class="px-3">
+			<small>
+				<span class="text-muted me-3">result</span>
+			</small>
+			<span class="
+				badge
+				{{#with PublishingResult}}
+				{{#if IsSuccess}}
+					bg-green-lt
+				{{else}}
+					bg-orange-lt
+				{{/if}}
+				{{/with}}
+			">
+				{{PublishingResult.ResultType}}
+			</span>
+		</td>
+		<td class="px-3">
+			<small>
+				<span class="text-muted me-3">message</span>
 			</small>
 			 <span class="
 			 	badge
-			 	{{#if IsSuccess}}
-				bg-green-lt
-				{{else if IsError}}
-				bg-red-lt
-				{{else if IsRunning}}
-				bg-azure-lt
-				{{else if IsCancelled}}
-				bg-orange-lt
+			 	{{#if PublishingResult.IsSuccess}}
+					bg-green-lt
+				{{else}}
+					bg-orange-lt
 				{{/if}}
 			">
-				{{PackageFullName}}
+				{{PublishingResult.ResultMessage}}
+				{{!-- <textarea>{{{PublishingResult.ResultMessage}}}</textarea> --}}
 			 </span>
 		</td>
 	</tr>

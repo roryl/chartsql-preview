@@ -30,8 +30,10 @@ component extends="zero.zero" {
 	processingdirective preserveCase="true";
 
 	variables.zero.devmode = fileRead("devmode.txt");
+	variables.zero.ormEnabled = false;
 	variables.zero.checkReloadOrm = false;
-	variables.zero.maintainScrollPosition = cgi.path_info.contains("/studio/settings");
+	// variables.zero.maintainScrollPosition = cgi.path_info.contains("/studio/settings");
+	variables.zero.maintainScrollPosition = false;
 	variables.zero.scrollPositionBackgroundColor = "##151f2c;";
 	variables.framework.defaultSubsystem = "studio";
 
@@ -85,39 +87,6 @@ component extends="zero.zero" {
 
 		var ChartSQLStudio = this.getChartSQLStudio();
 
-		var openedDropdownMenuItems = request.context.client_state?.opened_dropdown_menu_items ?: "";
-
-		arguments.controllerResult.MenuItems = this.serializeFast(ChartSQLStudio.getMenuItems(), {
-			Name:{},
-			Link:{},
-			OpenNewTab:{},
-			IconClass:{},
-			Location:{},
-			IsActive: function(MenuItem){
-				var pathInfo = cgi.path_info;
-				var pathLength = len(MenuItem.getLink());
-				if(pathInfo contains MenuItem.getLink()){
-					return true;
-				} else {
-					return false;
-				}
-			},
-			HasChildren:{},
-			Children:{
-				Name:{},
-				Link:{},
-				IconClass:{}
-			},
-			Tooltip:{},
-			IsOpen: function (MenuItem) {
-				if (openedDropdownMenuItems.contains(MenuItem.getName())) {
-					return true;
-				} else {
-					return false;
-				}
-			}
-		})
-
 		// if (isDefined("request.extensionsContext")) {
 			ChartSQLStudio.executeExtensions("onResult", {
 				requestContext: request.extensionsContext,
@@ -134,57 +103,145 @@ component extends="zero.zero" {
 		var ChartSQLStudio = this.getChartSQLStudio();
 		var qs = ChartSQLStudio.getEditorQueryString();
 
-		arguments.controllerResult.data.GlobalChartSQLStudio = this.serializeFast(ChartSQLStudio, {
-			isPackagesDropdownOpened: function (GlobalChartSQLStudio) {
-				if (openedDropdownMenuItems.contains("packages-menu-item")) {
-					return true;
-				} else {
-					return false;
-				}
-			},
-			Packages:{
-				UniqueId:{},
-				FriendlyName:{},
-				IsReadOnly:{},
-				OpenPackageParams: function(Package){
-					var qs = qs.clone();
-					qs.setValue("PackageName", Package.getUniqueId())
-					.delete("Filter")
-					.delete("SchemaFilter");
-
-					var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
-					if(StudioDatasourceOptional.exists()){
-						var StudioDatasource = StudioDatasourceOptional.get();
-						qs.setValue("StudioDatasource", StudioDatasource.getName());
-					}
-
-					return qs.getFields();
-				},
-				OpenPackageLink: function(Package){
-					var qs = qs.clone();
-					qs.setValue("PackageName", Package.getUniqueId())
-					.delete("Filter")
-					.delete("SchemaFilter");
-
-					var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
-					if(StudioDatasourceOptional.exists()){
-						var StudioDatasource = StudioDatasourceOptional.get();
-						qs.setValue("StudioDatasource", StudioDatasource.getName());
-					}
-
-					return qs.get();
-				},
-			}
-		});
-
 		if(this.getSubsystem() == "studio" and this.getSection() == "main"){
 			var qs = new zero.plugins.zerotable.model.queryStringNew(this.getQueryString());
 			qs.setBasePath("/studio/main");
-			ChartSQLStudio.setLastPresentationUrl(qs.clone().setValue("PresentationMode", "true").setValue("RenderPanelView", "chart").get());
-			ChartSQLStudio.setLastEditorUrl(qs.clone().delete("PresentationMode").get());
+
+			if(this.getItem() == "list") {
+				ChartSQLStudio.setLastPresentationUrl(qs.clone().setValue("PresentationMode", "true").setValue("RenderPanelView", "chart").get());
+				ChartSQLStudio.setLastEditorUrl(qs.clone().delete("PresentationMode").get());
+			}
+
 		}
 
 		if(this.getCgiRequestMethod() == "GET"){
+
+			var openedDropdownMenuItems = request.context.client_state?.opened_dropdown_menu_items ?: "";
+
+			arguments.controllerResult.MenuItems = this.serializeFast(ChartSQLStudio.getMenuItems(), {
+				Name:{},
+				Link:{},
+				StepOrder: {},
+				OpenNewTab:{},
+				IconClass:{},
+				Location:{},
+				IsActive: function(MenuItem){
+					var pathInfo = cgi.path_info;
+					var pathLength = len(MenuItem.getLink());
+					if(pathInfo contains MenuItem.getLink()){
+						return true;
+					} else {
+						return false;
+					}
+				},
+				HasChildren:{},
+				Children:{
+					Name:{},
+					Link:{},
+					IconClass:{}
+				},
+				Tooltip:{},
+				IsOpen: function (MenuItem) {
+					if (openedDropdownMenuItems.contains(MenuItem.getName())) {
+						return true;
+					} else {
+						return false;
+					}
+				}
+			});
+
+			arguments.controllerResult.data.GlobalChartSQLStudio = this.serializeFast(ChartSQLStudio, {
+				isPackagesDropdownOpened: function (GlobalChartSQLStudio) {
+					if (openedDropdownMenuItems.contains("packages-menu-item")) {
+						return true;
+					} else {
+						return false;
+					}
+				},
+				isWorkspacesDropdownOpened: function (GlobalChartSQLStudio) {
+					if (openedDropdownMenuItems.contains("workspaces-menu-item")) {
+						return true;
+					} else {
+						return false;
+					}
+				},
+				StudioDatasources: {
+					Name: {}
+				},
+				Workspaces: {
+					UniqueId: {},
+					FriendlyName: {},
+					OpenWorkspaceLink: function(Workspace){
+						var qs = new zero.plugins.zerotable.model.queryStringNew(urlDecode(cgi.query_string));
+						qs.setBasePath("/studio/main");
+						qs.setValue("WorkspaceName", Workspace.getUniqueId())
+						.delete("PackageName")
+						.delete("EditWorkspace")
+						.delete("EditPackage")
+						.delete("Filter")
+						.delete("SchemaFilter");
+						return qs.get();
+					}
+				},
+				Packages:{
+					UniqueId:{},
+					FriendlyName:{},
+					IsReadOnly:{},
+					IsFiltered: function (Package) {
+						if (isNull(request.context.WorkspaceName) || isEmpty(request.context.WorkspaceName)) {
+							return false;
+						}
+
+						// Get WorkspaceName from the request URL
+						var WorkspaceOptional = ChartSQLStudio.findWorkspaceByUniqueId(request.context.WorkspaceName);
+						if (!WorkspaceOptional.exists()) {
+							return true;
+						}
+						var Workspace = WorkspaceOptional.get();
+
+						var PackageOptional = Workspace.findPackageByUniqueId(
+							Package.getUniqueId()
+						);
+						if (PackageOptional.exists()) {
+							return false;
+						}
+
+						return true;
+					},
+					OpenPackageParams: function(Package){
+						var qs = qs.clone();
+						qs.setValue("PackageName", Package.getUniqueId())
+						.delete("Filter")
+						.delete("EditWorkspace")
+						.delete("EditPackage")
+						.delete("SchemaFilter");
+
+						var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
+						if(StudioDatasourceOptional.exists()){
+							var StudioDatasource = StudioDatasourceOptional.get();
+							qs.setValue("StudioDatasource", StudioDatasource.getName());
+						}
+
+						return qs.getFields();
+					},
+					OpenPackageLink: function(Package){
+						var qs = qs.clone();
+						qs.setValue("PackageName", Package.getUniqueId())
+						.delete("EditWorkspace")
+						.delete("EditPackage")
+						.delete("Filter")
+						.delete("SchemaFilter");
+
+						var StudioDatasourceOptional = Package.getDefaultStudioDatasource();
+						if(StudioDatasourceOptional.exists()){
+							var StudioDatasource = StudioDatasourceOptional.get();
+							qs.setValue("StudioDatasource", StudioDatasource.getName());
+						}
+
+						return qs.get();
+					},
+				}
+			});
 
 			controllerResult.data.isGlobalSearching = false;
 			controllerResult.view_state.globalSearchQuery = nullValue();
@@ -205,6 +262,7 @@ component extends="zero.zero" {
 			}
 
 			controllerResult.view_state.section = this.getSection();
+
 			// The editor link should remove the PresentationMode variable from the URL
 			// to get back to the same file as we were in preview mode
 			controllerResult.view_state.editor_link = ChartSQLStudio.getLastEditorUrl();
@@ -276,11 +334,24 @@ component extends="zero.zero" {
 			var response = doc.toString();
 		}
 		request.timerData.extensionsOnRender = getTickCount() - extensionsRenderStartTick;
-
-		// writeDump(request.timerData);
-		// abort;
-		// writeDump(application.performanceData);
 		return response;
+	}
+
+	/**
+	 * Generates a unique hash for the URL that we can use for caching page content
+	 */
+	function getUrlHashKey(){
+
+		var urlKeys = structKeyArray(url).sort("text");
+
+		var hashKey = "";
+		for(var key in urlKeys){
+			hashKey &= url[key];
+		}
+
+		var hashKey = hash(hashKey);
+
+		return hashKey;
 	}
 
 	function onError(error, template){
@@ -321,9 +392,6 @@ component extends="zero.zero" {
 	function onFailure(error){
 		// writeDump(error);
 		// abort;
-
-
-
 		writeLog(file="onFailure", text=error.message);
 		if(arguments.error.type == "auth.resourceNotAuthorized"){
 			header statuscode="400" statustext="Method Not Allowed";
@@ -379,8 +447,6 @@ component extends="zero.zero" {
 
 		var dirPath = homeDirectory & server.separator.file & "ChartSQL" & server.separator.file & installLocation;
 
-		server.installLocation = dirPath;
-
 		if(!directoryExists(dirPath)){
 			directoryCreate(dirPath, true);
 			application.delete("ChartSQLStudio");
@@ -397,7 +463,7 @@ component extends="zero.zero" {
 				homeDirectory = server.system.environment.appdata;
 			}
 
-			var configPath = dirPath & server.separator.file & "ChartSQLStudio.config.json";
+			var userDirectory = dirPath & server.separator.file;
 			var dbBasePath = dirPath & server.separator.file & "db";
 			var defaultScriptsPath = dirPath & server.separator.file & "sql_scripts";
 
@@ -415,7 +481,7 @@ component extends="zero.zero" {
 				fileWrite(gettingStartedPath, fileRead("getting_started.sql"));
 			}
 
-			application.ChartSQLStudio = new studio.model.ChartSQLStudio(configPath);
+			application.ChartSQLStudio = new studio.model.ChartSQLStudio(userDirectory);
 
 			// Set the model hash so that we can detect when the model code has changed
 			application.ChartSQLStudio.setStudioModelHash(studioModelHash);

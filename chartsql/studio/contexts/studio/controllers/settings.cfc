@@ -147,6 +147,73 @@ component accessors="true" {
 		return out;
 	}
 
+	public struct function workspaces(
+		boolean ShowCreate = false,
+		string EditWorkspace = ""
+	) method="GET" {
+		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+		var qs = new zero.plugins.zerotable.model.queryStringNew(variables.fw.getQueryString());
+		qs.setBasePath("/studio/settings/workspaces");
+		var args = arguments;
+		var out = {
+			"success":true,
+			"data":{
+				ChartSQLStudio = variables.fw.serializeFast(ChartSQLStudio, {
+					StudioDatasources:{
+						Name:{}
+					},
+					Workspaces: {
+						UniqueId: {},
+						FriendlyName: {},
+						WorkspacePackages: {
+							DefaultStudioDatasource: {
+								Name: {}
+							},
+							Package: {
+								UniqueId:{},
+								FriendlyName:{},
+								IsReadOnly:{},
+								Path:{},
+								DefaultStudioDatasource:{
+									Name:{}
+								},
+								IsDefaultPackage: {},
+								DashId:{},
+								PublisherKey:{}
+							}
+						},
+						IsEditing: function(Workspace){
+							if (Workspace.getUniqueId() == args.EditWorkspace){
+								return true;
+							} else {
+								return false;
+							}
+						},
+						OpenLink: function(Workspace){
+							var link = new zero.plugins.zerotable.model.queryStringNew(variables.fw.getQueryString());
+							link.setBasePath("/studio/main");
+							return link.clone().delete("EditWorkspace").setValue("WorkspaceName", Workspace.getUniqueId()).get();
+						},
+						EditLink: function(Workspace){
+							return qs.clone().setValue("EditWorkspace", Workspace.getUniqueId()).get();
+						},
+						CloseEditLink: function(){
+							return qs.clone().delete("EditWorkspace").get();
+						}
+					}
+				})
+			},
+			"view_state":{
+				"show_create":ShowCreate,
+				"links":{
+					"open_create":qs. clone().setValue("ShowCreate",true).get(),
+					"close_create":qs. clone().delete("ShowCreate").get(),
+				}
+			}
+		}
+		return out;
+	}
+
 	/**
 	 * Deletes the ChartSQLStudio object from the application scope which will
 	 * force it to be reloaded on the next request
@@ -160,7 +227,7 @@ component accessors="true" {
 			success:true
 		};
 	}
-	
+
 	/**
 	 * Changes the logo. It saves a file to the homedirectory 'ChartSQL' directory,
 	 * then it sets the ExpandedLogoURL
@@ -170,7 +237,7 @@ component accessors="true" {
 	) method="POST" {
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
 		var fileName = 'expanded_logo.png';
-		var filePath = server.installLocation & server.separator.file & fileName;
+		var filePath = ChartSQLStudio.getUserDirectory() & server.separator.file & fileName;
 
 		var uploadedFile = new zeromodel.data.FileUpload(file);
 		var blob = uploadedFile.toBinary();
@@ -182,7 +249,7 @@ component accessors="true" {
 			success:true
 		};
 	}
-	
+
 	/**
 	 * Changes the small logo. It saves a file to the homedirectory 'ChartSQL' directory,
 	 * then it sets the ExpandedLogoURL
@@ -191,10 +258,9 @@ component accessors="true" {
 		required string file
 	) method="POST" {
 		var ChartSQLStudio = variables.fw.getChartSQLStudio();
-		
-		x
+		var fileName = 'small-logo.png';
+		var filePath = ChartSQLStudio.getUserDirectory() & server.separator.file & fileName;
 
-		// Save file to server.installLocation
 		var uploadedFile = new zeromodel.data.FileUpload(file);
 		var blob = uploadedFile.toBinary();
 		var image = imageRead(blob);
@@ -206,8 +272,31 @@ component accessors="true" {
 		};
 	}
 
-	public struct function create(){
-		return {};
+	/**
+	 * Removes the expanded and small logos from the ChartSQLStudio object
+	 */
+	public struct function resetLogos() method="POST" {
+		var ChartSQLStudio = variables.fw.getChartSQLStudio();
+
+		// Return the default mascot image from the framework
+		var imageBlob = fileReadBinary(expandPath("/studio/wwwroot/assets/img/logo.fw.png"));
+		ChartSQLStudio.setLogoBinary(imageBlob);
+		var filePath = ChartSQLStudio.getUserDirectory() & server.separator.file & 'expanded_logo.png';
+		var image = imageRead(imageBlob);
+
+		imageWrite(image=image, destination=filePath, overwrite=true);
+
+		// Return the default mascot image from the framework
+		var imageBlob = fileReadBinary(expandPath("/studio/wwwroot/assets/img/mascot.fw.png"));
+		ChartSQLStudio.setMascotBinary(imageBlob);
+		var filePath = ChartSQLStudio.getUserDirectory() & server.separator.file & 'small-logo.png';
+		var image = imageRead(imageBlob);
+
+		imageWrite(image=image, destination=filePath, overwrite=true);
+
+		return {
+			success:true
+		};
 	}
 
 	public struct function read( required id ) {

@@ -33,7 +33,7 @@ component
 	}
 
 	public query function execute(SqlScript){
-		return this.executeSql(arguments.SqlScript.stripDirectives());
+		return this.executeSql(arguments.SqlScript.getExecutableSQL());
 	}
 
     /**

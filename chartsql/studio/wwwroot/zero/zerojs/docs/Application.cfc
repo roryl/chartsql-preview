@@ -1,0 +1,6 @@
+/**
+
+*/
+component {
+	this.name = "ZeroJS";
+}

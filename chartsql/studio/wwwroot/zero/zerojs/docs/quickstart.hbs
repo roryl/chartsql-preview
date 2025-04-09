@@ -1,0 +1,23 @@
+<!--- SERVER SIDE RENDERED HANDLEBARS TEMPLATE --->
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script src="../src/zero.js"></script>
+	<title>ZSX.js - QuickStart</title>
+</head>
+<body>
+	<h1>ZSX.js QuickStart</h1>
+
+	<a href="?hello=true" zx-swap="#targetContent">Hello</a>
+	<a href="?hello=false" zx-swap="#targetContent">Good Bye</a>
+
+	<div id="targetContent" style="width: 300px; height:100px;">
+		{{#if url.hello}}
+			Hello World
+		{{else}}
+			Goodbye World
+		{{/if}}
+	</div>
+</body>
+</html>

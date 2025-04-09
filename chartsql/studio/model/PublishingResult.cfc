@@ -16,10 +16,11 @@ component accessors="true" {
 		required PublishingRequest PublishingRequest,
 		required string ResultType,
 		struct ResultJson,
-		string ResultMessage
+		required string ResultMessage
 	){
 		variables.PublishingRequest = arguments.PublishingRequest;
 		variables.ResultJson = arguments.ResultJson?:{};
+		variables.ResultMessage = arguments.ResultMessage;
 
 		var ChartSQLStudio = variables.PublishingRequest.getChartSQLStudio();
 		ChartSQLStudio.addPublishingResult(this);

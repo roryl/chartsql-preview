@@ -45,6 +45,7 @@ component accessors="true" {
 	property name="hasFilterableColumns" setter="false";
 	property name="defaultSort" setter="false";
 	property name="useFastSerializer" setter="false";
+	property name="layout" setter="false";
 
 	/**
 	 * Initialize a ZeroTable
@@ -63,6 +64,7 @@ component accessors="true" {
 	 * @style A Struct containing key:value styles to use for the table. (ie `style={striped:true}`) Available styles are *striped*, *hover*,*bordered*, and *condensed*
 	 * @toolbar Settings to control additional features available through the toolbar. (ie `toolbar={show:true, tools={copy:false}}`)
 	 * @rowGroup Settings to group related rows together when displaying (ie rowGroup={columnName:"foo"})
+	 * @layout Whether the table is in a card or table layout, default is table
 	 * @return
 	 */
 	public zeroTable function init(required data Rows,
@@ -102,7 +104,8 @@ component accessors="true" {
 						  	}
 						  },
 						 boolean useFastSerializer=false,
-						 boolean showRowFilterButtons=true
+						 boolean showRowFilterButtons=true,
+						 string layout="table"
 
 						 ){
 
@@ -126,6 +129,10 @@ component accessors="true" {
 		variables.serializeRowsToSnakeCase = arguments.serializeRowsToSnakeCase?:true;
 		variables.useFastSerializer = arguments.useFastSerializer;
 		variables.showRowFilterButtons = arguments.showRowFilterButtons;
+		variables.layout = arguments.layout;
+
+		variables.validLayouts = ["table", "card"];
+
 
 		if(variables.direction == "asc"){
 			variables.isSortAsc = true;
@@ -183,11 +190,13 @@ component accessors="true" {
 					.delete(getFieldNameWithTablePrefix("offset"))
 					.delete(getFieldNameWithTablePrefix("more"))
 					//Not sure why jquery ajax is submitting an undefined variable, but delete it anyway
-					.delete(getFieldNameWithTablePrefix("undefined"));
+					.delete(getFieldNameWithTablePrefix("undefined"))
+					.delete(getFieldNameWithTablePrefix("layout"));
 
 		setMore(arguments.more);
 		setMax(arguments.max);
 		setOffset(arguments.offset);
+		setLayout(arguments.layout);
 
 		if(arguments.persistUrl){
 			var primaryParams = this.getPrimaryParamsAsStruct();
@@ -989,6 +998,14 @@ component accessors="true" {
 		variables.Rows.search(arguments.search);
 	}
 
+	public function setLayout(required string layout) {
+		if(!arrayContainsNoCase(variables.validLayouts, arguments.layout)){
+			throw("Invalid layout type. Valid layouts are: #variables.validLayouts.toList(", ")#");
+		}
+		variables.layout = arguments.layout;
+		variables.qs.setValue(getFieldNameWithTablePrefix("layout"), arguments.layout);
+	}
+
 	public function setMore(required numeric more){
 		variables.more = arguments.more;
 		variables.nextMore = variables.more + variables.max;
@@ -1071,7 +1088,12 @@ component accessors="true" {
 		zeroTableOut["style"] = this.getStyle();
 		zeroTableOut["toolbar"] = variables.toolbar?:{};
 		zeroTableOut["use_zero_ajax"] = this.getuseZeroAjax();
+		zeroTableOut["layout"] = this.getLayout();
 
+		for(var layout in variables.validLayouts){
+			zeroTableOut["layout_#layout#_link"] = this.getCurrentQueryString().setValue(getFieldNameWithTablePrefix("layout"), "#layout#").get();
+			zeroTableOut["is_layout_#layout#"] = variables.layout == layout;
+		}
 
 		if(variables.keyExists("tableName") and len(trim(variables.tableName)) gt 0){
 			zeroTableOut["table_name"] = variables.tableName;
@@ -1138,7 +1160,8 @@ component accessors="true" {
 							edit_message,
 							filters,
 							download_csv,
-							string show_columns
+							string show_columns,
+							string layout
 
 	){
 
@@ -1168,6 +1191,11 @@ component accessors="true" {
 		//SEARCHING
 		if(arguments.keyExists("search") and trim(arguments.search) != ""){
 			this.search(arguments.search);
+		}
+
+		//LAYOUT
+		if(arguments.keyExists("layout") and trim(arguments.layout) != ""){
+			this.setLayout(arguments.layout);
 		}
 
 		//DOWNLOAD CSV

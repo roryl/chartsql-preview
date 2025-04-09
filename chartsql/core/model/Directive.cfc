@@ -15,9 +15,14 @@ component accessors="true" {
 	property name="Validations";
 	property name="IsValid";
 	property name="IsSupported";
+	property name="IsSelectListDefaultValue" type="boolean" default="false" hint="If this is a select-list directive, is the default value selected";
 	property name="Errors";
 	property name="HasValue";
 	property name="IsCommentedOut";
+	property name="IsUserNamed" type="boolean" default="false";
+	property name="UserName" type="string" default="";
+	property name="CoreName" type="string" default="" hint="For user definable directives, this is the core name without the user defined part";
+	property name="SelectListSelectedValue" type="string" default="" hint="For select-list directives, this is the selected value from the UI to be used in the SQL";
 
 	public function init(
 		required SqlScript SqlScript,
@@ -26,7 +31,9 @@ component accessors="true" {
 		string ValueRaw,
 		required struct Validations,
 		required boolean IsSupported,
-		required boolean IsCommentedOut
+		required boolean IsCommentedOut,
+		required boolean IsUserNamed,
+		required string UserName = ""
 	){
 
 		variables.HasErrors = false;
@@ -38,6 +45,10 @@ component accessors="true" {
 		variables.IsValid = true;
 		variables.IsSupported = arguments.IsSupported;
 		variables.IsCommentedOut = arguments.IsCommentedOut;
+		variables.IsUserNamed = arguments.IsUserNamed;
+		variables.UserName = arguments.UserName;
+		variables.SelectListSelectedValue = "";
+		variables.IsSelectListDefaultValue = false;
 
 		if(arguments.keyExists("Parsed")){
 			variables.HasValue = true;
@@ -61,6 +72,15 @@ component accessors="true" {
 		//Lower case the values where the names match the types
 		if (lowerCaseTypes.keyExists(arguments.name)){
 			variables.ValueRaw = lCase(arguments.ValueRaw);
+		}
+
+		// If the directive IsUserNamed then we are going to remove the user name
+		// from the Name and set it as the core name so we know which real directive
+		// it is
+		if(variables.IsUserNamed){
+			variables.CoreName = replace(variables.Name, variables.UserName, "", "all");
+			//Remove trailing '-'
+			variables.CoreName = left(variables.CoreName, - 1);
 		}
 
 		return this;
@@ -103,9 +123,7 @@ component accessors="true" {
 
 		if(variables.name == "mongodb-query"){
 			if(isJson(variables.ValueRaw)){
-				return formatJSON(variables.ValueRaw);
-				// var Gson = new core.model.Gson(variables.valueRaw);
-				// return Gson.toString();
+				return variables.ValueRaw;
 			} else {
 				return toString(toBinary(variables.ValueRaw));
 			}
@@ -114,40 +132,35 @@ component accessors="true" {
 		}
 	}
 
-	public string function formatJSON(str) {
-		var fjson = '';
-		var pos = 1;
-		var strLen = len(arguments.str);
-		var indentStr = chr(9); // Adjust Indent Token If you Like
-		var newLine = chr(10); // Adjust New Line Token If you Like <BR>
+	public function resetSelectListSelection(){
+		this.setSelectListSelectedValue(variables.Parsed[1]);
+	}
 
-		for (var i=1; i<=strLen; i++) {
-			var char = mid(arguments.str,i,1);
+	public function setSelectListSelectedValue(string value){
+		//Check that the provided value is in the array of options
+		if(variables.Parsed.find(value) == 0){
+			throw(message="The value '#arguments.value#' provided is not in the list of options for '#variables.name#'", type="InvalidSelectListValue");
+		}
+		variables.SelectListSelectedValue = arguments.value;
 
-			if (char == '}' || char == ']') {
-				fjson &= newLine;
-				pos = pos - 1;
-
-				for (var j=1; j<pos; j++) {
-					fjson &= indentStr;
-				}
-			}
-
-			fjson &= char;
-
-			if (char == '{' || char == '[' || char == ',') {
-				fjson &= newLine;
-
-				if (char == '{' || char == '[') {
-					pos = pos + 1;
-				}
-
-				for (var k=1; k<pos; k++) {
-					fjson &= indentStr;
-				}
-			}
+		// writeDump(variables.SelectListSelectedValue == variables.Parsed[1]);
+		//If the value is the default value then we are going to set the flag
+		if(variables.SelectListSelectedValue == variables.Parsed[1]){
+			variables.IsSelectListDefaultValue = true;
+		} else {
+			variables.IsSelectListDefaultValue = false;
 		}
 
-		return fjson;
+	}
+
+	/**
+	 * Returns the Select List Selected Value or the default value if it is not set
+	 */
+	public function getSelectListSelectedValueOrDefault(){
+		if(variables.SelectListSelectedValue == ""){
+			return variables.Parsed[1];
+		} else {
+			return variables.SelectListSelectedValue;
+		}
 	}
 }

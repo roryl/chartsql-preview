@@ -5,7 +5,6 @@
 <!---
 	Setup the the PresentationMode script which currently allows the user
 	to draw a canvas overlaying the chart.  --->
-<cfhtmlhead><script src="/assets/editor/js/PresentationMode.js"></script></cfhtmlhead>
 <script>
 	ChartSQLStudio.presentationMode = new PresentationMode().init();
 </script>

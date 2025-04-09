@@ -1,11 +1,20 @@
 <div class="card-header">
 
 	<div class="card-title">
-		<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-package me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" /><path d="M12 12l8 -4.5" /><path d="M12 12l0 9" /><path d="M12 12l-8 -4.5" /><path d="M16 5.25l-8 4.5" /></svg>
+		<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-folder me-2">
+			<path stroke="none" d="M0 0h24v24H0z" fill="none" />
+			<path d="M5 4h4l3 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2" />
+		</svg>
 		Folders
 	</div>
 	<div class="ms-auto">
-		<a href="{{view_state.links.open_create}}" class="btn btn-primary btn-sm">
+		<a
+			href="{{view_state.links.open_create}}"
+			studio-form-links="false"
+			zx-swap="#settingsContent"
+			zx-link-mode="app"
+			class="btn btn-primary btn-sm"
+			 >
 			<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-folder-plus me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 19h-7a2 2 0 0 1 -2 -2v-11a2 2 0 0 1 2 -2h4l3 3h7a2 2 0 0 1 2 2v3.5" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
 			Add Folder
 		</a>
@@ -27,7 +36,7 @@
 	</div>
 
 	{{#if view_state.show_create}}
-	<form class="card mb-3" method="POST" action="/studio/packages">
+	<form class="card mb-3" method="POST" action="/studio/packages" zx-swap="#settingsContent">
 		<input type="hidden" name="goto" value="/studio/settings/packages">
 		<input type="hidden" name="goto_fail" value="/studio/settings/packages">
 		<div class="card-header bg-primary">
@@ -56,14 +65,14 @@
 		</div>
 		<div class="card-footer text-end">
 			<a href="{{view_state.links.close_create}}" class="btn btn-outline-secondary me-2">Cancel</a>
-			<button type="submit" class="btn btn-primary">Submit</button>
+			<button type="submit" class="btn btn-primary" zx-scroll-to=":nth-last-child(1 of .existingFolder)">Submit</button>
 		</div>
 	</form>
 	{{/if}}
 
 	<h3>Existing Folders</h3>
 	{{#each data.ChartSQLStudio.Packages}}
-	<div class="card mb-3">
+	<div id="folder{{UniqueId}}" class="card mb-3 existingFolder">
 		<div class="card-header">
 			<div>
 				<h3 class="card-title">
@@ -91,14 +100,14 @@
 					{{DefaultStudioDatasource.Name}}
 				</span>
 				{{/if}}
-				<a href="{{#if IsEditing}}{{CloseEditLink}}{{else}}{{EditLink}}{{/if}}" class="btn btn-icon btn-ghost-primary">
+				<a href="{{#if IsEditing}}{{CloseEditLink}}{{else}}{{EditLink}}{{/if}}" zx-swap="#folder{{UniqueId}}" zx-link-mode="app" class="btn btn-icon btn-ghost-primary" studio-form-links="false">
 					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
 				</a>
 			</div>
 		</div>
 		{{#if IsEditing}}
 		<div class="card-body">
-			<form class="card mb-3" method="POST" action="/studio/packages/{{UniqueId}}">
+			<form class="card mb-3" method="POST" action="/studio/packages/{{UniqueId}}" zx-swap="#folder{{UniqueId}}">
 				<input type="hidden" name="goto" value="{{EditLink}}">
 				<input type="hidden" name="goto_fail" value="{{EditLink}}">
 				<div class="card-header bg-primary">
@@ -173,7 +182,7 @@
 							</div>
 						</div>
 					</div>
-					<div class="row mb-3">
+					<div id="editPackageResults" class="row mb-3">
 						<div class="mb-3 col">
 							{{#if view_state.verify_publisher_key}}
 							{{#if view_state.verify_publisher_key.success}}
@@ -189,36 +198,56 @@
 							</div>
 							{{/if}}
 							{{/if}}
-							<button class="btn btn-outline-info" form="verifyPublisherKey">Verify Publisher Key</button>
+							<button
+								class="btn btn-outline-info"
+								form="verifyPublisherKey"
+								zx-loader="true"
+								zero-icon="false"
+							>Verify Publisher Key</button>
 						</div>
 					</div>
 				</div>
 				<div class="card-footer">
 					<div class="row">
 						<div class="col">
-							<button form="removeForm" type="submit" class="btn btn-ghost-info" zero-confirm="Are you sure?">Remove</button>
+							<button
+								form="removeForm"
+								type="submit"
+								class="btn btn-ghost-info"
+								zx-dialog-confirm="Remove the folder from ChartSQL? It will remain on the filesystem"
+							>Remove</button>
 						</div>
 						<div class="col text-end">
 							{{#unless IsDefaultPackage}}
-								<button form="setAsDefaultPackageForm" type="submit" class="btn btn-outline-danger me-2">Set as Default Folder</button>
+								<button form="setAsDefaultPackageForm" type="submit" class="btn btn-outline-info me-2">Set as Default Folder</button>
 							{{/unless}}
-							<a href="{{CloseEditLink}}" class="btn btn-outline-secondary me-2">Close</a>
+							<a href="{{CloseEditLink}}" class="btn btn-outline-secondary me-2" zx-swap="#folder{{UniqueId}}">Close</a>
 							<button type="submit" class="btn btn-primary">Update</button>
 						</div>
 					</div>
 				</div>
 			</form>
-			<form id="verifyPublisherKey" method="POST" action="/studio/packages/{{UniqueId}}/verifyPublisherKey">
+			<form
+				id="verifyPublisherKey"
+				method="POST"
+				action="/studio/packages/{{UniqueId}}/verifyPublisherKey"
+				zx-swap="#editPackageResults"
+			>
 				<input type="hidden" name="goto" value="{{EditLink}}">
 				<input type="hidden" name="goto_fail" value="{{EditLink}}">
 				<input type="hidden" name="preserve_response" value="view_state.verify_publisher_key">
 			</form>
-			<form id="setAsDefaultPackageForm" method="POST" action="/studio/packages/{{UniqueId}}">
+			<form id="setAsDefaultPackageForm" method="POST" action="/studio/packages/{{UniqueId}}" zx-swap="#folder{{UniqueId}}">
 				<input type="hidden" name="setAsDefaultPackage" value="true">
 				<input type="hidden" name="goto" value="{{EditLink}}">
 				<input type="hidden" name="goto_fail" value="{{EditLink}}">
 			</form>
-			<form id="removeForm" method="POST" action="/studio/packages/{{UniqueId}}/delete">
+			<form
+				id="removeForm"
+				method="POST"
+				action="/studio/packages/{{UniqueId}}/delete"
+				zx-swap="#settingsContent"
+			>
 				<input type="hidden" name="goto" value="/studio/settings/packages"/>
 				<input type="hidden" name="goto_fail" value="/studio/settings/packages"/>
 			</form>

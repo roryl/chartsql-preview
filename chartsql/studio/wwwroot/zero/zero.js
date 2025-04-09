@@ -20,6 +20,18 @@ $(document).ready(function() {
 	// 	ZERO_JS_ICON_SPINNER = 'fa fa-circle-o-notch fa-spin';
 	// }
 
+	// Setup a handler for zux replacement events to add event listeners
+	// back. This will allow us to transition to zux.js
+	document.addEventListener('zsx.zx-swap.after', function(event) {
+		var newElement = event.detail.newElement
+		// Add all of our handlers for the new element
+		zeroAjax($(event.detail.newElement));
+		zeroOnChange($(event.detail.newElement));
+		zeroIcon($(event.detail.newElement));
+		lastButtonClicked($(event.detail.newElement));
+		zeroAuto(event.detail.newElement);
+	});
+
 	var doLog = function(message, level){
 
 		if(typeof level == 'undefined'){

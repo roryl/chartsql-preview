@@ -5,7 +5,7 @@ abstract component extends="Datasource" accessors="true" {
 
 	public query function execute(SqlScript){
 		var results = "";
-		this.executeSql(SqlScript.stripDirectives());
+		this.executeSql(SqlScript.getExecutableSQL());
 		return result;
 	}
 

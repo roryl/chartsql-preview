@@ -34,11 +34,17 @@ component accessors="true" {
 
 		if(result.keyExists("method") and result.method == "GET"){
 
+			// arguments.result.view_state.presentation_mode = {
+			// 	is_active: url.keyExists("PresentationMode"),
+			// 	link: this.getChartSQLStudio().getEditorQueryString().clone().setValue("PresentationMode", "true").get();
+			// }
+			var qs = new zero.plugins.zerotable.model.queryStringNew(urlDecode(cgi.query_string));
+
 			arguments.result.view_state.presentation_mode = {
 				is_active: url.keyExists("PresentationMode"),
-				link: this.getChartSQLStudio().getLastPresentationUrl()
+				link: qs.clone().setValue("PresentationMode", "true").get()
 			}
-			var qs = new zero.plugins.zerotable.model.queryStringNew(urlDecode(cgi.query_string));
+
 			var SliceDateTime = qs.getValue("SliceDatetime") ?: nullvalue();
 			arguments.result.view_state.datetime_slicer_links = new studio.model.DatetimeSlicer("1D").getLinks(qs, SliceDateTime);
 		}
@@ -54,30 +60,46 @@ component accessors="true" {
 			```
 			<cf_handlebars context="#arguments.result#">
 			<li class="nav-item {{#if view_state.presentation_mode.is_active}}active{{/if}}">
-				<form action="/studio/main" method="GET" zero-target="#aside,#pageContent,#headTitle">
-					{{#each view_state.params}}
-						{{#unless (eq key "RenderPanelView")}}
-							{{#unless (eq key "PresentationMode")}}
-								<input type="hidden" name="{{key}}" value="{{value}}">
-							{{/unless}}
-						{{/unless}}
-					{{/each}}
-					<input type="hidden" name="RenderPanelView" value="chart">
-					<input type="hidden" name="PresentationMode" value="true">
-					<button type="submit" class="nav-link" zero-icon-class="nav-link-icon-custom-loading-indicator">
-						<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Present Charts"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
-							<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-presentation" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 4l18 0" /><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" /><path d="M12 16l0 4" /><path d="M9 20l6 0" /><path d="M8 12l3 -3l2 2l3 -3" /></svg>
-						</span>
-						<span class="nav-link-title">
-							Present
-						</span>
-					</button>
-				</form>
+				<a
+					href="{{view_state.presentation_mode.link}}"
+					class="nav-link"
+					zero-icon-class="nav-link-icon-custom-loading-indicator"
+					studio-form-links="false"
+					zx-swap="#aside,#pageContent,#headTitle"
+					zx-loader="true"
+					zx-link-mode="app"
+				>
+					<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Present Charts"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-presentation" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 4l18 0" /><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" /><path d="M12 16l0 4" /><path d="M9 20l6 0" /><path d="M8 12l3 -3l2 2l3 -3" /></svg>
+					</span>
+					<span class="nav-link-title">
+						Present
+					</span>
+				</a>
 			</li>
-			</cf_handlebars>
-			```
+		</cf_handlebars>
+		```
 		}
 
+		// <form action="/studio/main" method="GET" zero-target="#aside,#pageContent,#headTitle">
+		// 	{{#each view_state.params}}
+		// 		{{#unless (eq key "RenderPanelView")}}
+		// 			{{#unless (eq key "PresentationMode")}}
+		// 				<input type="hidden" name="{{key}}" value="{{value}}">
+		// 			{{/unless}}
+		// 		{{/unless}}
+		// 	{{/each}}
+		// 	<input type="hidden" name="RenderPanelView" value="chart">
+		// 	<input type="hidden" name="PresentationMode" value="true">
+		// 	<button type="submit" class="nav-link" zero-icon-class="nav-link-icon-custom-loading-indicator">
+		// 		<span class="nav-link-icon-custom d-md-none d-lg-inline-block" data-bs-toggle="tooltip" data-bs-placement="right" title="Present Charts"><!-- Download SVG icon from http://tabler-icons.io/i/home -->
+		// 			<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-presentation" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 4l18 0" /><path d="M4 4v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-10" /><path d="M12 16l0 4" /><path d="M9 20l6 0" /><path d="M8 12l3 -3l2 2l3 -3" /></svg>
+		// 		</span>
+		// 		<span class="nav-link-title">
+		// 			Present
+		// 		</span>
+		// 	</button>
+		// </form>
 
 		// savecontent variable="dateslicer" {
 		// 	include template="dateslicer_toolbar.cfm";
@@ -154,6 +176,9 @@ component accessors="true" {
 			}
 			if (doc.select("##new-file-dropdown").size() > 0) {
 				doc.select("##new-file-dropdown")[1].addClass('d-none');
+			}
+			if (doc.select("##datalist").size() > 0) {
+				doc.select("##datalist")[1].remove();
 			}
 
 			doc.select(".open-file-name").html(openFileName);

@@ -32,32 +32,55 @@
 		<h3>Reload Studio</h3>
 		<p class="text-muted">Reload and instantiate ChartSQL Studio. This will clear any existing executions and cached files.</p>
 		<div class="btn-list">
-			<form method="POST" action="/studio/settings/reload">
+			<form method="POST" action="/studio/settings/reload" zero-swap="#settingsContent">
 				<input type="hidden" name="goto" value="/studio/settings">
 				<button type="submit" class="btn btn-outline-primary">Reload Editor</button>
 			</form>
 		</div>
 	</div>
-	<div class="mb-3 col-12 col-sm-4">
-		<h3>Branding</h3>
-		<p class="text-muted">Change the expanded studio logo to your own brand (recommended size: 170x25).</p>
-		<img src="/studio/main/logo" height="25" class="mb-3" alt="Studio Logo">
-		{{!-- Image input --}}
-		<form method="POST" action="/studio/settings/changeExpandedLogo" enctype="multipart/form-data">
+		<h3>Change Branding</h3>
+	<div class="mb-3 col-12 d-flex flex-wrap align-items-center">
+		<div class="col-12 col-sm-5 pe-3">
+			<form method="POST" action="/studio/settings/changeExpandedLogo" enctype="multipart/form-data">
+				<input type="hidden" name="goto" value="/studio/settings">
+				<input type="hidden" name="goto_fail" value="/studio/settings">
+				<label class="form-label">Expanded Logo</label>
+				<img src="/studio/main/logo" height="25" class="mb-3" alt="Studio Logo">
+				<div class="input-group w-100">
+					<input type="file" class="form-control" name="file" accept="image/*" required>
+					<button type="submit" class="btn">Save Expanded Logo</button>
+				</div>
+				<small class="form-hint">Change the expanded studio logo to your own brand (recommended size: 170x25).</small>
+			</form>
+		</div>
+		<div class="col-12 col-sm-5 ps-3">
+			<form method="POST" action="/studio/settings/changeSmallLogo" enctype="multipart/form-data">
+				<input type="hidden" name="goto" value="/studio/settings">
+				<input type="hidden" name="goto_fail" value="/studio/settings">
+				<label class="form-label">Mascot Logo</label>
+				<img src="/studio/main/mascot" height="25" alt="ChartSQL Studio" class="mb-3" alt="Studio Logo">
+				<div class="input-group">
+					<input type="file" class="form-control" name="file" accept="image/*" required>
+					<button type="submit" class="btn">Save Mascot Logo</button>
+				</div>
+				<small class="form-hint mt-2">Change the small/mascot studio logo to your own brand (recommended size: 25x25).</small>
+			</form>
+		</div>
+	</div>
+	<div class="mb-3">
+		<h3>Reset Branding</h3>
+		<p class="text-muted">Reset the expanded and small logos to the default ChartSQL Studio logos.</p>
+		<form method="POST" action="/studio/settings/resetLogos">
 			<input type="hidden" name="goto" value="/studio/settings">
-			<input type="hidden" name="goto_fail" value="/studio/settings?itfailed=true">
-			<input type="file" class="form-control" name="file" accept="image/*" required>
-			<button type="submit" class="btn btn-outline-primary">Save Expanded Logo</button>
+			<input type="hidden" name="goto_fail" value="/studio/settings">
+			<input type="hidden" name="preserve_response" value="view_state.resetBranding">
+			<button type="submit" class="btn btn-outline-primary">Reset Branding</button>
 		</form>
-		<p class="text-muted mt-2">Change the small/mascot studio logo to your own brand (recommended size: 25x25).</p>
-		<img src="/studio/main/mascot" height="25" alt="ChartSQL Studio" class="mb-3" alt="Studio Logo">
-		{{!-- Image input --}}
-		<form method="POST" action="/studio/settings/changeSmallLogo" enctype="multipart/form-data">
-			<input type="hidden" name="goto" value="/studio/settings">
-			<input type="hidden" name="goto_fail" value="/studio/settings?itfailed=true">
-			<input type="file" class="form-control" name="file" accept="image/*" required>
-			<button type="submit" class="btn btn-outline-primary">Save Small Logo</button>
-		</form>
+		{{#if view_state.resetBranding.errors}}
+			<div class="alert alert-danger mt-5">
+				<h4 class="alert-heading">Could not reset branding!</h4>
+			</div>
+		{{/if}}
 	</div>
 </div>
 {{!-- <div class="card-footer bg-transparent mt-auto">

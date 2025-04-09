@@ -13,7 +13,11 @@ component accessors="true" {
 	property name="LastExecutionRequest";
 	property name="LastSuccessfulExecutionRequest";
 	property name="LastRendering";
+	property name="SqlFileCaches";
+	property name="CurrentDatasourceLastExecutionRequest";
+	property name="CurrentDatasource";
 	property name="IsDirty";
+	property name="IsAnySelectListSelected" type="boolean" default="false" hint="If any select-list directive has a value selected. Used in the UI";
 	property name="EditorContent";
 	property name="Subpath";
 	property name="Id";
@@ -25,6 +29,7 @@ component accessors="true" {
 	property name="LastRenderContent";
 	property name="LastOptionContent";
 	property name="IsMissingFile";
+	property name="SelectListDirectives";
 
 	public function init(
 		required Package Package,
@@ -51,8 +56,14 @@ component accessors="true" {
 		variables.Package.getChartSqlStudio().addSqlFile(this);
 		variables.IsMissing = false;
 		variables.IsDirty = false;
+		variables.SqlFileCaches = {};
 		variables.HasDirectiveErrors = false;
 		variables.Subpath = this.generateSubpath();
+		// SelectListSelections will store the selected values for the select-list directives
+		// which will be used in the SQL and the UI
+		variables.SelectListSelections = {};
+		variables.IsAnySelectListSelected = false;
+
 		this.setEditorContent(this.getContent());
 		this.loadDirectives();
 
@@ -154,6 +165,12 @@ component accessors="true" {
 			}
 		}
 
+		// Restore the select list selections into the directives. The directives
+		// get cleared when the editor content is set, so we need to restore them
+		var NamedSelectListDirectives = this.getNamedSelectListDirectives();
+		for(var selectListName in variables.SelectListSelections){
+			this.updateSelectListSelection(selectListName, variables.SelectListSelections[selectListName]);
+		}
 	}
 
 	public function getNamedDirectives(){
@@ -169,6 +186,47 @@ component accessors="true" {
 		return new Optional(variables.LastExecutionRequest?:nullValue());
 	}
 
+	public function getSqlFileCaches(){
+		return variables.SqlFileCaches;
+	}
+	
+	/**
+	 * Searches for SqlFileCache from the property SqlFileCaches
+	 * that matches the datasource id and returns it
+	 */
+	public function getSqlFileCacheFromStudioDatasourceName(
+		required string StudioDatasourceName
+	) {
+		if (variables.SqlFileCaches.containsKey(arguments.StudioDatasourceName)) {
+			return new Optional(variables.SqlFileCaches[arguments.StudioDatasourceName]);
+		}
+		return new Optional(nullValue());
+	}
+
+	/**
+	 * Searches for LastExecutionRequest from the property SqlFileCache
+	 * that matches the datasource id and returns it
+	 */
+	public function getLastExecutionRequestFromStudioDatasourceName(
+		required string StudioDatasourceName
+	) {
+		var SqlFileCacheOptional = getSqlFileCacheFromStudioDatasourceName(arguments.StudioDatasourceName);
+		if (SqlFileCacheOptional.exists()) {
+			return new Optional(SqlFileCacheOptional.get().getLastExecutionRequest());
+		}
+		return new Optional(nullValue());
+	}
+	
+	/**
+	 * Adds a Sql Cache to the SqlFile
+	 */
+	public function addSqlFileCache(
+		required SqlFileCache SqlFileCache
+	) {
+		variables.SqlFileCaches[SqlFileCache.getStudioDatasource().getName()] = arguments.SqlFileCache;
+		return arguments.SqlFileCache;
+	}
+
 	/**
 	 * Allows us to load the last successful execution so we can get useful data for rendering
 	 * or displaying columns, even if there is currently a request or if the latest exection
@@ -176,6 +234,30 @@ component accessors="true" {
 	 */
 	public function getLastSuccessfulExecutionRequest(){
 		return new Optional(variables.LastSuccessfulExecutionRequest?:nullValue());
+	}
+
+	public Directive[] function getSelectListDirectives(){
+		var out = [];
+
+		for(var directive in variables.directives){
+			if(directive.getCoreName() == "select-list"){
+				arrayAppend(out, directive);
+			}
+		}
+		return out;
+	}
+
+	/**
+	 * Returns a struct of select-list directives with the key being the user name
+	 * of the directive. Used for easy lookup of the directives.
+	 */
+	public struct function getNamedSelectListDirectives(){
+		var out = {};
+		var SelectListDirectives = this.getSelectListDirectives();
+		for(var directive in SelectListDirectives){
+			out[directive.getUserName()] = directive;
+		}
+		return out;
 	}
 
 	/**
@@ -234,21 +316,21 @@ component accessors="true" {
 		}
 		this.loadDirectives();
 
-		var namedDirectives = this.getNamedDirectives();
+		// var namedDirectives = this.getNamedDirectives();
 
 		// In case the user has some mongodb-query directive written directly on the
 		// on the main editor instead of the mongodb-query editor, then it will migrate
 		// the current value to base64.
-		if (
-			namedDirectives.keyExists('mongodb-query')
-			&& !isNull(namedDirectives['mongodb-query'].getValueRaw())
-			&& !isEmpty(namedDirectives['mongodb-query'].getValueRaw())
-			&& isJson(namedDirectives['mongodb-query'].getValueRaw())
-		){
-			// Make the directive a base64 encoded string
-			var DirectiveRawValue = namedDirectives['mongodb-query'].getValueRaw();
-			this.addOrUpdateDirective('mongodb-query', toBase64(DirectiveRawValue));
-		}
+		// if (
+		// 	namedDirectives.keyExists('mongodb-query')
+		// 	&& !isNull(namedDirectives['mongodb-query'].getValueRaw())
+		// 	&& !isEmpty(namedDirectives['mongodb-query'].getValueRaw())
+		// 	&& isJson(namedDirectives['mongodb-query'].getValueRaw())
+		// ){
+		// 	// Make the directive a base64 encoded string
+		// 	var DirectiveRawValue = namedDirectives['mongodb-query'].getValueRaw();
+		// 	this.addOrUpdateDirective('mongodb-query', toBase64(DirectiveRawValue));
+		// }
 	}
 
 	public function toggleDirective(required string name){
@@ -257,6 +339,38 @@ component accessors="true" {
 		var SqlScript = new core.model.SqlScript(ChartSql, this.getEditorContent());
 		SqlScript.toggleDirective(name);
 		this.setEditorContent(SqlScript.getSql());
+	}
+
+	/**
+	 * Updates the selection for a select-list directive in the SQL file and stores it
+	 * in the SqlFile object. We can use this to render the SQL file with the selected
+	 * values in the select-list directive, and restore the UI state when the user
+	 * navigates back to the SQL file.
+	 */
+	public function updateSelectListSelection(required string selectListUserName, required string selectListSelectedValue){
+		var SelectListDirectives = this.getNamedSelectListDirectives();
+		if(SelectListDirectives.keyExists(arguments.selectListUserName)){
+			SelectListDirectives[arguments.selectListUserName].setSelectListSelectedValue(arguments.selectListSelectedValue);
+			variables.SelectListSelections[arguments.selectListUserName] = arguments.selectListSelectedValue;
+		}
+
+		var isAnySelected = false;
+		for(var SelectList in this.getSelectListDirectives()){
+			if(!SelectList.getIsSelectListDefaultValue()){
+				isAnySelected = true;
+				break;
+			}
+		}
+		variables.IsAnySelectListSelected = isAnySelected;
+	}
+
+	public function resetSelectListSelections(){
+		var SelectListDirectives = this.getNamedSelectListDirectives();
+		for(var SelectList in this.getSelectListDirectives()){
+			SelectList.resetSelectListSelection();
+		}
+		variables.SelectListSelections = {};
+		variables.IsAnySelectListSelected = false;
 	}
 
 	/**

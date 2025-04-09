@@ -37,7 +37,7 @@ component accessors="true" {
 		var Slide = new Slide(
 			argumentCollection = arguments
 		);
-		variables.Package.saveConfig();
+		variables.Package.getChartSQLStudio().saveConfig();
 		return Slide;
 	}
 
@@ -72,12 +72,12 @@ component accessors="true" {
 			}
 		}
 		variables.Slides = newSlides;
-		variables.Package.saveConfig();
+		variables.Package.getChartSQLStudio().saveConfig();
 	}
 
 	public void function setName(required string Name){
 		variables.Name = arguments.Name;
-		variables.Package.saveConfig();
+		variables.Package.getChartSQLStudio().saveConfig();
 	}
 
 }

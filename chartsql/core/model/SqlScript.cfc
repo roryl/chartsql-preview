@@ -8,6 +8,7 @@ component accessors="true" {
 	processingdirective preservecase="true";
 	property name="ChartSql" type="ChartSql";
 	property name="sql" type="string";
+	property name="HandlebarsContext" type="struct" hint="The context from the editor session that was used to evaluate the script with handlebars";
 
 	public function init(
 		required ChartSql ChartSql,
@@ -16,6 +17,11 @@ component accessors="true" {
 		variables.ChartSql = ChartSql;
 		variables.ChartSql.getSqlScripts().append(this);
 		variables.sql = arguments.sql?:"";
+
+		// 2024-10-31: The ExecutionContext will be set by AsyncExecutionRequest when it is settting up
+		// the SqlScript. The context will carry details about the user environment that the script can use
+		// to render handlebars code
+		variables.HandlebarsContext = {};
 
 		variables.supportedDirectives = {
 			"chart": true,
@@ -39,6 +45,11 @@ component accessors="true" {
 			"tags": true
 		}
 
+		// These are the directives that are user named and need to be prefixed with a '-'
+		variables.userNamedDirectives = {
+			"select-list": true
+		}
+
 		// These are the directives that are arrays and need to be converted to arrays
 		variables.arrayDirectives = [
 			"series",
@@ -50,7 +61,16 @@ component accessors="true" {
 			 "baselines",
 			 "baseline-types",
 			 "series-labels",
-			 "overlay-series"
+			 "overlay-series",
+			 "tags",
+			 "select-list",
+			 "select-list-channel"
+		];
+		
+		// Case sensitive directives
+		variables.caseSensitiveDirectives = [
+			"select-list",
+			"select-list-channel"
 		];
 
 		variables.multilineDirectives = [
@@ -101,6 +121,33 @@ component accessors="true" {
 			return true;
 		}
 		return false;
+	}
+
+	public boolean function isUserNamedDirective(required string directive){
+		var match = this.matchUserNamedDirective(directive);
+		return match != "";
+	}
+
+	public string function matchUserNamedDirective(required string directive){
+		for(var userNamedDirective in variables.userNamedDirectives){
+			if(left(directive, len(userNamedDirective)) == userNamedDirective){
+				return userNamedDirective;
+			}
+		}
+		return "";
+	}
+
+	public string function parseUserNameFromDirective(required string directive, required string userNamedDirective){
+		if(userNamedDirective != ""){
+
+			var out = replaceNoCase(directive, userNamedDirective, "", "all");
+
+			if(left(out, 1) == "-"){
+				out = trim(replace(out, "-", "", "one"));
+			}
+			return out;
+		}
+		return "";
 	}
 
 	public Boolean function isLineCommentedOut(string line) {
@@ -259,26 +306,54 @@ component accessors="true" {
 	 * ]
 	 */
 	public struct function getAtDirectiveContents(array directives){
-		// writeDump(arguments.directives);
+
 		var out = structNew("ordered");
+
+		var finalArrayDirectives = duplicate(variables.arrayDirectives);
+
 		for (var directive in arguments.directives){
 			var finalName = replaceNoCase(directive, "@", "", "all");
 			finalName = replaceNoCase(finalName, ":", "", "all");
 			out[finalName] = trim(this.getAtDirectiveContentRaw(new CleanedDirectiveName(directive)));
+
+			// If the directive is a user named directive, we need to add the
+			// directive to the list of array directives if the core directive
+			// is an array directive
+			if(this.IsUserNamedDirective(finalName)){
+
+				var userNamedDirective = this.matchUserNamedDirective(finalName);
+
+				if(arrayContainsNoCase(variables.arrayDirectives, userNamedDirective)){
+					if(!arrayContainsNoCase(finalArrayDirectives, finalName)){
+						finalArrayDirectives.append(finalName);
+					}
+				}
+			}
+
 		}
+
 
 		// 2024-01-29: out[finalName] will be either like 'chart' or '//chart'
 		// for commented out directives. For the check of whether the directive
 		// is an array, we also need to check for the commented out version. So
 		// we add the commented out version to the arrayDirectives array
-		var commentedOutArrayDirectives = variables.arrayDirectives.map(function(item){
-			return "//#item#";
+		variables.arrayDirectives.each(function(item){
+			finalArrayDirectives.append("//#item#");
 		});
 
-		for(var arrayField in variables.arrayDirectives.merge(commentedOutArrayDirectives)){
+
+		for(var arrayField in finalArrayDirectives){
 			if(out.keyExists(arrayField)){
-				out[arrayField] = listToArray(out[arrayField], ",").map(function(item){
-					return trim(item);
+				out[arrayField]	= listToArray(
+					out[arrayField],
+					","
+				).map(function(item){
+					// Check if the item is in the case sensitive list of directives
+					if(variables.caseSensitiveDirectives.contains(arrayField)){
+						return trim(item);
+					} else {
+						return lcase(trim(item));
+					}
 				})
 			}
 		}
@@ -290,14 +365,14 @@ component accessors="true" {
 			}
 		}
 
-		var base64Fields = ["mongodb-query"];
-		for(var base64Field in base64Fields){
-			if(out.keyExists(base64Field)){
-				if (!isJson(out[base64Field])) {
-					out[base64Field] = ToString(ToBinary(out[base64Field]));
-				}
-			}
-		}
+		// var base64Fields = ["mongodb-query"];
+		// for(var base64Field in base64Fields){
+		// 	if(out.keyExists(base64Field)){
+		// 		if (!isJson(out[base64Field])) {
+		// 			out[base64Field] = ToString(ToBinary(out[base64Field]));
+		// 		}
+		// 	}
+		// }
 
 		return out;
 	}
@@ -395,6 +470,48 @@ component accessors="true" {
 			"min": true,
 			"max": true,
 			"median": true
+		}
+
+		for(var nameableKey in directives){
+
+			var userNamedDirective = this.matchUserNamedDirective(nameableKey);
+
+			if(userNamedDirective != ""){
+
+				out.types[nameableKey] = {name:{}, errors:[], isValid:true, allowEmpty: false};
+
+				var name = replaceNoCase(nameableKey, userNamedDirective, "", "all");
+				if(left(name, 1) == "-"){
+					name = trim(replace(name, "-", "", "one"));
+				} else {
+
+					out.types[nameableKey].isValid = false;
+					var error = {
+						type: "error",
+						directive: nameableKey,
+						errorClass: "invalidSelectListName",
+						title: "User Named Directive Must Be Prefixed",
+						message: "The user named directive '#userNamedDirective#' must be prefixed with a '-' after select list like: 'select-list-name'"
+					}
+
+					out.types[nameableKey].errors.append(error);
+					out.errors.append(error);
+				}
+
+				if(name == ""){
+					out.types[nameableKey].isValid = false;
+					var error = {
+						type: "error",
+						directive: nameableKey,
+						errorClass: "emptySelectListName",
+						title: "Empty select-list Name",
+						message: "The select-list name must be provided"
+					}
+					out.types[nameableKey].errors.append(error);
+					out.errors.append(error);
+				}
+			}
+
 		}
 
 		var allSeries = [];
@@ -602,17 +719,31 @@ component accessors="true" {
 			out.errors.append(error);
 		}
 
-		//Validate json types for valid json
+		//If is not a valid base64 value add an InvalidBase64 error
 		for(var jsonType in variables.jsonTypes){
 			if(directives.keyExists(jsonType)){
-				if(!isJson(directives[jsonType])){
+				var regexToValidateBase64 = "^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{2}==|[A-Za-z0-9+\/]{3}=)?$";
+				if(reFind(regexToValidateBase64, directives[jsonType]) < 1){
+					out.types[jsonType].isValid = false;
+					var error = {
+						type: "error",
+						directive: jsonType,
+						errorClass: "InvalidBase64",
+						title: "Invalid Base64 Value",
+						message: "The value provided for the #jsonType# directive is not a valid Base64 value."
+					}
+					out.types[jsonType].errors.append(error);
+					out.errors.append(error);
+				}
+
+				if(!isJson(toString(toBinary(directives[jsonType])))){
 					out.types[jsonType].isValid = false;
 					var error = {
 						type: "error",
 						directive: jsonType,
 						errorClass: "invalidJson",
-						title: "Invalid JSON",
-						message: "The text for the '#jsonType#' directive must be valid JSON"
+						title: "Invalid JSON Value",
+						message: "The value provided for the #jsonType# directive is not a valid JSON."
 					}
 					out.types[jsonType].errors.append(error);
 					out.errors.append(error);
@@ -698,6 +829,22 @@ component accessors="true" {
 	}
 
 	/**
+	 * Returns a string that has been evaluated to be executable SQL. We execute any
+	 * handlebars code and we strip out any directives
+	 */
+	public string function getExecutableSQL(){
+		var sql = this.stripDirectives();
+
+		var out = "";
+		savecontent variable="out" {
+			module name="handlebars" context="#variables.HandlebarsContext#" {
+				echo(sql);
+			}
+		}
+		return out;
+	}
+
+	/**
 	 * Gets the directives but only returns the ones that are IsSupported
 	 * @return array
 	 */
@@ -760,19 +907,29 @@ component accessors="true" {
 		var out = [];
 		for (var directive in directives){
 
-			//If nots not supported we don't have validations for it
-			if(variables.supportedDirectives.keyExists(directive)){
-				validationOut = validations.types[directive];
-			} else {
-				validationOut = {}
-			}
-
 			var IsCommentedOut = false;
 			if(directive.contains("//")){
 				IsCommentedOut = true;
 				var directiveName = replace(directive, "//", "", "all");
 			} else {
 				var directiveName = directive;
+			}
+
+			var userNamedDirective = this.matchUserNamedDirective(directiveName);
+			var isUserNamedDirective = userNamedDirective != "";
+			var userName = this.parseUserNameFromDirective(directiveName, userNamedDirective);
+
+			//If nots not supported we don't have validations for it
+			if(variables.supportedDirectives.keyExists(directive)){
+				validationOut = validations.types[directive];
+			} else {
+
+				if(isUserNamedDirective){
+					validationOut = validations.types[directiveName];
+					// writeDump(validationOut);
+				} else {
+					validationOut = {};
+				}
 			}
 
 			// Mark if we have seen a supported directive. Use the cleaned up
@@ -789,7 +946,9 @@ component accessors="true" {
 				ValueRaw = rawContents[directive],
 				validations = validationOut,
 				IsSupported = variables.supportedDirectives.keyExists(directive),
-				IsCommentedOut = IsCommentedOut
+				IsCommentedOut = IsCommentedOut,
+				IsUserNamed = isUserNamedDirective,
+				UserName = userName
 			)
 			out.append(Directive);
 		}
@@ -802,7 +961,8 @@ component accessors="true" {
 					Name = supportedDirective,
 					validations = {},
 					IsSupported = true,
-					IsCommentedOut = false
+					IsCommentedOut = false,
+					IsUserNamed = false
 				)
 				out.append(Directive);
 			}
@@ -899,8 +1059,8 @@ component accessors="true" {
 
 		// Replace all new lines and tabs to compact the text
 
-		if(variables.jsonTypes.keyExists(directive) && isJson(newText)){
-			var newText = toBase64(newText);
+		if(variables.jsonTypes.keyExists(directive)){
+			newText = toBase64(newText);
 		}
 
 		// writeDump(lines);

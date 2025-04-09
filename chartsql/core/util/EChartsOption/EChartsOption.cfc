@@ -51,7 +51,7 @@ component {
 			<cf_handlebars context="#context#">
 				<cfoutput>
 					<div style="{{##if Width}}width:{{Width}};{{/if}} {{##if Height}}height:{{Height}};{{/if}}">
-						<div id="{{ContainerId}}" style="width:100%; height:100%;"></div>
+						<div class="chart-container" id="{{ContainerId}}" style="width:100%; height:100%;"></div>
 					</div>
 				</cfoutput>
 			</cf_handlebars>
@@ -72,7 +72,10 @@ component {
 						// this code below is in javascript not Lucee
 
 						if(typeof option.tooltip != "undefined" && typeof option.tooltip.formatter != "undefined"){
-							eval(option.tooltip.formatter);
+							if (option.tooltip.formatter.includes("var func =")) {
+								option.tooltip.formatter = option.tooltip.formatter.replace("var func =", "");
+							}
+							eval("var func = " + option.tooltip.formatter);
 							option.tooltip.formatter = func;
 						}
 
@@ -82,7 +85,10 @@ component {
 							&& typeof option.tooltip.axisPointer.label != "undefined"
 							&& typeof option.tooltip.axisPointer.label.formatter != "undefined"
 						){
-							eval(option.tooltip.axisPointer.label.formatter);
+							if (option.tooltip.axisPointer.label.formatter.includes("var func =")) {
+								option.tooltip.axisPointer.label.formatter = option.tooltip.axisPointer.label.formatter.replace("var func =", "");
+							}
+							eval("var func = " + option.tooltip.axisPointer.label.formatter);
 							option.tooltip.axisPointer.label.formatter = func;
 						}
 
@@ -94,7 +100,10 @@ component {
 								//If the yAxis has a formatter, we need to eval it
 								if(typeof option.yAxis[ii].axisLabel != "undefined"){
 									if(typeof option.yAxis[ii].axisLabel.formatter != "undefined"){
-										eval(option.yAxis[ii].axisLabel.formatter);
+										if (option.yAxis[ii].axisLabel.formatter.includes("var func =")) {
+											option.yAxis[ii].axisLabel.formatter = option.yAxis[ii].axisLabel.formatter.replace("var func =", "");
+										}
+										eval("var func = " + option.yAxis[ii].axisLabel.formatter);
 										option.yAxis[ii].axisLabel.formatter = func;
 									}
 								}
@@ -110,7 +119,10 @@ component {
 								//If the yAxis has a formatter, we need to eval it
 								if(typeof option.xAxis[ii].axisLabel != "undefined"){
 									if(typeof option.xAxis[ii].axisLabel.formatter != "undefined"){
-										eval(option.xAxis[ii].axisLabel.formatter);
+										if (option.xAxis[ii].axisLabel.formatter.includes("var func =")) {
+											option.xAxis[ii].axisLabel.formatter = option.xAxis[ii].axisLabel.formatter.replace("var func =", "");
+										}
+										eval("var func = " + option.xAxis[ii].axisLabel.formatter);
 										option.xAxis[ii].axisLabel.formatter = func;
 									}
 								}
@@ -129,8 +141,11 @@ component {
 								//If the series has a formatter, we need to eval it
 								if(typeof option.series[ii].label != "undefined"){
 									if(typeof option.series[ii].label.formatter != "undefined"){
-										eval(option.series[ii].label.formatter);
-										option.series[ii].label.formatter = func;
+										if (option.series[ii].label.formatter.includes("var func =")) {
+											option.series[ii].label.formatter = option.series[ii].label.formatter.replace("var func =", "");
+											eval("var func = " + option.series[ii].label.formatter);
+											option.series[ii].label.formatter = func;
+										}
 									}
 								}
 
@@ -157,7 +172,10 @@ component {
 
 						//Check if the option contains _scatterSize
 						if(option._scatterSize){
-							var scatterFunc = eval(option._scatterSize);
+							if (option._scatterSize.includes("scatterFunc =")) {
+								option._scatterSize = option._scatterSize.replace("scatterFunc =", "");
+							}
+							var scatterFunc = eval("scatterFunc =" + option._scatterSize);
 							// console.log(scatterFunc);
 							for(var ii=0; ii<option.series.length; ii++){
 								// console.log(option.series[ii]);
@@ -171,6 +189,11 @@ component {
 						});
 
 						window.chartHandle = myChart{{ContainerId}};
+
+						if (window.charts == undefined || window.charts == null) {
+							window.charts = {};
+						}
+						window.charts["{{ContainerId}}"] = myChart{{ContainerId}};
 
 						// var funcTest{{ContainerId}} = function(){
 						// 	console.log("test");
@@ -215,14 +238,13 @@ component {
 			var renderContent = arguments.renderContent;
 		}
 
-
 		```
 		<cfoutput>#renderContent.container#</cfoutput>
 
 		<cfif variables.renderInline>
 			<cfoutput>#renderContent.script#</cfoutput>
 		<cfelse>
-			<cfhtmlbody action="append"><cfoutput>#renderContent.script#</cfoutput></cfhtmlbody>
+			<cfoutput>#renderContent.script#</cfoutput>
 		</cfif>
 		```
 	}
@@ -235,7 +257,9 @@ component {
 		}
 
 		if(variables.directives.keyExists("formats")){
-			// this.decorateAxisWithFormats(option, variables.directives.formats);
+			this.decorateAxisWithFormats(option, variables.directives.formats);
+
+
 		}
 
 		if (!option.keyExists('tooltip')) {
@@ -250,7 +274,6 @@ component {
 			}
 
 			if (
-				false &&
 				isDefined("variables.directives.formats")
 				&& !isNull(variables.directives.formats)
 				&& isArray(variables.directives.formats)
@@ -274,7 +297,9 @@ component {
 						var formats = #serializeJSON(variables.directives.formats)#;
 						var mainAxisDimension = '#mainAxisDimension#';
 						var format = 'decimal';
-						if (formats.length > params.axisIndex) {
+						if (params.axisIndex >= formats.length) {
+							format = formats[formats.length - 1];
+						} else {
 							format = formats[params.axisIndex];
 						}
 
@@ -286,7 +311,7 @@ component {
 						if (params.axisDimension == 'x' && params.seriesData != undefined && params.seriesData.length > 0 && 'componentType' in params.seriesData[params.axisIndex] && params.seriesData[params.axisIndex].componentType == 'series') {
 							resultDate = new Date(params.value);
 							if (resultDate.isValid()) {
-								return resultData.toLocaleDateString();
+								return resultDate.toLocaleDateString();
 							} else {
 							 	return params.value;
 							}
@@ -321,12 +346,15 @@ component {
 				var seriesGroupByStack = structNew("ordered");
 
 				for (i = 1; i <= len(option.series); i++) {
-					if (option.series[i].stack != false) {
+					if (option.series[i].keyExists('stack') && option.series[i].stack != false) {
 						var key = option.series[i].stack.toString();
-					} else {
+					} else if (option.series[i].keyExists('name')) {
 						var key = option.series[i].name;
+					} else {
+						var key = i;
+						option.series[i].name = key;
 					}
-					if (seriesGroupByStack.containsKey(key)) {
+					if (seriesGroupByStack.keyExists(key)) {
 						seriesGroupByStack[key].append(option.series[i]);
 					} else {
 						seriesGroupByStack[key] = [option.series[i]];
@@ -726,7 +754,7 @@ component {
 				return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 			}";
 
-			switch(format){
+			switch(format.trim().toLowerCase()){
 
 				case "none":
 					arguments.AxisItem.axisLabel.formatter = "var func = function(value) {
@@ -1117,6 +1145,7 @@ component {
 
 					// First we are going to get the distinct values for groupBy1
 					// these will be our category values
+
 					query name="groupByData" dbtype="query" {
 						echo("
 						SELECT *
@@ -1125,6 +1154,7 @@ component {
 						ORDER BY _sortId ASC
 						")
 					}
+
 
 					var categoryData = groupByData.columnData(groupBy1);
 

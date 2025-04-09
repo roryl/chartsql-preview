@@ -5,7 +5,13 @@
 		Datasources
 	</div>
 	<div class="ms-auto">
-		<a href="{{view_state.links.open_create}}" class="btn btn-primary btn-sm">
+		<a 	href="{{view_state.links.open_create}}"
+			zx-swap="#settingsContent"
+			zx-link-mode="app"
+			zx-scroll-to="#createDatasourceFormTitle"
+			studio-form-links="false"
+			class="btn btn-primary btn-sm"
+		>
 			<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-database-plus" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 6c0 1.657 3.582 3 8 3s8 -1.343 8 -3s-3.582 -3 -8 -3s-8 1.343 -8 3" /><path d="M4 6v6c0 1.657 3.582 3 8 3c1.075 0 2.1 -.08 3.037 -.224" /><path d="M20 12v-6" /><path d="M4 12v6c0 1.657 3.582 3 8 3c.166 0 .331 -.002 .495 -.006" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
 			Add Datasource
 		</a>
@@ -27,28 +33,16 @@
 	</div>
 
 	{{#if view_state.show_create}}
-	<form id="datasourceCreate" method="post" action="/studio/datasources/validate">
+	<form id="datasourceCreate" method="post" action="/studio/datasources/validate" zx-swap="#settingsContent">
 		<div class="card mb-3">
 			<div class="card-header bg-azure">
-				<h3 class="card-title">
+				<h3 id="createDatasourceFormTitle" class="card-title" style="scroll-margin-top: 20px;">
 					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-database-plus" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 6c0 1.657 3.582 3 8 3s8 -1.343 8 -3s-3.582 -3 -8 -3s-8 1.343 -8 3" /><path d="M4 6v6c0 1.657 3.582 3 8 3c1.075 0 2.1 -.08 3.037 -.224" /><path d="M20 12v-6" /><path d="M4 12v6c0 1.657 3.582 3 8 3c.166 0 .331 -.002 .495 -.006" /><path d="M16 19h6" /><path d="M19 16v6" /></svg>
 					{{#if data.ChartSqlStudio.ConfigureDatasourceTemplate.Type}}Configure {{data.ChartSqlStudio.ConfigureDatasourceTemplate.Type}} Settings{{else}}Add New Datasource{{/if}}
 				</h3>
 			</div>
 			<div class="card-body bg-azure-lt">
 
-				<!--- {{view_state}} --->
-				{{#if view_state.create_datasource}}
-				{{#if view_state.create_datasource.success}}
-				<div class="alert alert-success bg-green-lt">
-					{{view_state.create_datasource.message}}
-				</div>
-				{{else}}
-				<div class="alert alert-danger bg-red-lt">
-					{{view_state.create_datasource.message}}
-				</div>
-				{{/if}}
-				{{/if}}
 				{{#if data.ChartSqlStudio.ConfigureDatasourceTemplate.Type}}
 
 				<input type="hidden" name="goto" value="{{view_state.links.goto_configure}}">
@@ -89,7 +83,7 @@
 								<div class="card-title mb-1">{{Name}}</div>
 								<div class="text-secondary">{{Description}}</div>
 							</div>
-							<a href="{{ConfigureLink}}" class="card-btn">Configure {{Type}}</a>
+							<a href="{{ConfigureLink}}" zx-swap="#settingsContent" zx-link-mode="app" zx-scroll-to="#createDatasourceFormTitle" studio-form-links="false" class="card-btn">Configure {{Type}}</a>
 						</div>
 					</div>
 					{{/each}}
@@ -116,13 +110,40 @@
 				</div>
 				{{/if}}
 				{{/if}}
+
+				{{#if view_state.create_datasource}}
+				{{#if view_state.validate_datasource.success}}
+				{{else}}
 				<div class="row">
 					<div class="col">
-						<button zero-icon="true" type="submit" name="submit_overload" value="{'preserve_response':'view_state.validate_datasource'}" class="btn btn-outline-info">Test Connection</button>
+						<div class="alert alert-danger bg-red-lt">
+							{{#each view_state.create_datasource.errors.errors}}
+								{{message}}
+							{{/each}}
+						</div>
+					</div>
+				</div>
+				{{/if}}
+				{{/if}}
+
+				<div class="row">
+					<div class="col">
+						<button
+							zero-icon="false"
+							type="submit"
+							name="submit_overload"
+							value="{'preserve_response':'view_state.validate_datasource'}"
+							class="btn btn-outline-info"
+							zx-loader="true"
+						>Test Connection
+						</button>
 					</div>
 					<div class="col text-end">
-						<a href="{{view_state.links.close_create}}" class="btn btn-outline-secondary me-2">Cancel</a>
-						<button formAction="/studio/datasources/create" name="submit_overload" value="{'goto':'/studio/settings/datasources'}" type="submit" class="btn btn-primary">Create</button>
+						<a href="{{view_state.links.close_create}}" zx-swap="#settingsContent" zx-link-mode="app" studio-form-links="false" class="btn btn-outline-secondary me-2">Cancel</a>
+						<button formAction="/studio/datasources/create" name="submit_overload" zx-scroll-to=":nth-last-child(1 of .existingDatasource)" value="{'goto':'/studio/settings/datasources'}" type="submit" class="btn btn-primary">
+							<!--- <div class="spinner-border spinner-border-sm me-2 zx-loader"></div> --->
+							Create
+						</button>
 					</div>
 				</div>
 			</div>
@@ -132,7 +153,7 @@
 
 	<h3>Existing Datasources</h3>
 	{{#each data.ChartSQLStudio.StudioDatasources}}
-	<div class="card mb-3">
+	<div class="card mb-3 existingDatasource">
 		<div class="card-header">
 			<div>
 				<div class="row align-items-center">
@@ -146,14 +167,20 @@
 				</div>
 			</div>
 			<div class="card-actions">
-				<a href="{{#if IsEditing}}{{CloseEditLink}}{{else}}{{EditLink}}{{/if}}" class="btn btn-icon btn-ghost-primary">
+				<a 	href="{{#if IsEditing}}{{CloseEditLink}}{{else}}{{EditLink}}{{/if}}"
+					class="btn btn-icon btn-ghost-primary"
+					zx-swap="#settingsContent"
+					zx-link-mode="app"
+					zx-jump-guard="true"
+					studio-form-links="false"
+					>
 					<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-settings" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z" /><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" /></svg>
 				</a>
 			</div>
 		</div>
 		{{#if IsEditing}}
 		<div class="card-body">
-			<form class="card mb-3" method="POST" action="/studio/datasources/{{Name}}">
+			<form class="card mb-3" method="POST" action="/studio/datasources/{{Name}}" zx-swap="#settingsContent">
 				<input type="hidden" name="goto" value="{{EditLink}}">
 				<input type="hidden" name="goto_fail" value="{{EditLink}}">
 				<input type="hidden" name="preserve_response" value="view_state.update_datasource">
@@ -221,17 +248,41 @@
 					{{/if}}
 					<div class="row">
 						<div class="col">
-							<button form="removeForm" type="submit" class="btn btn-ghost-info" zero-confirm="Are you sure?">Remove</button>
-							<button zero-icon="true" formAction="/studio/datasources/validate" type="submit" name="submit_overload" value="{'preserve_response':'view_state.validate_datasource'}" class="btn btn-outline-info">Test Connection</button>
+							<button
+								form="removeForm"
+								type="submit"
+								class="btn btn-ghost-info"
+								zx-dialog-confirm="Removing the datasource cannot be undone"
+								zx-dialog-confirm-title="Remove Datasource"
+								zx-dialog-confirm-yes="Remove"
+								zx-dialog-confirm-no="Cancel"
+							>Remove</button>
+							<button
+								zero-icon="false"
+								formAction="/studio/datasources/validate"
+								type="submit"
+								name="submit_overload"
+								value="{'preserve_response':'view_state.validate_datasource'}"
+								class="btn btn-outline-info"
+								zx-loader="true"
+							>
+								<span class="">Test Connection</span>
+							</button>
 						</div>
 						<div class="col-auto text-end">
-							<a href="{{CloseEditLink}}" class="btn btn-outline-secondary me-2">Close</a>
+							<a 	href="{{CloseEditLink}}"
+								class="btn btn-outline-secondary me-2"
+								zx-swap="#settingsContent"
+								zx-link-mode="app"
+								zx-jump-guard="true"
+								studio-form-links="false"
+							>Close</a>
 							<button type="submit" class="btn btn-primary">Update</button>
 						</div>
 					</div>
 				</div>
 			</form>
-			<form id="removeForm" method="POST" action="/studio/datasources/{{Name}}/delete">
+			<form id="removeForm" method="POST" action="/studio/datasources/{{Name}}/delete" zx-swap="#settingsContent">
 				<input type="hidden" name="goto" value="/studio/settings/datasources"/>
 				<input type="hidden" name="goto_fail" value="/studio/settings/datasources"/>
 			</form>

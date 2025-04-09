@@ -14,7 +14,8 @@ component accessors="true" {
 			var FileBrowserView = new studio.model.FileBrowserView(
 				ChartSQLStudio = variables.ChartSQLStudio,
 				Name = "stories",
-				IconClass = "ti ti-slideshow"
+				IconClass = "ti ti-slideshow",
+				tooltip: "Show Storys"
 			);
 		}
 
@@ -88,6 +89,16 @@ component accessors="true" {
 			if(LatestStoryOptional.exists()){
 				var LatestStory = LatestStoryOptional.get();
 				result.data.LatestStory = new zero.serializerFast(LatestStory, {
+					Id:{},
+					Name:{},
+					Slides:{
+						FullName:{},
+						Title:{},
+						Order:{}
+					}
+				})
+
+				result.data.CurrentPackage.Storys = new zero.serializerFast(Package.getStorys(), {
 					Id:{},
 					Name:{},
 					Slides:{

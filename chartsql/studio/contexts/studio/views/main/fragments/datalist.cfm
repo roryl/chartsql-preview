@@ -26,32 +26,36 @@
 	}
 
 </style>
-{{#if data.CurrentSqlFile.LastExecutionRequest.IsError}}
+{{#unless data.CurrentSqlFile.Id}}
 	<div class="p-2 text-muted align-items-center justify-content-center" style="display:flex; height:100%; width:100%; align-items:center; justify-content:center;">
-		<span class="btn btn-outline-danger" style="pointer-events:none; opacity:.4">Error Querying Data</span>
+		<span class="btn btn-outline-info" style="pointer-events:none; opacity:.4">No file open</span>
 	</div>
 {{else}}
-	{{#unless data.CurrentSqlFile.Id}}
+	{{#if view_state.missing_studio_datasource}}
 		<div class="p-2 text-muted align-items-center justify-content-center" style="display:flex; height:100%; width:100%; align-items:center; justify-content:center;">
-			<span class="btn btn-outline-info" style="pointer-events:none; opacity:.4">No file open</span>
+			<span class="btn btn-outline-info" style="pointer-events:none; opacity:.4">Please select a datasource</span>
 		</div>
-	{{/unless}}
-{{/if}}
+	{{else if data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastExecutionRequest.IsError}}
+		<div class="p-2 text-muted align-items-center justify-content-center" style="display:flex; height:100%; width:100%; align-items:center; justify-content:center;">
+			<span class="btn btn-outline-danger" style="pointer-events:none; opacity:.4">Error Querying Data</span>
+		</div>
+	{{/if}}
+{{/unless}}
 
-<!--- {{#if data.CurrentSqlFile.LastExecutionRequest.IsRunning}}
+<!--- {{#if data.CurrentSqlFile.CurrentDatasourceSqlFileCache.LastExecutionRequest.IsRunning}}
 	<div class="p-2 text-muted align-items-center justify-content-center" style="display:flex; height:100%; width:100%">
 		<form method="POST" action="/studio/main/cancelExecution">
-			<input type="hidden" name="Id" value="{{data.CurrentSqlFile.LastExecutionRequest.Id}}">
+			<input type="hidden" name="Id" value="{{data.CurrentSqlFile.CurrentDatasourceLastExecutionRequest.Id}}">
 			<input type="hidden" name="goto" value="{{view_state.current_url}}"/>
 			<input type="hidden" name="goto_fail" value="{{view_state.current_url}}"/>
 			<button class="btn btn-outline-azure" style="">Cancel Execution</button>
 		</form>
 	</div>
 {{/if}} --->
-
-<table class="table scrollable-table table-sm table-striped table-hover datalist">
-	<thead class="">
-		<tr>
+<div class="d-flex flex-row justify-content-start">
+<table id="datalist" class="table scrollable-table table-sm table-striped table-hover datalist dt-head-left dt-body-left">
+	<thead>
+		<tr style="height: 36.5px;">
 			{{#each data.CurrentSqlFile.ResultSet.Columns}}
 
 				<!--- Add a CSS class that will be used to decorate the column td
@@ -66,7 +70,7 @@
 					</style>
 				{{/if}}
 
-				<th style="text-transform: none;" class="pe-3">
+				<th style="text-transform: none; height: 36.5px;" class="pe-3">
 					{{#if IsCategoryField}}
 					<span data-bs-toggle="tooltip" data-bs-placement="top" title="{{Name}} is on the x-Axis">
 						<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-axis-x text-info" style="width:20px;" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 13v.01" /><path d="M4 9v.01" /><path d="M4 5v.01" /><path d="M17 20l3 -3l-3 -3" /><path d="M4 17h16" /></svg>
@@ -105,9 +109,9 @@
 	</thead>
 	<tbody>
 		{{#each data.CurrentSqlFile.ResultSet.Data}}
-			<tr>
+			<tr style="height: 33px;">
 				{{#each this}}
-					<td class="pe-3 isUsedAnywhere{{@index}}">{{this}}</td>
+					<td class="pt-2 ps-3 isUsedAnywhere{{@index}}">{{this}}</td>
 				{{/each}}
 			</tr>
 		{{/each}}
@@ -133,3 +137,36 @@
 		<tr><th scope="row">20</th><td>Product A</td><td>$75</td><td>4</td><td>$300</td></tr> --->
 	</tbody>
 </table>
+<div style="height: 36px;"></div>
+</div>
+
+<script>
+	$(document).ready( function () {
+		// If #datalist exists, then initialize the DataTable
+		if ( ! $('#datalist').length ) return;
+
+		$.fn.dataTable.ext.errMode = 'none';
+    	let table = $('#datalist').on( 'error.dt', function ( e, settings, techNote, message ) {
+			console.log( 'An error has been reported by DataTables: ', message );
+		}).DataTable(
+			{
+				"dom": 'rtip',
+				info: false,
+				"pageLength": 100,
+				ajax: {
+					url: '/studio/main/getLastExecutionRequestData',
+					data: function (d) {
+						d.SqlFileFullName = '{{data.CurrentSqlFile.FullName}}';
+					}
+				},
+    			processing: false,
+    			serverSide: true
+			}
+		);
+
+
+		$('#datalist-search-input').on('keyup', function () {
+			table.search(this.value).draw();
+		});
+	});
+</script>

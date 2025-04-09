@@ -75,7 +75,8 @@ component accessors="true" {
 			RequestType = "PUBLISH_CHART",
 			Method = "POST",
 			Headers = Headers,
-			FormFields = formFields
+			FormFields = formFields,
+			SqlFile = SqlFile.getName()
 		);
 
 		PublishingRequest.send();
@@ -114,7 +115,8 @@ component accessors="true" {
 			RequestType = "UPDATE_CHART",
 			Method = "POST",
 			Headers = Headers,
-			FormFields = formFields
+			FormFields = formFields,
+			SqlFile = SqlFile.getName()
 		);
 
 		PublishingRequest.send();
@@ -122,7 +124,35 @@ component accessors="true" {
 		var PublishingResult = parsePublishingRequest(PublishingRequest);
 
 		return PublishingResult;
+	}
 
+	public PublishingResult function markMissingChartsAsTrashed(required string[] DashIds){
+
+		var baseUrl = variables.ChartSQLStudio.getBasePublishingUrl(variables.key);
+		var uri = "#baseUrl#/markMissingChartsAsTrashed.json";
+
+		var Headers = {}
+		if(!isNull(variables.ChartSQLStudio.getPublishingAppId())){
+			Headers["x-application-id"] = variables.ChartSQLStudio.getPublishingAppId();
+		}
+
+		var FormFields = {
+			"dashIds" = serializeJson(DashIds)
+		};
+
+		var PublishingRequest = new PublishingRequest(
+			ChartSQLStudio = variables.ChartSQLStudio,
+			Uri = uri,
+			RequestType = "MARK_MISSING_CHARTS_AS_TRASHED",
+			Method = "POST",
+			Headers = Headers,
+			FormFields = formFields
+		);
+
+		PublishingRequest.send();
+		var PublishingResult = parsePublishingRequest(PublishingRequest);
+
+		return PublishingResult;
 	}
 
 	/**
@@ -151,6 +181,38 @@ component accessors="true" {
 			Headers = Headers
 		);
 
+		// writeDump(PublishingRequest);
+
+		PublishingRequest.send();
+		var PublishingResult = parsePublishingRequest(PublishingRequest);
+
+		return PublishingResult;
+	}
+
+	public PublishingResult function getStats(){
+
+		var baseUrl = variables.ChartSQLStudio.getBasePublishingUrl(variables.key);
+		var uri = "#baseUrl#/stats.json";
+
+		var Headers = {}
+		if(!isNull(variables.ChartSQLStudio.getPublishingAppId())){
+			Headers["x-application-id"] = variables.ChartSQLStudio.getPublishingAppId();
+		}
+
+		if(!isNull(variables.ChartSQLStudio.getPublishingDevMode())){
+			Headers["x-dev-mode"] = variables.ChartSQLStudio.getPublishingDevMode();
+		}
+
+		var PublishingRequest = new PublishingRequest(
+			ChartSQLStudio = variables.ChartSQLStudio,
+			Uri = uri,
+			RequestType = "GET_STATS",
+			Method = "POST",
+			Headers = Headers
+		);
+
+		// writeDump(PublishingRequest);
+
 		PublishingRequest.send();
 		var PublishingResult = parsePublishingRequest(PublishingRequest);
 
@@ -161,6 +223,8 @@ component accessors="true" {
 
 		var rawResult = PublishingRequest.getRawResult();
 		var content = rawResult.filecontent;
+
+		// echo(content);
 
 		if(isJson(content)){
 
@@ -179,16 +243,18 @@ component accessors="true" {
 				var PublishingResult = new PublishingResult(
 					PublishingRequest = PublishingRequest,
 					ResultType = "API_SUCCESS",
-					ResultJson = json
+					ResultJson = json,
+					ResultMessage = json.message?:"The request was successfully published to the API."
 				);
-
 			}
 
 		} else {
 
 			var PublishingResult = new PublishingResult(
 				PublishingRequest = PublishingRequest,
-				ResultType = "INVALID_JSON"
+				ResultType = "INVALID_JSON",
+				ResultJson = {},
+				ResultMessage = content
 			);
 
 		}

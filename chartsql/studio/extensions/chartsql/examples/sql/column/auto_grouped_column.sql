@@ -1,5 +1,5 @@
 -- @title: Auto Grouped Column
--- @subtitle: Auto grouping columns when there is one category and two values
+-- @subtitle: Auto grouping columns when there is one category and two values  
 SELECT
 Channel,
 SUM(

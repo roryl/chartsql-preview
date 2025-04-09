@@ -11,6 +11,7 @@ component accessors="true" {
 	property name="Parent" type="MenuItem";
 	property name="Children" type="array";
 	property name="HasChildren" type="boolean" setter="false";
+	property name="StepOrder" type="numeric";
 	property name="OpenNewTab" type="boolean";
 	property name="Tooltip" type="string";
 
@@ -22,6 +23,7 @@ component accessors="true" {
 		string Link,
 		string Tooltip,
 		string Location = 'top',
+		numeric StepOrder = 0,
 		boolean OpenNewTab = false
 	){
 
@@ -31,6 +33,7 @@ component accessors="true" {
 
 		variables.Name = arguments.Name;
 		variables.IconClass = arguments.IconClass;
+		variables.StepOrder = arguments.StepOrder;
 		variables.Children = [];
 
 		if (structKeyExists(arguments, "Link")){

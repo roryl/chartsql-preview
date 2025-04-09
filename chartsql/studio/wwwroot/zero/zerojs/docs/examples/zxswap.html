@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZSX.js zx-swap Example</title>
+    <!-- ZSX CSS -->
+    <link rel="stylesheet" href="../../src/zsx.css">
+</head>
+<body>
+    <h1>ZSX.js zx-swap Example</h1>
+
+    <!-- Links with zx-swap attribute -->
+	<a href="./zxswap.html" zx-swap="#targetContent">Welcome</a><br/>
+    <a href="./zxswap.html?message=hello" zx-swap="#targetContent">Say Hello</a><br/>
+    <a href="./zxswap.html?message=goodbye" zx-swap="#targetContent">Say Goodbye</a><br/>
+
+	The page time is: <span id="pageTime"></span>
+
+    <!-- Target content to be swapped -->
+    <div id="targetContent" style="width: 300px; height: 100px; border: 1px solid #ccc; padding: 10px;">
+		<p id="messageText">Welcome! Click a link to change this content.</p>
+		<p>The fragment time is: <span id="currentTime"></span></p>
+
+		<!-- Script to simulate rendering. Typically you would be rendering
+		     on the server rather than rendering in javascript.
+		 -->
+		<script>renderContent();</script>
+    </div>
+
+	<script zx-script-skip="true">
+		document.getElementById('pageTime').innerHTML = new Date().toLocaleTimeString();
+		// Update page time
+		function renderContent(){
+			// Get URL parameters
+			var urlParams = new URLSearchParams(window.location.search);
+			var message = urlParams.get('message');
+			if (message === 'hello') {
+				document.getElementById('messageText').innerHTML = "Hello, World!";
+			}
+
+			if (message === 'goodbye') {
+				document.getElementById('messageText').innerHTML = "Goodbye, World!";
+			}
+			// Update current time
+			document.getElementById('currentTime').innerHTML = new Date().toLocaleTimeString();
+		}
+		renderContent();
+	</script>
+
+    <!-- ZSX.js Script -->
+    <script src="../../src/zsx.js"></script>
+    <script zx-script-skip="true">
+        // Initialize ZsxJs
+        const zsx = new ZsxJs();
+        zsx.init(document, {
+            // You can add custom options here
+        });
+    </script>
+</body>
+</html>

@@ -21,13 +21,22 @@
   /*float: left;*/
 }
 
-/*table {
+table {
 	width: 100%;
-}*/
+}
+
 td {
 	max-width: 1px;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+td.is-auto-width {
+	max-width: unset;
+	width: auto;
+	overflow: visible;
+	text-overflow: unset;
 	white-space: nowrap;
 }
 
@@ -72,7 +81,7 @@ good hitbox for the click
 				<div class="form form-inline float-right">
 					<div class="form-group">
 						{{#if toolbar.tools.copy}}
-						copy link <input type="text" class="form-control input-sm" value="{{current_link}}">
+						copy link <input type="text" class="form-control form-control-sm" value="{{current_link}}">
 						{{/if}}
 						{{#if toolbar.tools.history}}
 						<button class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="top" title="Show Filter History"><i class="glyphicon glyphicon-list-alt"></i></button>
@@ -82,14 +91,6 @@ good hitbox for the click
 						{{/if}}
 						{{#if toolbar.tools.download}}
 						<a class="btn btn-default btn-sm" data-toggle="tooltip" data-placement="top" title="Download CSV" href="{{csv_download_link}}"><i class="glyphicon glyphicon-download-alt"></i></a>
-						{{/if}}
-						{{#if toolbar.tools.customize}}
-						<button class="btn btn-secondary btn-sm" data-toggle="tooltip" data-placement="top" title="Customize Table" onClick="$('#selectColumns').toggle();">
-							<svg class="bi bi-gear" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-							  <path fill-rule="evenodd" d="M8.837 1.626c-.246-.835-1.428-.835-1.674 0l-.094.319A1.873 1.873 0 0 1 4.377 3.06l-.292-.16c-.764-.415-1.6.42-1.184 1.185l.159.292a1.873 1.873 0 0 1-1.115 2.692l-.319.094c-.835.246-.835 1.428 0 1.674l.319.094a1.873 1.873 0 0 1 1.115 2.693l-.16.291c-.415.764.42 1.6 1.185 1.184l.292-.159a1.873 1.873 0 0 1 2.692 1.116l.094.318c.246.835 1.428.835 1.674 0l.094-.319a1.873 1.873 0 0 1 2.693-1.115l.291.16c.764.415 1.6-.42 1.184-1.185l-.159-.291a1.873 1.873 0 0 1 1.116-2.693l.318-.094c.835-.246.835-1.428 0-1.674l-.319-.094a1.873 1.873 0 0 1-1.115-2.692l.16-.292c.415-.764-.42-1.6-1.185-1.184l-.291.159A1.873 1.873 0 0 1 8.93 1.945l-.094-.319zm-2.633-.283c.527-1.79 3.065-1.79 3.592 0l.094.319a.873.873 0 0 0 1.255.52l.292-.16c1.64-.892 3.434.901 2.54 2.541l-.159.292a.873.873 0 0 0 .52 1.255l.319.094c1.79.527 1.79 3.065 0 3.592l-.319.094a.873.873 0 0 0-.52 1.255l.16.292c.893 1.64-.902 3.434-2.541 2.54l-.292-.159a.873.873 0 0 0-1.255.52l-.094.319c-.527 1.79-3.065 1.79-3.592 0l-.094-.319a.873.873 0 0 0-1.255-.52l-.292.16c-1.64.893-3.433-.902-2.54-2.541l.159-.292a.873.873 0 0 0-.52-1.255l-.319-.094c-1.79-.527-1.79-3.065 0-3.592l.319-.094a.873.873 0 0 0 .52-1.255l-.16-.292c-.892-1.64.902-3.433 2.541-2.54l.292.159a.873.873 0 0 0 1.255-.52l.094-.319z"/>
-							  <path fill-rule="evenodd" d="M8 5.754a2.246 2.246 0 1 0 0 4.492 2.246 2.246 0 0 0 0-4.492zM4.754 8a3.246 3.246 0 1 1 6.492 0 3.246 3.246 0 0 1-6.492 0z"/>
-							</svg>
-							</button>
 						{{/if}}
 					</div>
 				</div>
@@ -114,7 +115,7 @@ good hitbox for the click
 					{{/each}}
 					<div class="form-group">
 						<label>Show </label>
-						<select class="form-control" name="{{table_name_prefix}}max" onChange="$('#max_items{{table_name}}').submit();">
+						<select class="form-control form-control-sm" name="{{table_name_prefix}}max" onChange="$('#max_items{{table_name}}').submit();">
 							{{#select max}}<option value="10">10</option>{{/select}}
 							{{#select max}}<option value="25">25</option>{{/select}}
 							{{#select max}}<option value="50">50</option>{{/select}}
@@ -123,7 +124,7 @@ good hitbox for the click
 							{{#select max}}<option value="0">All</option>{{/select}}
 						</select>
 						<label>records</label>
-						<button id="max_select_button" class="btn btn-primary" style="margin-left:3px;">Go</button>
+						<button id="max_select_button" class="btn btn-primary btn-sm" style="margin-left:3px;">Go</button>
 					</div>
 				</form>
 
@@ -140,7 +141,7 @@ good hitbox for the click
 								{{/if}}
 							{{/unless}}
 						{{/each}}
-						<button id="clearAllFiltersBtn" class="btn btn-default" {{#if has_filters}}{{else}}disabled="true"{{/if}}>Clear All Filters <svg class="bi bi-x-circle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+						<button id="clearAllFiltersBtn" class="btn btn-default btn-sm" {{#if has_filters}}{{else}}disabled="true"{{/if}}>Clear All Filters <svg class="bi bi-x-circle" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 						  <path fill-rule="evenodd" d="M8 15A7 7 0 108 1a7 7 0 000 14zm0 1A8 8 0 108 0a8 8 0 000 16z" clip-rule="evenodd"/>
 						  <path fill-rule="evenodd" d="M11.854 4.146a.5.5 0 010 .708l-7 7a.5.5 0 01-.708-.708l7-7a.5.5 0 01.708 0z" clip-rule="evenodd"/>
 						  <path fill-rule="evenodd" d="M4.146 4.146a.5.5 0 000 .708l7 7a.5.5 0 00.708-.708l-7-7a.5.5 0 00-.708 0z" clip-rule="evenodd"/>
@@ -192,13 +193,16 @@ good hitbox for the click
 								{{/unless}}
 							{{/unless}}
 						{{/each}}
-						<input name="{{table_name_prefix}}offet" type="hidden" class="form-control input-sm" value="0">
+						<input name="{{table_name_prefix}}offet" type="hidden" class="form-control form-control-sm" value="0">
 						<div class="input-group">
-						  <input type="text" name="{{table_name_prefix}}search" class="form-control" placeholder="Search..." aria-label="search" aria-describedby="button-addon4" value="{{search}}">
+						  <input type="text" name="{{table_name_prefix}}search" class="form-control form-control-sm" placeholder="Search..." aria-label="search" aria-describedby="button-addon4" value="{{search}}">
 						  <div class="input-group-append" id="button-addon4">
-							<button class="btn btn-primary" type="button">Search</button>
-							<a class="btn btn-outline-secondary" href="{{clear_search_link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>Clear</a>
+							<button class="btn btn-primary btn-sm" type="submit">Search</button>
+							<a class="btn btn-outline-secondary btn-sm" href="{{clear_search_link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>Clear</a>
 						  </div>
+							<span class="btn btn-sm btn-outline-primary ml-1" data-toggle="tooltip" data-placement="top" title="Customize Table" onClick="$('#selectColumns').toggle();">
+								<i class="bi bi-gear"></i>
+							</span>
 						</div>
 					</form>
 					{{#if use_zero_ajax}}
@@ -266,6 +270,136 @@ good hitbox for the click
 		</div>
 
 		<div class="row">
+
+			{{#if is_layout_card}}
+			<!--- Gallery GRID view --->
+			{{#each rows}}
+				<div class="col-3 mb-3">
+					<div class="card" style="">
+						{{#each columns}}
+							{{#if (eq column_name  'ImageSrc')}}
+
+									{{!-- <img src="{{lookup ../this column_row_data_path}}" class="card-img-top" style=""> --}}
+									<div class="card-header" style="height:200px; background-image: url('{{lookup ../this column_row_data_path}}'); background-size: contain; background-repeat: no-repeat; background-position: center;">
+										<a href="{{lookup ../this column_row_data_path}}" target="_blank" style="position: absolute; top: 6px; right: 10px;"><i class="bi bi-fullscreen"></i></a>
+										</a>
+									</div>
+							{{/if}}
+						{{/each}}
+						<div class="card-title p-2 mb-0">
+							{{#each columns}}
+								{{#if (eq column_name  'Name')}}
+									<div class="">{{lookup ../this column_row_data_path}}</div>
+								{{/if}}
+							{{/each}}
+						</div>
+						<ul class="list-group list-group-flush">
+							{{#each columns}}
+								{{#unless hidden}}
+									<li class="list-group-item py-1 pl-2"><span class="badge badge-primary">{{{icon}}}&nbsp;&nbsp;{{column_name}}</span>
+									{{#if column_type.custom}}
+										{{{lookup ../this.zerotable_custom_output column_name}}}
+									{{else if column_type.imagesrc}}
+										<img src="{{lookup ../this column_row_data_path}}" class="rowImage"/>
+									{{else}}
+										{{lookup ../this column_row_data_path}}
+									{{/if}}
+
+									{{#if filterable}}
+										<form style="display:inline; background:none; border:none;" action="{{base_path}}" class="horizontal" method="GET">
+											{{!-- This next section outputs the parameters for the form EXCEPT:
+												- Paramters which represent a filter column AND the current looped column is
+												being filters. For clarity with the lookup() expression I am using if/else
+												instead of unless which can be hard to mentally parse in a complex situation --}}
+											{{#each current_params}}
+
+												{{#if is_filter}}
+													{{!-- Filter params will have the name of the column which is being
+													filtered within the structure like below:
+
+													{
+														is_filter: true,
+														column: {
+															a_columns_name: true
+														},
+														name: "filters.name",
+														value: "shoes"
+													},
+
+													We can therefore lookup the column name (a_columns_name) to return true
+													if we are on the current column being looped over in the outer loop.
+
+													Need to use the ifLookup helper which will properly test the lookup for a
+													truthy value (true or "true"). If doing a normal 'if (lookup column ../this.column_name' then handlebars may conflict on columns named 'name' and
+													find keys in some parent structure, which will also return true under a normal
+													#if (strings return true).
+														--}}
+													{{#ifLookup (lookup column ../this.column_name)}}
+														{{!-- The current column we are looping matches the current_param
+														that we are looping, as such, do not output any hidden variable because
+														the form input will handle passing this value back --}}
+													{{else}}
+														{{#if is_struct}}
+															{{#each value}}
+																<input type="hidden" name="{{name}}.{{@key}}" value="{{this}}">
+															{{/each}}
+														{{else}}
+															<input type="hidden" name="{{name}}" value="{{value}}">
+														{{/if}}
+													{{/ifLookup}}
+												{{else}}
+													{{#if is_struct}}
+														{{#each value}}
+															<input type="hidden" name="{{name}}.{{@key}}" value="{{this}}">
+														{{/each}}
+													{{else}}
+														<input type="hidden" name="{{name}}" value="{{value}}">
+													{{/if}}
+												{{/if}}
+
+											{{/each}}
+											<input type="hidden" name="{{table_name_prefix}}filters.{{column_name}}" value="{{lookup ../this column_row_data_path}}">
+											<button class="btn btn-sm btn-link m-0 p-0" style="">
+												<svg class="bi bi-filter" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M6 10.5a.5.5 0 01.5-.5h3a.5.5 0 010 1h-3a.5.5 0 01-.5-.5zm-2-3a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zm-2-3a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5z" clip-rule="evenodd"/></svg>
+											</button>
+										</form>
+									{{/if}}
+
+									{{#if sortable}}
+										{{#if is_sorted}}
+											{{#if is_sorted_asc}}
+												<span class="float-right"><a href="{{sort_desc_link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}><i class="fas fa-sort-up"></i></a></span>
+											{{else}}
+												<span class="float-right"><a href="{{sort_asc_link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}><i class="fas fa-sort-down"></i></a></span>
+											{{/if}}
+										{{else}}
+											<span class="float-right"><a href="{{sort_asc_link}}" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}><i class="fas fa-sort"></i></a></span>
+										{{/if}}
+											<!--- <span class="pull-right"><a href=""><i class="fa fa-fw fa-filter"></i></a></span>
+											<span class="pull-right"><a href=""><i class="fa fa-fw fa-search"></i></a></span> --->
+									{{/if}}
+									</li>
+								{{/unless}}
+							{{/each}}
+
+							{{!-- <li class="list-group-item"> An item</li>
+							<li class="list-group-item">A second item</li>
+							<li class="list-group-item">A third item</li> --}}
+						</ul>
+						{{!-- <div class="card-body">
+							<a href="#" class="card-link">Card link</a>
+							<a href="#" class="card-link">Another link</a>
+						</div> --}}
+						{{#each columns}}
+							{{#if (eq column_name  'CreatedAt')}}
+								<div class="card-footer">
+									<div class="">{{lookup ../this column_row_data_path}}</div>
+								</div>
+							{{/if}}
+						{{/each}}
+					</div>
+				</div>
+			{{/each}}
 			{{!-- <div class="col-lg-3">
 				<div class="panel panel-default">
 					<div class="panel-heading">
@@ -281,7 +415,7 @@ good hitbox for the click
 										<!--- {{../is_active}} --->
 										<input type="hidden" name="goto" value="{{current_link}}" />
 										<input type="hidden" name="is_active" value="{{#if ../is_active}}false{{else}}true{{/if}}">
-										<!--- <input type="submit" name="{{column_name}}" id="data-grid-input-name{{id}}" class="form-control input-sm" value="{{lookup ../this column_row_data_path}}" data-initial-value="{{lookup ../this column_row_data_path}}" {{#if zero_is_checked}}checked{{/if}}/> --->
+										<!--- <input type="submit" name="{{column_name}}" id="data-grid-input-name{{id}}" class="form-control form-control-sm" value="{{lookup ../this column_row_data_path}}" data-initial-value="{{lookup ../this column_row_data_path}}" {{#if zero_is_checked}}checked{{/if}}/> --->
 										<button id="data-grid-input-name{{id}}" class="" style="border:none; margin:0px;" value="" data-initial-value="{{lookup ../this column_row_data_path}}">{{#if ../is_active}}&#9745;{{else}}&#9744;{{/if}}</button>
 									</div>
 								</form>
@@ -293,6 +427,8 @@ good hitbox for the click
 					</div>
 				</div>
 			</div> --}}
+
+			{{else if is_layout_table}}
 			<div class="col-lg-12">
 				<div class="table-responsive">
 				<table id="zerotable{{table_name}}"
@@ -335,7 +471,7 @@ good hitbox for the click
 										  http://stackoverflow.com/questions/13856955/i-need-to-make-an-input-element-adjust-to-table-cell-width
 									--}}
 									<td {{#if width}}width="{{width}}"{{/if}}
-
+										class="{{#if is_auto_width}}is-auto-width{{/if}}"
 										{{#if filterable}}{{#if filter.value}}style="background-color: #cccccc;"{{/if}}{{/if}}
 
 									>
@@ -396,7 +532,7 @@ good hitbox for the click
 													{{#if filter.type.text}}
 														{{#if filter.value}}
 															<div class="input-group">
-																<input type="input" class="form-control input input-sm" name="{{table_name_prefix}}filters.{{column_name}}" style="min-width: 10px;" {{#if filter.value}}value="{{filter.value}}"{{/if}} placeholder="filter {{friendly_name}}"/>
+																<input type="input" class="form-control form-control-sm" name="{{table_name_prefix}}filters.{{column_name}}" style="min-width: 5px;" {{#if filter.value}}value="{{filter.value}}"{{/if}} placeholder="filter {{friendly_name}}"/>
 																<div class="input-group-addon input-group-addon-btn">
 																	<button class="text">
 																		<svg class="bi bi-filter" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -412,7 +548,7 @@ good hitbox for the click
 															</div>
 														{{else}}
 															<div class="input-group">
-																<input type="input" class="form-control input input-sm" name="{{table_name_prefix}}filters.{{column_name}}" style="min-width: 10px;" {{#if filter.value}}value="{{filter.value}}"{{/if}} placeholder="filter {{friendly_name}}"/>
+																<input type="input" class="form-control form-control-sm" name="{{table_name_prefix}}filters.{{column_name}}" style="min-width: 5px;" {{#if filter.value}}value="{{filter.value}}"{{/if}} placeholder="filter {{friendly_name}}"/>
 																<div class="input-group-addon input-group-addon-btn">
 																	<button class="text">
 																		<svg class="bi bi-filter" width="1em" height="1em" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -426,7 +562,7 @@ good hitbox for the click
 
 													{{#if filter.type.select}}
 														<div class="input-group">
-															<select name="{{table_name_prefix}}filters.{{column_name}}" class="form-control input input-sm" placeholder="" onchange="$(this).closest('form').find('.applyFilter').click();">
+															<select name="{{table_name_prefix}}filters.{{column_name}}" class="form-control form-control-sm" placeholder="" onchange="$(this).closest('form').find('.applyFilter').click();">
 																<option disabled selected>Select {{friendly_name}}</option>
 																{{#each filter.data}}
 																	{{#select filter.value}}<option value="{{id}}">{{name}}</option>{{/select}}
@@ -581,7 +717,7 @@ good hitbox for the click
 																<input type="text"
 																	   name="{{column_name}}"
 																	   id="data-grid-input-name{{id}}"
-																	   class="form-control input-sm"
+																	   class="form-control form-control-sm"
 																	   style="width:60%; height:32px;"
 																	   value="{{lookup ../this column_row_data_path}}"
 																	   data-initial-value="{{lookup ../this column_row_data_path}}"/>
@@ -659,14 +795,21 @@ good hitbox for the click
 													<!--- {{{lookup ../this column_row_data_path}}} --->
 												{{/if}}
 
+												{{#if column_type.imagesrc}}
+													<div style="display:table-cell; vertical-align:middle; padding-left:5px;">
+														<img src="{{lookup ../this column_row_data_path}}" class="rowImage"/>
+													</div>
+													<!--- {{{lookup ../this column_row_data_path}}} --->
+												{{/if}}
+
 												{{#if column_type.checkbox}}
 													<form id="data-grid-form-name{{../id}}" action="{{base_path}}/{{../id}}" method="post" class="form-inline" style="display:inline;" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
 														<div class="form-group">
 															<!--- {{../is_active}} --->
 															<input type="hidden" name="goto" value="{{current_link}}" />
 															<input type="hidden" name="is_active" value="{{#if ../is_active}}false{{else}}true{{/if}}">
-															<!--- <input type="submit" name="{{column_name}}" id="data-grid-input-name{{id}}" class="form-control input-sm" value="{{lookup ../this column_row_data_path}}" data-initial-value="{{lookup ../this column_row_data_path}}" {{#if zero_is_checked}}checked{{/if}}/> --->
-															<button id="data-grid-input-name{{id}}" class="form-control" style="border:none;" value="" data-initial-value="{{lookup ../this column_row_data_path}}">{{#if ../is_active}}&#9745;{{else}}&#9744;{{/if}}</button>
+															<!--- <input type="submit" name="{{column_name}}" id="data-grid-input-name{{id}}" class="form-control form-control-sm" value="{{lookup ../this column_row_data_path}}" data-initial-value="{{lookup ../this column_row_data_path}}" {{#if zero_is_checked}}checked{{/if}}/> --->
+															<button id="data-grid-input-name{{id}}" class="form-control form-control-sm" style="border:none;" value="" data-initial-value="{{lookup ../this column_row_data_path}}">{{#if ../is_active}}&#9745;{{else}}&#9744;{{/if}}</button>
 														</div>
 													</form>
 												{{/if}}
@@ -722,7 +865,7 @@ good hitbox for the click
 
 														<div class="form-group" style="padding:2% 0;">
 															<input type="hidden" name="goto" value="{{pagination.current_page.link}}" />
-															<select name="{{column_name}}" class="form-control" style="">
+															<select name="{{column_name}}" class="form-control form-control-sm" style="">
 																{{#each column_type.options}}
 																	{{#select (lookup ../this column_name)}}<option value="{{id}}">{{name}}</option>{{/select}}
 																{{/each}}
@@ -780,6 +923,7 @@ good hitbox for the click
 											{{else}}
 
 											{{/if}}
+
 											{{#if filterable}}
 												<form style="display:inline; background:none; border:none;" action="{{base_path}}" class="horizontal" method="GET" {{#if use_zero_ajax}}zero-target="{{ajax_target}}"{{/if}}>
 													{{!-- This next section outputs the parameters for the form EXCEPT:
@@ -862,6 +1006,7 @@ good hitbox for the click
 				</table>
 				</div>
 			</div>
+			{{/if}}
 			<div id="selectColumns" class="col-lg-3" style="position:absolute; z-index:1; right:0; display:none;">
 				<div class="card border-light">
 					<div class="card-header bg-light d-flex justify-content-between align-items-center">
@@ -893,8 +1038,17 @@ good hitbox for the click
 								{{/if}}
 							{{/unless}}
 						{{/each}}
-
 						<ul class="list-group bg-light">
+							<li class="list-group-item d-flex justify-content-between align-items-center">
+								<div><i class="bi bi-grid-3x3-gap"></i> Display Layout</div>
+								<div class="float-right">
+									<small class="text-muted">{{layout}}</small>
+									<div class="btn-group mr-1" role="group" aria-label="Basic example">
+										<a id="tableLayoutButton" href="{{layout_table_link}}" class="btn btn-sm {{#if is_layout_table}}btn-primary{{/if}}"><i class="bi bi-table"></i></a>
+										<a id="cardLayoutButton" href="{{layout_card_link}}" class="btn btn-sm {{#if is_layout_card}}btn-primary{{/if}}"><i class="bi bi-card-heading"></i></a>
+									</div>
+								</div>
+							</li>
 							{{#each columns}}
 									<li class="list-group-item d-flex justify-content-between align-items-center bg-white text-body">
 										<div class="custom-control custom-switch">
@@ -982,8 +1136,8 @@ good hitbox for the click
 													{{/if}}
 												{{/unless}}
 											{{/each}}
-											<button class="form-control btn-primary btn btn-sm">go to page</button>
-											<input name="{{table_name_prefix}}goto_page" class="form-control" type="page" style="width:50px;">
+											<button class="btn-primary btn btn-sm">go to page</button>
+											<input name="{{table_name_prefix}}goto_page" class="form-control form-control-sm" type="page" style="width:50px;">
 											of {{toString pagination.total_pages}} pages
 										</div>
 									</form>
